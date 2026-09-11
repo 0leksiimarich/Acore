@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acore — Все для вас</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background-color: #f4f5f7; color: #333; }
+        
+        header { background: #1a4a84; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo-group { display: flex; align-items: baseline; gap: 10px; }
+        .logo { font-size: 26px; font-weight: bold; letter-spacing: 0.5px; }
+        .slogan { font-size: 13px; opacity: 0.85; font-style: italic; }
+        
+        .container { display: grid; grid-template-columns: 280px 1fr 280px; gap: 15px; max-width: 1200px; margin: 15px auto; padding: 0 10px; }
+        
+        .card { background: white; border-radius: 6px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .card h3 { font-size: 16px; margin-bottom: 10px; color: #1a4a84; border-bottom: 2px solid #eef2f5; padding-bottom: 5px; }
+        
+        .mail-login input { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .mail-login button { width: 100%; padding: 8px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .mail-login button:hover { background: #218838; }
+
+        .info-block { font-size: 14px; line-height: 1.6; }
+
+        .news-item { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .news-item a { color: #1a4a84; text-decoration: none; font-weight: bold; font-size: 15px; }
+        .news-item a:hover { text-decoration: underline; }
+        .news-item .time { font-size: 11px; color: #777; margin-top: 3px; }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-group">
+            <div class="logo">Acore</div>
+            <div class="slogan">Все для вас</div>
+        </div>
+        <div id="header-date"></div>
+    </header>
+
+    <div class="container">
+        <aside>
+            <div class="card">
+                <h3> Пошта Acore</h3>
+                <div class="mail-login" id="mail-box">
+                    <input type="text" id="email" placeholder="Логін / Email">
+                    <input type="password" id="password" placeholder="Пароль">
+                    <button onclick="loginMail()">Увійти</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3> Курс валют (НБУ)</h3>
+                <div class="info-block" id="rates">Завантаження...</div>
+            </div>
+        </aside>
+
+        <main>
+            <div class="card">
+                <h3> Головні новини</h3>
+                <div id="news-container">Завантаження новин...</div>
+            </div>
+        </main>
+
+        <aside>
+            <div class="card">
+                <h3> Погода (Черкаси)</h3>
+                <div class="info-block" id="weather">Завантаження...</div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        document.getElementById('header-date').innerText = new Date().toLocaleDateString('uk-UA', { weekday: 'long', day: 'numeric', month: 'long' });
+
+        async function fetchNews() {
+            try {
+                const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.pravda.com.ua/rss/');
+                const data = await res.json();
+                const container = document.getElementById('news-container');
+                container.innerHTML = '';
+
+                data.items.slice(0, 10).forEach(item => {
+                    const pubDate = new Date(item.pubDate).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+                    container.innerHTML += `
+                        <div class="news-item">
+                            <a href="${item.link}" target="_blank">${item.title}</a>
+                            <div class="time">${pubDate}</div>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                document.getElementById('news-container').innerText = 'Не вдалося завантажити новини.';
+            }
+        }
+
+        async function fetchWeather() {
+            try {
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=49.44&longitude=32.06&current_weather=true');
+                const data = await res.json();
+                const temp = data.current_weather.temperature;
+                const wind = data.current_weather.windspeed;
+                document.getElementById('weather').innerHTML = `
+                    <strong>Температура:</strong> ${temp}°C<br>
+                    <strong>Вітер:</strong> ${wind} км/год
+                `;
+            } catch (e) {
+                document.getElementById('weather').innerText = 'Помилка погоди.';
+            }
+        }
+
+        async function fetchRates() {
+            try {
+                const res = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json');
+                const data = await res.json();
+                const usd = data.find(c => c.cc === 'USD').rate.toFixed(2);
+                const eur = data.find(c => c.cc === 'EUR').rate.toFixed(2);
+                document.getElementById('rates').innerHTML = `
+                    <strong>USD:</strong> ${usd} грн<br>
+                    <strong>EUR:</strong> ${eur} грн
+                `;
+            } catch (e) {
+                document.getElementById('rates').innerText = 'Помилка курсів.';
+            }
+        }
+
+        function loginMail() {
+            const email = document.getElementById('email').value;
+            if (email) {
+                document.getElementById('mail-box').innerHTML = `
+                    <p style="color:green;">Вітаємо, <b>${email}</b>!</p>
+                    <p style="font-size:12px; margin-top:5px;">У вас 0 нових листів.</p>
+                    <button style="margin-top:10px; background:#dc3545;" onclick="location.reload()">Вийти</button>
+                `;
+            }
+        }
+
+        fetchNews();
+        fetchWeather();
+        fetchRates();
+    </script>
+</body>
+</html>
