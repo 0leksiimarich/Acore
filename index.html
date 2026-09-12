@@ -107,7 +107,7 @@
 
     <script>
         // ВСТАВ СВІЙ СЕКРЕТНИЙ КЛЮЧ З JSONBIN СЮДИ:
-        const JSONBIN_MASTER_KEY = "ВСТАВ_СВІЙ_КЛЮЧ_СЮДИ";
+        const JSONBIN_MASTER_KEY = "$2a$10$yWbOgQUYWCs3KHW4WPaz0uLdNLRmF6wvZSiz1oKq9V6gTKUpfaiQO";
 
         document.getElementById('header-date').innerText = new Date().toLocaleDateString('uk-UA', { weekday: 'long', day: 'numeric', month: 'long' });
 
@@ -146,7 +146,7 @@
             const fullEmail = login + domain;
             const userData = { name, email: fullEmail, pass, createdAt: new Date().toISOString() };
 
-            if (JSONBIN_MASTER_KEY === "$2a$10$yWbOgQUYWCs3KHW4WPaz0uLdNLRmF6wvZSiz1oKq9V6gTKUpfaiQO") {
+            if (JSONBIN_MASTER_KEY === "ВСТАВ_СВІЙ_КЛЮЧ_СЮДИ") {
                 alert('Будь ласка, вставте ваш Master Key з jsonbin.io в код файлу index.html!');
                 return;
             }
