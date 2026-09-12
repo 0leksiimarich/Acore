@@ -156,7 +156,7 @@
                         'Authorization': `Bearer ${getOpenRouterKey()}`
                     },
                     body: JSON.stringify({
-                        model: "openrouter/auto",
+                        model: "meta-llama/llama-3.3-70b-instruct:free",
                         messages: [
                             { role: "system", content: "Ти — корисний помічник пошукової системи Acore. Відповідай українською мовою чітко та лаконічно." },
                             { role: "user", content: query }
