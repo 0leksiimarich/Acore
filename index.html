@@ -156,7 +156,7 @@
                         'Authorization': `Bearer ${getOpenRouterKey()}`
                     },
                     body: JSON.stringify({
-                        model: "google/gemini-2.5-flash:free",
+                        model: "openrouter/auto",
                         messages: [
                             { role: "system", content: "Ти — корисний помічник пошукової системи Acore. Відповідай українською мовою чітко та лаконічно." },
                             { role: "user", content: query }
