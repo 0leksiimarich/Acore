@@ -57,7 +57,7 @@
         <div class="search-box">
             <input type="text" id="search-query" placeholder="Пошук або запитання..." required>
             <button class="btn-google" onclick="searchGoogle()">Google</button>
-            <button class="btn-ai" onclick="askDeepSeek()">Запитати AI</button>
+            <button class="btn-ai" onclick="askAI()">Запитати AI</button>
         </div>
 
         <div id="header-date"></div>
@@ -134,7 +134,7 @@
             }
         }
 
-        async function askDeepSeek() {
+        async function askAI() {
             const query = document.getElementById('search-query').value.trim();
             if (!query) {
                 alert('Введіть запитання!');
@@ -147,8 +147,9 @@
             aiCard.style.display = 'block';
             aiText.innerText = '🤖 Acore AI думає... Зачекайте декілька секунд.';
 
-            // Використовуємо лише 100% безкоштовні моделі з вашого списку
+            // Список безкоштовних моделей для резервного перемикання (fallback)
             const freeModels = [
+                "nvidia/nemotron-3.5-lightning:free",
                 "nex-agi/nex-n2.5-mini:free",
                 "inclusionai/ling-3.0-flash-vl:free",
                 "nex-agi/nex-n2.5-pro:free"
@@ -181,12 +182,12 @@
                     success = true;
                     break; 
                 } catch (error) {
-                    console.warn(`Модель ${model} тимчасово недоступна, пробуємо наступну...`, error);
+                    console.warn(`Модель ${model} недоступна, спроба наступної...`, error);
                 }
             }
 
             if (!success) {
-                aiText.innerText = '❌ Не вдалося отримати відповідь від безкоштовних моделей. Спробуйте ще раз за хвилину.';
+                aiText.innerText = '❌ Наразі безкоштовні AI-моделі перевантажені. Спробуйте ще раз через декілька секунд.';
             }
         }
 
