@@ -25,9 +25,9 @@
         .card { background: white; border-radius: 6px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 15px; }
         .card h3 { font-size: 16px; margin-bottom: 10px; color: #1a4a84; border-bottom: 2px solid #eef2f5; padding-bottom: 5px; }
         
-        .mail-form input, .mail-form select { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
-        .mail-form button { width: 100%; padding: 8px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 6px; }
-        .mail-form button:hover { opacity: 0.9; }
+        .mail-form input, .mail-form select, .translate-box textarea, .translate-box select { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+        .mail-form button, .translate-box button { width: 100%; padding: 8px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 6px; }
+        .mail-form button:hover, .translate-box button:hover { opacity: 0.9; }
         .mail-toggle { font-size: 12px; color: #1a4a84; text-align: center; cursor: pointer; text-decoration: underline; margin-top: 5px; }
 
         .info-block { font-size: 14px; line-height: 1.6; }
@@ -39,6 +39,9 @@
 
         #ai-response-card { display: none; background: #eef6ff; border: 1px solid #b6d4fe; }
         #ai-response-text { font-size: 14px; line-height: 1.5; white-space: pre-wrap; color: #1b365d; }
+
+        .donate-btn { display: block; width: 100%; text-align: center; padding: 10px; background: #ea5353; color: white; text-decoration: none; font-weight: bold; border-radius: 4px; font-size: 14px; }
+        .donate-btn:hover { background: #d63b3b; }
 
         @media (max-width: 850px) {
             .container { grid-template-columns: 1fr; }
@@ -96,6 +99,12 @@
                 <h3> Курс валют (НБУ)</h3>
                 <div class="info-block" id="rates">Завантаження...</div>
             </div>
+
+            <div class="card">
+                <h3> Підтримка проєкту</h3>
+                <p style="font-size: 12px; color: #555; margin-bottom: 10px;">Підтримайте розробку Acore та купівлю домену!</p>
+                <a href="https://send.monobank.ua/jar/2WY5hToE3a" target="_blank" class="donate-btn">💳 Донат у Банку</a>
+            </div>
         </aside>
 
         <main>
@@ -111,6 +120,19 @@
         </main>
 
         <aside>
+            <div class="card">
+                <h3> Перекладач Acore</h3>
+                <div class="translate-box">
+                    <select id="trans-lang">
+                        <option value="en">Українська ➔ Англійська</option>
+                        <option value="uk">Англійська ➔ Українська</option>
+                    </select>
+                    <textarea id="trans-text" rows="3" placeholder="Введіть текст..."></textarea>
+                    <button style="background: #007bff;" onclick="translateText()">Перекласти</button>
+                    <div id="trans-result" style="font-size: 13px; margin-top: 5px; color: #1b365d; white-space: pre-wrap;"></div>
+                </div>
+            </div>
+
             <div class="card">
                 <h3> Погода (Черкаси)</h3>
                 <div class="info-block" id="weather">Завантаження...</div>
@@ -134,6 +156,13 @@
             }
         }
 
+        const freeModels = [
+            "nvidia/nemotron-3.5-lightning:free",
+            "nex-agi/nex-n2.5-mini:free",
+            "inclusionai/ling-3.0-flash-vl:free",
+            "nex-agi/nex-n2.5-pro:free"
+        ];
+
         async function askAI() {
             const query = document.getElementById('search-query').value.trim();
             if (!query) {
@@ -146,14 +175,6 @@
 
             aiCard.style.display = 'block';
             aiText.innerText = '🤖 Acore AI думає... Зачекайте декілька секунд.';
-
-            // Список безкоштовних моделей для резервного перемикання (fallback)
-            const freeModels = [
-                "nvidia/nemotron-3.5-lightning:free",
-                "nex-agi/nex-n2.5-mini:free",
-                "inclusionai/ling-3.0-flash-vl:free",
-                "nex-agi/nex-n2.5-pro:free"
-            ];
 
             let success = false;
 
@@ -188,6 +209,54 @@
 
             if (!success) {
                 aiText.innerText = '❌ Наразі безкоштовні AI-моделі перевантажені. Спробуйте ще раз через декілька секунд.';
+            }
+        }
+
+        async function translateText() {
+            const text = document.getElementById('trans-text').value.trim();
+            const lang = document.getElementById('trans-lang').value;
+            const resDiv = document.getElementById('trans-result');
+
+            if (!text) {
+                alert('Введіть текст для перекладу!');
+                return;
+            }
+
+            resDiv.innerText = '⏳ Переклад...';
+            const targetLang = lang === 'en' ? 'англійську' : 'українську';
+
+            let success = false;
+
+            for (const model of freeModels) {
+                try {
+                    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${getOpenRouterKey()}`
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [
+                                { role: "system", content: `Ти — професійний перекладач. Переклади наданий текст на ${targetLang} мову. Повертай ЛИШЕ готовий переклад без зайвих слів.` },
+                                { role: "user", content: text }
+                            ]
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) throw new Error();
+
+                    resDiv.innerText = data.choices[0].message.content;
+                    success = true;
+                    break;
+                } catch (e) {
+                    console.warn(`Переклад через ${model} не вдався...`);
+                }
+            }
+
+            if (!success) {
+                resDiv.innerText = '❌ Помилка перекладу. Спробуйте знову.';
             }
         }
 
