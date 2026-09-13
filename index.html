@@ -119,7 +119,6 @@
     </div>
 
     <script>
-        // Зашифровані Base64 ключі
         const B64_JSONBIN = "JDJhJDEwJHlXYk9nUVVZV0NzM0tIVzRXUGF6MHVMZE5MUm1GNnd2WlNpejFvS3E5VjZnVEtVcGZhaVFP";
         const B64_OPENROUTER = "c2stb3ItdjEtNDA1NjkzYjk3ZGI1ZDI0MjI3M2JmOGVkMDRjMTgyZjIxOGM4ODEzMjY1YmZhZDMzODg1M2ZiNWVlMDFiNDY5Mw==";
 
@@ -148,31 +147,44 @@
             aiCard.style.display = 'block';
             aiText.innerText = '🤖 Acore AI думає... Зачекайте декілька секунд.';
 
-            try {
-                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getOpenRouterKey()}`
-                    },
-                    body: JSON.stringify({
-                        model: "meta-llama/llama-3.3-70b-instruct:free",
-                        messages: [
-                            { role: "system", content: "Ти — корисний помічник пошукової системи Acore. Відповідай українською мовою чітко та лаконічно." },
-                            { role: "user", content: query }
-                        ]
-                    })
-                });
+            const models = [
+                "google/gemini-2.0-flash-lite-001:free",
+                "qwen/qwen-2.5-coder-32b-instruct:free"
+            ];
 
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error?.message || 'Помилка API');
+            let success = false;
 
-                const answer = data.choices[0].message.content;
-                aiText.innerText = answer;
+            for (const model of models) {
+                try {
+                    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${getOpenRouterKey()}`
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [
+                                { role: "system", content: "Ти — корисний помічник пошукової системи Acore. Відповідай українською мовою чітко та лаконічно." },
+                                { role: "user", content: query }
+                            ]
+                        })
+                    });
 
-            } catch (error) {
-                console.error('Помилка:', error);
-                aiText.innerText = `❌ Помилка: ${error.message}`;
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error?.message || 'Помилка API');
+
+                    const answer = data.choices[0].message.content;
+                    aiText.innerText = answer;
+                    success = true;
+                    break;
+                } catch (error) {
+                    console.warn(`Модель ${model} недоступна, спроба наступної...`, error);
+                }
+            }
+
+            if (!success) {
+                aiText.innerText = '❌ Не вдалося отримати відповідь від безкоштовних моделей. Спробуйте пізніше.';
             }
         }
 
