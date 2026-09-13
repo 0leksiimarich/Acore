@@ -25,9 +25,9 @@
         .card { background: white; border-radius: 6px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 15px; }
         .card h3 { font-size: 16px; margin-bottom: 10px; color: #1a4a84; border-bottom: 2px solid #eef2f5; padding-bottom: 5px; }
         
-        .mail-form input, .mail-form select, .translate-box textarea, .translate-box select { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
-        .mail-form button, .translate-box button { width: 100%; padding: 8px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 6px; }
-        .mail-form button:hover, .translate-box button:hover { opacity: 0.9; }
+        .mail-form input, .mail-form select, .translate-box textarea, .translate-box select, .qr-box input { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+        .mail-form button, .translate-box button, .qr-box button { width: 100%; padding: 8px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 6px; }
+        .mail-form button:hover, .translate-box button:hover, .qr-box button:hover { opacity: 0.9; }
         .mail-toggle { font-size: 12px; color: #1a4a84; text-align: center; cursor: pointer; text-decoration: underline; margin-top: 5px; }
 
         .info-block { font-size: 14px; line-height: 1.6; }
@@ -42,6 +42,9 @@
 
         .donate-btn { display: block; width: 100%; text-align: center; padding: 10px; background: #ea5353; color: white; text-decoration: none; font-weight: bold; border-radius: 4px; font-size: 14px; }
         .donate-btn:hover { background: #d63b3b; }
+
+        #qr-img-container { text-align: center; margin-top: 8px; }
+        #qr-img-container img { max-width: 150px; height: auto; border: 1px solid #eee; padding: 5px; }
 
         @media (max-width: 850px) {
             .container { grid-template-columns: 1fr; }
@@ -101,8 +104,17 @@
             </div>
 
             <div class="card">
+                <h3> Генератор QR-коду</h3>
+                <div class="qr-box">
+                    <input type="text" id="qr-input" placeholder="Введіть текст або URL">
+                    <button style="background: #17a2b8;" onclick="generateQR()">Створити QR</button>
+                    <div id="qr-img-container"></div>
+                </div>
+            </div>
+
+            <div class="card">
                 <h3> Підтримка проєкту</h3>
-                <p style="font-size: 12px; color: #555; margin-bottom: 10px;">Підтримайте розробку Acore на купівлю домену!</p>
+                <p style="font-size: 12px; color: #555; margin-bottom: 10px;">Підтримайте розробку Acore та купівлю домену!</p>
                 <a href="https://send.monobank.ua/jar/2WY5hToE3a" target="_blank" class="donate-btn">💳 Донат у Банку</a>
             </div>
         </aside>
@@ -111,6 +123,11 @@
             <div class="card" id="ai-response-card">
                 <h3>🤖 Відповідь Acore AI</h3>
                 <div id="ai-response-text"></div>
+            </div>
+
+            <div class="card">
+                <h3> Порада дня</h3>
+                <div class="info-block" id="quote-box" style="font-style: italic; color: #444;">Завантаження...</div>
             </div>
 
             <div class="card">
@@ -124,17 +141,17 @@
                 <h3> Перекладач Acore</h3>
                 <div class="translate-box">
                     <select id="trans-lang">
-                        <option value="en">Українська ➔ Англійська</option>
-                        <option value="uk">Англійська ➔ Українська</option>
+                        <option value="uk|en">Українська ➔ Англійська</option>
+                        <option value="en|uk">Англійська ➔ Українська</option>
                     </select>
                     <textarea id="trans-text" rows="3" placeholder="Введіть текст..."></textarea>
-                    <button style="background: #007bff;" onclick="translateText()">Перекласти</button>
+                    <button style="background: #007bff;" onclick="translateMyMemory()">Перекласти</button>
                     <div id="trans-result" style="font-size: 13px; margin-top: 5px; color: #1b365d; white-space: pre-wrap;"></div>
                 </div>
             </div>
 
             <div class="card">
-                <h3> Погода (Черкаси)</h3>
+                <h3 id="weather-title"> Погода</h3>
                 <div class="info-block" id="weather">Завантаження...</div>
             </div>
         </aside>
@@ -212,9 +229,10 @@
             }
         }
 
-        async function translateText() {
+        // 1. API Перекладач (MyMemory API)
+        async function translateMyMemory() {
             const text = document.getElementById('trans-text').value.trim();
-            const lang = document.getElementById('trans-lang').value;
+            const langPair = document.getElementById('trans-lang').value;
             const resDiv = document.getElementById('trans-result');
 
             if (!text) {
@@ -223,40 +241,84 @@
             }
 
             resDiv.innerText = '⏳ Переклад...';
-            const targetLang = lang === 'en' ? 'англійську' : 'українську';
 
-            let success = false;
-
-            for (const model of freeModels) {
-                try {
-                    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${getOpenRouterKey()}`
-                        },
-                        body: JSON.stringify({
-                            model: model,
-                            messages: [
-                                { role: "system", content: `Ти — професійний перекладач. Переклади наданий текст на ${targetLang} мову. Повертай ЛИШЕ готовий переклад без зайвих слів.` },
-                                { role: "user", content: text }
-                            ]
-                        })
-                    });
-
-                    const data = await response.json();
-                    if (!response.ok) throw new Error();
-
-                    resDiv.innerText = data.choices[0].message.content;
-                    success = true;
-                    break;
-                } catch (e) {
-                    console.warn(`Переклад через ${model} не вдався...`);
+            try {
+                const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`);
+                const data = await res.json();
+                if (data.responseData) {
+                    resDiv.innerText = data.responseData.translatedText;
+                } else {
+                    resDiv.innerText = '❌ Не вдалося перекласти.';
                 }
+            } catch (e) {
+                resDiv.innerText = '❌ Помилка з’єднання з сервісом перекладу.';
+            }
+        }
+
+        // 2. API QR-кодів (QuickChart API)
+        function generateQR() {
+            const val = document.getElementById('qr-input').value.trim();
+            const container = document.getElementById('qr-img-container');
+
+            if (!val) {
+                alert('Введіть текст або посилання!');
+                return;
             }
 
-            if (!success) {
-                resDiv.innerText = '❌ Помилка перекладу. Спробуйте знову.';
+            const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(val)}&size=150`;
+            container.innerHTML = `<img src="${qrUrl}" alt="QR Code">`;
+        }
+
+        // 3. API Цитати / Поради дня (Advice Slip API)
+        async function fetchQuote() {
+            try {
+                const res = await fetch('https://api.adviceslip.com/advice');
+                const data = await res.json();
+                const adviceEn = data.slip.advice;
+
+                // Автоматично перекладаємо пораду на українську
+                const transRes = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(adviceEn)}&langpair=en|uk`);
+                const transData = await transRes.json();
+                
+                document.getElementById('quote-box').innerText = `«${transData.responseData.translatedText}»`;
+            } catch (e) {
+                document.getElementById('quote-box').innerText = 'Не вдалося завантажити пораду.';
+            }
+        }
+
+        // 4. API Геолокації та Погоди (ipapi.co + Open-Meteo)
+        async function fetchWeatherAndLocation() {
+            let lat = 49.44;
+            let lon = 32.06;
+            let city = 'Черкаси';
+
+            try {
+                const ipRes = await fetch('https://ipapi.co/json/');
+                if (ipRes.ok) {
+                    const ipData = await ipRes.json();
+                    if (ipData.latitude && ipData.longitude) {
+                        lat = ipData.latitude;
+                        lon = ipData.longitude;
+                        city = ipData.city || 'Черкаси';
+                    }
+                }
+            } catch (e) {
+                console.warn('Геолокація недоступна, використовується місто Черкаси за замовчуванням.');
+            }
+
+            document.getElementById('weather-title').innerText = ` Погода (${city})`;
+
+            try {
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+                const data = await res.json();
+                const temp = data.current_weather.temperature;
+                const wind = data.current_weather.windspeed;
+                document.getElementById('weather').innerHTML = `
+                    <strong>Температура:</strong> ${temp}°C<br>
+                    <strong>Вітер:</strong> ${wind} км/год
+                `;
+            } catch (e) {
+                document.getElementById('weather').innerText = 'Помилка завантаження погоди.';
             }
         }
 
@@ -347,21 +409,6 @@
             }
         }
 
-        async function fetchWeather() {
-            try {
-                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=49.44&longitude=32.06&current_weather=true');
-                const data = await res.json();
-                const temp = data.current_weather.temperature;
-                const wind = data.current_weather.windspeed;
-                document.getElementById('weather').innerHTML = `
-                    <strong>Температура:</strong> ${temp}°C<br>
-                    <strong>Вітер:</strong> ${wind} км/год
-                `;
-            } catch (e) {
-                document.getElementById('weather').innerText = 'Помилка погоди.';
-            }
-        }
-
         async function fetchRates() {
             try {
                 const res = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json');
@@ -378,8 +425,9 @@
         }
 
         fetchNews();
-        fetchWeather();
+        fetchWeatherAndLocation();
         fetchRates();
+        fetchQuote();
     </script>
 </body>
 </html>
