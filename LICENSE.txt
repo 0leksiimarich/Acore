@@ -1,0 +1,12 @@
+Copyright (c) 2026 Acore (Oleksii Marich). All rights reserved.
+
+This software and its documentation are the confidential and proprietary information 
+of the copyright holder. 
+
+Unauthorized copying, modification, distribution, sublicensing, or commercial exploitation 
+of this file, code, or any portion of this project, via any medium, is strictly prohibited 
+without express written permission from the copyright holder.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
