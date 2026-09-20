@@ -1,12 +1,28 @@
-Copyright (c) 2026 Acore (Oleksii Marich). All rights reserved.
+====================================================================
+English Version / Англійська версія
+====================================================================
 
-This software and its documentation are the confidential and proprietary information 
-of the copyright holder. 
+Copyright (c) 2026 Acore (Oleksii Marich Stanislavovych). All rights reserved.
 
-Unauthorized copying, modification, distribution, sublicensing, or commercial exploitation 
-of this file, code, or any portion of this project, via any medium, is strictly prohibited 
-without express written permission from the copyright holder.
+Starting from September 20, 2026, the Acore website and all of its source code belong exclusively to Oleksij Marich Stanislavovych.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+This software and its documentation are the confidential and proprietary information of the copyright holder.
+
+Unauthorized copying, modification, distribution, sublicensing, or commercial exploitation of this file, code, or any portion of this project, via any medium, is strictly prohibited without express written permission from the copyright holder.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+
+====================================================================
+Ukrainian Version / Українська версія
+====================================================================
+
+Copyright (c) 2026 Acore (Олексій Марич Станіславович). Усі права захищено.
+
+Починаючи з 20 вересня 2026 року, вебсайт Acore та весь його вихідний код належать виключно Олексію Маричу Станіславовичу.
+
+Це програмне забезпечення та документація до нього є конфідеційною та власницькою інформацією правовласника.
+
+Будь-яке несанкціоноване копіювання, зміна, розповсюдження, субліцензування або комерційне використання цього файлу, коду чи будь-якої частини цього проєкту будь-яким способом суворо заборонено без письмового дозволу правовласника.
+
+ПРОГРАМНЕ ЗАБЕЗПЕЧЕННЯ НАДАЄТЬСЯ «ЯК Є», БЕЗ ЖОДНИХ ГАРАНТІЙ, ЯВНИХ АБО НЕЯВНИХ, ВЛЮЧАЮЧИ, АЛЕ НЕ ОБМЕЖУЮЧИСЬ, ГАРАНТІЇ ТОВАРНОГО СТАНУ ТА ВІДПОВІДНОСТІ ПЕВНІЙ МЕТІ.
