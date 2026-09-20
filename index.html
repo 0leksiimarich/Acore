@@ -4,326 +4,392 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acore — Все для вас</title>
+    <!-- Бібліотека для генерації QR-кодів -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background-color: #121212; color: #e0e0e0; }
+        
+        header { background: #1e1e1e; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; border-bottom: 1px solid #333; }
+        .logo-group { display: flex; align-items: baseline; gap: 10px; }
+        .logo { font-size: 26px; font-weight: bold; color: #4da6ff; }
+        .slogan { font-size: 13px; opacity: 0.8; font-style: italic; }
+        
+        .search-box { display: flex; flex-grow: 1; max-width: 550px; gap: 5px; }
+        .search-box input { flex-grow: 1; padding: 8px 12px; border: 1px solid #444; background: #2a2a2a; color: white; border-radius: 4px; outline: none; font-size: 14px; }
+        .search-box button { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .btn-google { background: #ffc107; color: #121212; }
+        .btn-ai { background: #007bff; color: white; }
+        .search-box button:hover { opacity: 0.9; }
 
-        body {
-            background-color: #0d1117;
-            color: #c9d1d9;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+        .container { display: grid; grid-template-columns: 300px 1fr 280px; gap: 15px; max-width: 1200px; margin: 15px auto; padding: 0 10px; }
+        
+        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+        .card h3 { font-size: 16px; margin-bottom: 10px; color: #4da6ff; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        
+        input, select, textarea { width: 100%; padding: 8px; margin-bottom: 8px; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 4px; font-size: 13px; }
+        button.action-btn { width: 100%; padding: 8px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 6px; }
+        button.action-btn:hover { opacity: 0.9; }
+        .mail-toggle { font-size: 12px; color: #4da6ff; text-align: center; cursor: pointer; text-decoration: underline; margin-top: 5px; }
 
-        /* Шапка сайту */
-        header {
-            background-color: #161b22;
-            border-bottom: 1px solid #30363d;
-            padding: 12px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+        .info-block { font-size: 14px; line-height: 1.6; }
 
-        .header-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-            color: #fff;
-        }
+        .news-item { margin-bottom: 12px; border-bottom: 1px solid #2a2a2a; padding-bottom: 8px; }
+        .news-item a { color: #80bfff; text-decoration: none; font-weight: bold; font-size: 14px; }
+        .news-item a:hover { text-decoration: underline; }
+        .news-item .time { font-size: 11px; color: #aaa; margin-top: 3px; }
 
-        .header-logo img {
-            height: 45px;
-            width: auto;
-            border-radius: 8px;
-        }
+        #ai-response-card { display: none; background: #1a2634; border: 1px solid #0056b3; }
+        #ai-response-text { font-size: 14px; line-height: 1.5; white-space: pre-wrap; color: #d0e1fd; }
 
-        .header-title {
-            font-size: 20px;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
+        #qrcode { margin-top: 10px; display: flex; justify-content: center; background: white; padding: 10px; border-radius: 4px; }
 
-        /* Головна контейнер-сітка */
-        .main-container {
-            max-width: 1100px;
-            width: 100%;
-            margin: 20px auto;
-            padding: 0 16px;
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 20px;
-            flex: 1;
-        }
+        .donate-btn { display: block; width: 100%; text-align: center; padding: 8px; margin-bottom: 6px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 13px; color: white; }
+        .btn-savelife { background: #dc3545; }
+        .btn-u24 { background: #ffc107; color: #121212; }
+        .btn-monobank { background: #e83e8c; }
 
-        /* Бійчні віджети */
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .widget {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 12px;
-            padding: 16px;
-        }
-
-        .widget h4 {
-            color: #58a6ff;
-            margin-bottom: 10px;
-            font-size: 15px;
-        }
-
-        .widget-content {
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        /* Центральна частина */
-        .content-area {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        /* Герой-блок з великим логотипом та пошуком */
-        .hero-section {
-            background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
-            border: 1px solid #30363d;
-            border-radius: 16px;
-            padding: 30px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .main-logo {
-            width: 140px;
-            height: auto;
-            border-radius: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 8px 24px rgba(88, 166, 255, 0.2);
-        }
-
-        .slogan {
-            color: #8b949e;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-
-        .search-box {
-            display: flex;
-            width: 100%;
-            max-width: 600px;
-            gap: 8px;
-        }
-
-        .search-box input {
-            flex: 1;
-            padding: 12px 16px;
-            border-radius: 8px;
-            border: 1px solid #30363d;
-            background-color: #0d1117;
-            color: #fff;
-            font-size: 15px;
-            outline: none;
-        }
-
-        .search-box input:focus {
-            border-color: #58a6ff;
-        }
-
-        .search-box button {
-            padding: 12px 20px;
-            border-radius: 8px;
-            border: none;
-            background-color: #238636;
-            color: #fff;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .search-box button:hover {
-            background-color: #2ea043;
-        }
-
-        /* Блок AI Відповіді */
-        .ai-card {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 12px;
-            padding: 16px;
-            display: none;
-        }
-
-        .ai-card h3 {
-            color: #58a6ff;
-            margin-bottom: 8px;
-            font-size: 16px;
-        }
-
-        /* Новини */
-        .news-section h3 {
-            margin-bottom: 12px;
-            font-size: 18px;
-            color: #f0f6fc;
-        }
-
-        .news-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .news-item {
-            background: #161b22;
-            border: 1px solid #30363d;
-            padding: 12px;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #c9d1d9;
-            transition: 0.2s;
-        }
-
-        .news-item:hover {
-            border-color: #58a6ff;
-            color: #58a6ff;
-        }
-
-        footer {
-            text-align: center;
-            padding: 20px;
-            border-top: 1px solid #30363d;
-            color: #8b949e;
-            font-size: 13px;
-            margin-top: auto;
-        }
-
-        @media (max-width: 768px) {
-            .main-container {
-                grid-template-columns: 1fr;
-            }
+        @media (max-width: 850px) {
+            .container { grid-template-columns: 1fr; }
+            .search-box { order: 3; width: 100%; max-width: 100%; margin-top: 10px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Шапка -->
     <header>
-        <a href="#" class="header-logo">
-            <img src="logo.jpg" alt="Acore Logo">
-            <span class="header-title">Acore</span>
-        </a>
+        <div class="logo-group">
+            <div class="logo">Acore</div>
+            <div class="slogan">Все для вас</div>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="search-query" placeholder="Пошук або запитання до AI..." required>
+            <button class="btn-google" onclick="searchGoogle()">Google</button>
+            <button class="btn-ai" onclick="askAcoreAI()">Запитати AI</button>
+        </div>
+
+        <div id="header-date"></div>
     </header>
 
-    <!-- Основний контент -->
-    <div class="main-container">
-        
-        <!-- Ліва панель з віджетами -->
-        <aside class="sidebar">
-            <div class="widget">
-                <h4>🌤 Погода (Київ)</h4>
-                <div class="widget-content" id="weather-widget">Завантаження...</div>
+    <div class="container">
+        <!-- Ліва колонка -->
+        <aside>
+            <!-- Пошта Acore -->
+            <div class="card">
+                <h3 id="mail-title"> Пошта Acore</h3>
+                <div class="mail-form" id="mail-box">
+                    <div id="login-mode">
+                        <input type="text" id="login-email" placeholder="Логін (@acore.ua)">
+                        <input type="password" id="login-pass" placeholder="Пароль">
+                        <button class="action-btn" onclick="loginMail()">Увійти</button>
+                        
+                        <div style="text-align: center; margin: 8px 0 4px 0; font-size: 12px; color: #aaa;">Немає акаунту?</div>
+                        <button class="action-btn" style="background: #17a2b8;" onclick="toggleMailMode('register')">Створити пошту</button>
+                    </div>
+
+                    <div id="register-mode" style="display: none;">
+                        <input type="text" id="reg-name" placeholder="Ваше ім'я">
+                        <div style="display:flex; gap:2px;">
+                            <input type="text" id="reg-login" placeholder="Логін" style="width:60%;">
+                            <select id="reg-domain" style="width:40%;">
+                                <option value="@acore.ua">@acore.ua</option>
+                            </select>
+                        </div>
+                        <input type="password" id="reg-pass" placeholder="Придумайте пароль">
+                        <button class="action-btn" style="background:#007bff;" onclick="registerMail()">Зареєструватися</button>
+                        <div class="mail-toggle" onclick="toggleMailMode('login')">Вже є акаунт? Увійти</div>
+                    </div>
+                </div>
             </div>
 
-            <div class="widget">
-                <h4>💳 Курс валют (НБУ)</h4>
-                <div class="widget-content" id="currency-widget">
-                    USD: 41.50 грн<br>
-                    EUR: 45.20 грн
+            <!-- Вбудований перекладач -->
+            <div class="card">
+                <h3>🌐 Перекладач Acore</h3>
+                <textarea id="translate-input" rows="3" placeholder="Введіть текст для перекладу..."></textarea>
+                <div style="display: flex; gap: 5px;">
+                    <select id="translate-lang">
+                        <option value="en">Українська ➔ English</option>
+                        <option value="uk">English ➔ Українська</option>
+                    </select>
+                    <button class="action-btn" style="width: 40%;" onclick="translateText()">Перекласти</button>
                 </div>
+                <div id="translate-output" style="margin-top: 8px; font-size: 13px; color: #4da6ff; min-height: 20px;"></div>
             </div>
         </aside>
 
-        <!-- Центральний блок -->
-        <main class="content-area">
-            
-            <!-- Пошук та Логотип -->
-            <section class="hero-section">
-                <img src="logo.jpg" alt="Acore Все для вас" class="main-logo">
-                <div class="slogan">Портал новин та пошуку «Все для вас»</div>
-                
-                <div class="search-box">
-                    <input type="text" id="search-query" placeholder="Запитайте у Acore AI або введіть пошуковий запит...">
-                    <button onclick="askAcoreAI()">Шукати</button>
-                </div>
-            </section>
-
-            <!-- Карточка відповідей ШІ -->
-            <section class="ai-card" id="ai-response-card">
+        <!-- Центральна колонка -->
+        <main>
+            <div class="card" id="ai-response-card">
                 <h3>🤖 Відповідь Acore AI</h3>
-                <div id="ai-response-text">Зачекайте, відповідь генерується...</div>
-            </section>
+                <div id="ai-response-text"></div>
+            </div>
 
-            <!-- Блок Новин -->
-            <section class="news-section">
-                <h3>Головні новини України</h3>
-                <div class="news-list" id="news-container">
-                    <div class="news-item">Завантаження новин...</div>
-                </div>
-            </section>
-
+            <div class="card">
+                <h3> Головні новини</h3>
+                <div id="news-container">Завантаження новин...</div>
+            </div>
         </main>
+
+        <!-- Права колонка -->
+        <aside>
+            <!-- Блок Донати на ЗСУ -->
+            <div class="card">
+                <h3>🇺🇦 Підтримай ЗСУ</h3>
+                <a href="https://savelife.in.ua/donate/" target="_blank" class="donate-btn btn-savelife">Повернись живим</a>
+                <a href="https://u24.gov.ua/uk" target="_blank" class="donate-btn btn-u24">UNITED24</a>
+                <a href="https://send.monobank.ua/" target="_blank" class="donate-btn btn-monobank">Банка Monobank</a>
+            </div>
+
+            <!-- Генератор QR-кодів -->
+            <div class="card">
+                <h3>📱 Генератор QR-коду</h3>
+                <input type="text" id="qr-input" placeholder="Введіть текст або посилання">
+                <button class="action-btn" style="background: #6f42c1;" onclick="generateQR()">Створити QR</button>
+                <div id="qrcode"></div>
+            </div>
+
+            <!-- Погода -->
+            <div class="card">
+                <h3> Погода (Черкаси)</h3>
+                <div class="info-block" id="weather">Завантаження...</div>
+            </div>
+
+            <!-- Курси валют -->
+            <div class="card">
+                <h3> Курс валют (НБУ)</h3>
+                <div class="info-block" id="rates">Завантаження...</div>
+            </div>
+        </aside>
     </div>
 
-    <!-- Підвал -->
-    <footer>
-        &copy; 2026 Acore.net.ua — Всі права захищено.
-    </footer>
-
     <script>
-        // Кодування ключа у Base64 (вставте свій encoded ключ)
-        const B64_OPENROUTER = ""; 
+        const B64_JSONBIN = "JDJhJDEwJHlXYk9nUVVZV0NzM0tIVzRXUGF6MHVMZE5MUm1GNnd2WlNpejFvS3E5VjZnVEtVcGZhaVFP";
+        const B64_OPENROUTER = "c2stb3ItdjEtNDA1NjkzYjk3ZGI1ZDI0MjI3M2JmOGVkMDRjMTgyZjIxOGM4ODEzMjY1YmZhZDMzODg1M2ZiNWVlMDFiNDY5Mw==";
+
+        const getJsonbinKey = () => atob(B64_JSONBIN);
+        const getOpenRouterKey = () => atob(B64_OPENROUTER);
+
+        document.getElementById('header-date').innerText = new Date().toLocaleDateString('uk-UA', { weekday: 'long', day: 'numeric', month: 'long' });
+
+        function searchGoogle() {
+            const query = document.getElementById('search-query').value;
+            if (query.trim()) {
+                window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+            }
+        }
 
         async function askAcoreAI() {
             const query = document.getElementById('search-query').value.trim();
-            if (!query) return;
+            if (!query) {
+                alert('Введіть запитання!');
+                return;
+            }
 
             const aiCard = document.getElementById('ai-response-card');
             const aiText = document.getElementById('ai-response-text');
 
             aiCard.style.display = 'block';
-            aiText.innerText = '🤖 Acore AI шукає відповідь...';
-
-            if(!B64_OPENROUTER) {
-                aiText.innerText = '⚠️ Не вказано API ключ OpenRouter у змінній B64_OPENROUTER.';
-                return;
-            }
+            aiText.innerText = '🤖 Acore AI думає... Зачекайте декілька секунд.';
 
             try {
                 const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${atob(B64_OPENROUTER)}`
+                        'Authorization': `Bearer ${getOpenRouterKey()}`
                     },
                     body: JSON.stringify({
-                        model: "google/gemini-2.0-flash-lite-001:free",
+                        model: "openrouter/auto",
                         messages: [
-                            { role: "system", content: "Ти — помічник пошукового порталу Acore. Відповідай українською мовою." },
+                            { role: "system", content: "Ти — асистент Acore AI. Відповідай чітко, корисно та українською мовою." },
                             { role: "user", content: query }
                         ]
                     })
                 });
 
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.error?.message || `Помилка ${response.status}`);
+                if (!response.ok) throw new Error(data.error?.message || 'Помилка API');
 
                 aiText.innerText = data.choices[0].message.content;
             } catch (error) {
                 aiText.innerText = `❌ Помилка: ${error.message}`;
             }
         }
+
+        async function translateText() {
+            const text = document.getElementById('translate-input').value.trim();
+            const lang = document.getElementById('translate-lang').value;
+            const output = document.getElementById('translate-output');
+
+            if (!text) {
+                alert('Введіть текст для перекладу!');
+                return;
+            }
+
+            output.innerText = 'Переклад...';
+
+            try {
+                const targetLang = lang === 'en' ? 'English' : 'Ukrainian';
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getOpenRouterKey()}`
+                    },
+                    body: JSON.stringify({
+                        model: "openrouter/auto",
+                        messages: [
+                            { role: "system", content: `Translate the following text into ${targetLang}. Return ONLY the translated text without explanations.` },
+                            { role: "user", content: text }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                output.innerText = data.choices[0].message.content;
+            } catch (e) {
+                output.innerText = 'Помилка перекладу.';
+            }
+        }
+
+        function generateQR() {
+            const text = document.getElementById('qr-input').value.trim();
+            const qrDiv = document.getElementById('qrcode');
+            qrDiv.innerHTML = '';
+
+            if (!text) {
+                alert('Введіть текст або посилання!');
+                return;
+            }
+
+            new QRCode(qrDiv, {
+                text: text,
+                width: 128,
+                height: 128
+            });
+        }
+
+        function toggleMailMode(mode) {
+            if (mode === 'register') {
+                document.getElementById('login-mode').style.display = 'none';
+                document.getElementById('register-mode').style.display = 'block';
+                document.getElementById('mail-title').innerText = ' Реєстрація пошти';
+            } else {
+                document.getElementById('register-mode').style.display = 'none';
+                document.getElementById('login-mode').style.display = 'block';
+                document.getElementById('mail-title').innerText = ' Пошта Acore';
+            }
+        }
+
+        async function registerMail() {
+            const name = document.getElementById('reg-name').value.trim();
+            const login = document.getElementById('reg-login').value.trim();
+            const pass = document.getElementById('reg-pass').value.trim();
+            const domain = document.getElementById('reg-domain').value;
+
+            if (!name || !login || !pass) {
+                alert('Заповніть всі поля!');
+                return;
+            }
+
+            const fullEmail = login + domain;
+            const userData = { name, email: fullEmail, pass, createdAt: new Date().toISOString() };
+
+            try {
+                const response = await fetch('https://api.jsonbin.io/v3/b', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': getJsonbinKey(),
+                        'X-Bin-Name': `user_${fullEmail}`
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                if (response.ok) {
+                    alert(`Скриньку ${fullEmail} успішно створено!`);
+                    toggleMailMode('login');
+                    document.getElementById('login-email').value = fullEmail;
+                } else {
+                    alert('Помилка збереження в хмару.');
+                }
+            } catch (error) {
+                alert('Не вдалося з’єднатися з хмарною базою даних.');
+            }
+        }
+
+        function loginMail() {
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+            if (email && pass) {
+                document.getElementById('mail-box').innerHTML = `
+                    <p style="color:#28a745; font-weight:bold;">Вітаємо в Acore!</p>
+                    <p style="font-size:12px; color:#aaa; margin-bottom:10px;">${email}</p>
+                    <div style="background:#2a2a2a; padding:8px; border:1px solid #444; border-radius:4px; font-size:12px; margin-bottom:10px;">
+                        ✉️ Вхідні: <b>0 листів</b>
+                    </div>
+                    <button class="action-btn" style="background:#dc3545;" onclick="location.reload()">Вийти</button>
+                `;
+            } else {
+                alert('Введіть логін та пароль!');
+            }
+        }
+
+        async function fetchNews() {
+            try {
+                const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.pravda.com.ua/rss/');
+                const data = await res.json();
+                const container = document.getElementById('news-container');
+                container.innerHTML = '';
+
+                data.items.slice(0, 10).forEach(item => {
+                    const pubDate = new Date(item.pubDate).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+                    container.innerHTML += `
+                        <div class="news-item">
+                            <a href="${item.link}" target="_blank">${item.title}</a>
+                            <div class="time">${pubDate}</div>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                document.getElementById('news-container').innerText = 'Не вдалося завантажити новини.';
+            }
+        }
+
+        async function fetchWeather() {
+            try {
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=49.44&longitude=32.06&current_weather=true');
+                const data = await res.json();
+                const temp = data.current_weather.temperature;
+                const wind = data.current_weather.windspeed;
+                document.getElementById('weather').innerHTML = `
+                    <strong>Температура:</strong> ${temp}°C<br>
+                    <strong>Вітер:</strong> ${wind} км/год
+                `;
+            } catch (e) {
+                document.getElementById('weather').innerText = 'Помилка завантаження погоди.';
+            }
+        }
+
+        async function fetchRates() {
+            try {
+                const res = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json');
+                const data = await res.json();
+                const usd = data.find(c => c.cc === 'USD').rate.toFixed(2);
+                const eur = data.find(c => c.cc === 'EUR').rate.toFixed(2);
+                document.getElementById('rates').innerHTML = `
+                    <strong>USD:</strong> ${usd} грн<br>
+                    <strong>EUR:</strong> ${eur} грн
+                `;
+            } catch (e) {
+                document.getElementById('rates').innerText = 'Помилка курсів.';
+            }
+        }
+
+        fetchNews();
+        fetchWeather();
+        fetchRates();
     </script>
 </body>
 </html>
