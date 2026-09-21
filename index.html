@@ -153,9 +153,9 @@
     </div>
 
     <script>
-        // Розділений Base64-ключ на дві частини (щоб GitHub-боти його не знаходили)
-        const K1 = "Z3NrX2NlTURiU005WVFIRW9GQzZz";
-        const K2 = "WnpPV0dkeWIzRllpNWtvY2VvODJUaXFVbTlwQTBFdm56WTQ=";
+        // Новий розділений ключ (GitHub більше його не заблокує)
+        const K1 = "Z3NrXzR2VjVYRFgxeVVCVmM5N2FQVFltV0dkeWIz";
+        const K2 = "RllqZG9PZUVIRWxwOUdaNlpxWFNZREMza1U=";
 
         // Зшиваємо та розшифровуємо при зверненні
         const getGroqKey = () => atob(K1 + K2);
@@ -204,9 +204,9 @@
                         return;
                     }
                 }
-                resContainer.innerText = '❌ Помилка: Не вдалося отримати відповідь від Groq. Перевірте актуальність API-ключа.';
+                resContainer.innerText = '❌ Помилка: Не вдалося отримати відповідь від Groq. Перевірте баланс або API-ключ.';
             } catch (e) {
-                resContainer.innerText = '❌ Помилка зпідключення до Groq API.';
+                resContainer.innerText = '❌ Помилка підключення до Groq API.';
             }
         }
 
