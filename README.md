@@ -1,1 +1,2 @@
-# Acode
+# Acore
+це заміна ukr.net
