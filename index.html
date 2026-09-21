@@ -49,6 +49,10 @@
         .chat-input-area input { flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
         .chat-input-area button { padding: 8px 12px; background: #1a4a84; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
+        /* Стиль підробного завісання/лагання */
+        .lag-status { font-style: italic; color: #d9534f; animation: pulse 1s infinite alternate; }
+        @keyframes pulse { from { opacity: 0.4; } to { opacity: 1; } }
+
         @media (max-width: 600px) {
             .search-box { width: 100%; max-width: 100%; }
             .side-chat-drawer { width: 85%; right: -85%; top: 100px; height: 70vh; }
@@ -99,7 +103,7 @@
 
         <div class="tab-content" id="content-ai">
             <div class="card">
-                <h3>🤖 Результат AI Пошуку (<span id="active-model-name">Перевірка моделі...</span>)</h3>
+                <h3>🤖 Результат AI Пошуку (<span id="active-model-name">Пошук активної моделі...</span>)</h3>
                 <div id="ai-response-text" style="font-size: 14px; line-height: 1.6; white-space: pre-wrap; color: #1b365d;">
                     Введіть запитання у верхній рядок пошуку та натисніть "Запитати AI".
                 </div>
@@ -158,35 +162,34 @@
         const getGroqKey = () => atob(K1 + K2);
 
         let currentUser = localStorage.getItem('acore_user') || "";
-        let activeModel = "llama-3.3-70b-versatile"; // Дефолтна модель
+        let availableModels = [];
+        let currentModelIndex = 0;
 
-        // Список моделей за пріоритетом (які безкоштовні на Groq)
-        const PREFERRED_MODELS = [
-            "llama-3.3-70b-versatile",
-            "llama-3.1-8b-instant",
-            "qwen-2.5-coder-32b",
-            "gemma2-9b-it"
-        ];
+        // Допоміжна затримка (симуляція лагу)
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        // Автоматична перевірка доступності моделей при запуску
-        async function initAvailableModel() {
+        // Отримання та вибір активної моделі
+        async function fetchAndSelectModel() {
+            const statusLabel = document.getElementById('active-model-name');
             try {
                 const res = await fetch('https://api.groq.com/openai/v1/models', {
                     headers: { 'Authorization': `Bearer ${getGroqKey()}` }
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    const availableIds = data.data.map(m => m.id);
-                    
-                    const found = PREFERRED_MODELS.find(m => availableIds.includes(m));
-                    if (found) {
-                        activeModel = found;
+                    // Отримуємо списком лише ID робочих моделей
+                    availableModels = data.data.map(m => m.id);
+                    if (availableModels.length > 0) {
+                        statusLabel.innerText = availableModels[currentModelIndex];
+                        return;
                     }
                 }
             } catch (e) {
-                console.warn('⚠️ Застосовано дефолтну модель:', activeModel);
+                console.warn('⚠️ Помилка завантаження списку моделей.');
             }
-            document.getElementById('active-model-name').innerText = activeModel;
+            // Резервний список якщо мережа підвела
+            availableModels = ["llama-3.1-8b-instant", "gemma2-9b-it", "qwen-2.5-coder-32b"];
+            statusLabel.innerText = availableModels[0];
         }
 
         function switchTopTab(tabName, btn) {
@@ -206,37 +209,59 @@
 
             switchTopTab('ai', document.querySelectorAll('.tab-btn')[1]);
             const resContainer = document.getElementById('ai-response-text');
-            resContainer.innerText = '🤖 Acore AI думає...';
+            const statusLabel = document.getElementById('active-model-name');
 
-            try {
-                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getGroqKey()}`
-                    },
-                    body: JSON.stringify({
-                        model: activeModel,
-                        messages: [
-                            { role: "system", content: "Ти офіційний помічник Acore. Відповідай українською мовою коротко та чітко." },
-                            { role: "user", content: query }
-                        ]
-                    })
-                });
+            if (availableModels.length === 0) {
+                await fetchAndSelectModel();
+            }
 
-                if (response.ok) {
-                    const data = await response.json();
-                    let content = data.choices?.[0]?.message?.content;
-                    if (content) {
-                        resContainer.innerText = content;
-                        return;
+            let success = false;
+
+            // Цикл перебору моделей при помилці/блокуванні
+            while (!success && currentModelIndex < availableModels.length) {
+                const activeModel = availableModels[currentModelIndex];
+                statusLabel.innerText = activeModel;
+                resContainer.innerText = `🤖 Acore AI думає (${activeModel})...`;
+
+                try {
+                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${getGroqKey()}`
+                        },
+                        body: JSON.stringify({
+                            model: activeModel,
+                            messages: [
+                                { role: "system", content: "Ти офіційний помічник Acore. Відповідай українською мовою коротко та чітко." },
+                                { role: "user", content: query }
+                            ]
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        let content = data.choices?.[0]?.message?.content;
+                        if (content) {
+                            resContainer.innerText = content;
+                            success = true;
+                            break;
+                        }
+                    }
+
+                    // Якщо відповідь не OK або блокована — підлаштовуємо "лаг"
+                    throw new Error("Модель недоступна або заблокована");
+
+                } catch (e) {
+                    currentModelIndex++; // Переходимо до наступної моделі
+                    if (currentModelIndex < availableModels.length) {
+                        resContainer.innerHTML = `<span class="lag-status">⚠️ Модель ${activeModel} заблокована. Перепідключення та підбір нового AI...</span>`;
+                        // Удаване зависання на 2.5 секунди
+                        await delay(2500);
+                    } else {
+                        resContainer.innerText = '❌ Усі наявні AI-моделі тимчасово недоступні або API-ключ вичерпав ліміт.';
                     }
                 }
-                
-                const errData = await response.json().catch(() => ({}));
-                resContainer.innerText = `❌ Помилка: ${errData.error?.message || 'Не вдалося отримати відповідь'}`;
-            } catch (e) {
-                resContainer.innerText = '❌ Помилка підключення до Groq API.';
             }
         }
 
@@ -315,8 +340,8 @@
             document.getElementById('mail-box').innerHTML = `<p style="color:green;">Вітаємо, <b>${currentUser}</b>!</p>`;
         }
 
-        // Старт ініціалізації
-        initAvailableModel();
+        // Запуск
+        fetchAndSelectModel();
         fetchNews();
         fetchWeather();
         fetchRates();
