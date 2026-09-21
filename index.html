@@ -152,8 +152,8 @@
     </div>
 
     <script>
-        const K1 = "Z3NrXzR2VjVYRFgxeVVCVmM5N2FQVFltV0dkeWIz";
-        const K2 = "RllqZG9PZUVIRWxwOUdaNlpxWFNZREMza1U=";
+        const K1 = "Z3NrX1FwaUNnNFBmU1F0U0laNmZEY3FrV0dkeWIz";
+        const K2 = "Rll6d3BsOHNCcEx6THZ0Uzd0eUVVaERuSzU=";
 
         const getGroqKey = () => atob(K1 + K2);
 
@@ -198,13 +198,14 @@
                     const data = await response.json();
                     let content = data.choices?.[0]?.message?.content;
                     if (content) {
-                        // Очищаємо службові теги міркувань <think>...</think>, якщо вони є у відповіді
                         content = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
                         resContainer.innerText = content;
                         return;
                     }
                 }
-                resContainer.innerText = '❌ Помилка: Не вдалося отримати відповідь від DeepSeek R1.';
+                
+                const errData = await response.json().catch(() => ({}));
+                resContainer.innerText = `❌ Помилка: ${errData.error?.message || 'Не вдалося отримати відповідь'}`;
             } catch (e) {
                 resContainer.innerText = '❌ Помилка підключення до Groq API.';
             }
