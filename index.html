@@ -2,343 +2,349 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Acore — Все для вас</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background: #f0f2f5; color: #1c1e21; font-size: 14px; }
+        body { background-color: #f4f5f7; color: #333; overflow-x: hidden; }
 
-        header { background: #1a4a84; color: white; padding: 10px; text-align: center; position: sticky; top: 0; z-index: 100; }
-        .logo { font-size: 20px; font-weight: bold; }
+        header { background: #1a4a84; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .logo-group { display: flex; align-items: baseline; gap: 8px; }
+        .logo { font-size: 24px; font-weight: bold; letter-spacing: 0.5px; }
+        .slogan { font-size: 12px; opacity: 0.85; font-style: italic; }
 
-        .top-tabs { display: flex; background: white; border-bottom: 1px solid #ccc; overflow-x: auto; position: sticky; top: 41px; z-index: 99; }
-        .tab-btn { flex: 1; padding: 10px; border: none; background: none; font-weight: bold; font-size: 12px; cursor: pointer; white-space: nowrap; }
-        .tab-btn.active { border-bottom: 3px solid #1a4a84; color: #1a4a84; }
+        .search-box { display: flex; flex-grow: 1; max-width: 500px; gap: 6px; }
+        .search-box input { flex-grow: 1; padding: 8px 12px; border: none; border-radius: 6px; outline: none; font-size: 14px; }
+        .search-box button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; background: #007bff; color: white; }
 
-        .container { max-width: 600px; margin: 10px auto; padding: 0 8px; }
+        .top-tabs { display: flex; justify-content: center; background: white; border-bottom: 1px solid #e2e8f0; padding: 5px 10px; gap: 8px; overflow-x: auto; }
+        .tab-btn { padding: 8px 16px; border: none; background: #eef2f5; border-radius: 20px; font-weight: bold; font-size: 13px; color: #555; cursor: pointer; white-space: nowrap; }
+        .tab-btn.active { background: #1a4a84; color: white; }
+
+        .container { max-width: 1000px; margin: 15px auto; padding: 0 12px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        .card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .card h3 { font-size: 14px; margin-bottom: 8px; color: #1a4a84; display: flex; align-items: center; gap: 6px; }
+        .card { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); margin-bottom: 15px; }
+        .card h3 { font-size: 16px; margin-bottom: 12px; color: #1a4a84; border-bottom: 2px solid #eef2f5; padding-bottom: 6px; }
 
-        /* Чат з ШІ */
-        .chat-box { height: 260px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; border-radius: 6px; background: #fafafa; margin-bottom: 8px; font-size: 13px; }
-        .msg { margin-bottom: 8px; padding: 6px 10px; border-radius: 6px; max-width: 85%; }
-        .msg.user { background: #1a4a84; color: white; margin-left: auto; }
-        .msg.ai { background: #e4e6eb; color: #050505; }
-        .chat-input { display: flex; gap: 5px; }
-        .chat-input input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
-        .chat-input button { padding: 8px 12px; background: #1a4a84; color: white; border: none; border-radius: 4px; font-weight: bold; }
+        .news-item { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .news-item a { color: #1a4a84; text-decoration: none; font-weight: bold; font-size: 15px; display: block; }
+        .news-item .time { font-size: 11px; color: #777; margin-top: 4px; }
 
-        /* Кнопка Банки Monobank */
-        .btn-mono { display: block; width: 100%; padding: 10px; background: #e51c24; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; text-align: center; text-decoration: none; cursor: pointer; }
-        .btn-mono:hover { background: #c8131a; }
+        .translator-box select, .translator-box textarea { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        .translator-box textarea { resize: vertical; height: 60px; }
+        .translator-box button { width: 100%; padding: 10px; background: #1a4a84; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .translate-result { background: #f8f9fa; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; margin-top: 8px; min-height: 40px; font-size: 14px; }
 
-        /* Ігри */
-        .game-select { margin-bottom: 10px; width: 100%; padding: 6px; }
-        #game-board { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 180px; }
-        .ttt-grid { display: grid; grid-template-columns: repeat(3, 50px); gap: 5px; }
-        .ttt-cell { width: 50px; height: 50px; background: #eee; border: 1px solid #ccc; font-size: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .mines-grid { display: grid; grid-template-columns: repeat(5, 35px); gap: 4px; }
-        .mines-cell { width: 35px; height: 35px; background: #ccc; border: 1px solid #999; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .mono-btn { display: block; width: 100%; padding: 10px; background: #e51937; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 8px; }
 
-        /* Оптимізація під Smart Watch / Годинники */
-        @media (max-width: 280px) {
-            header { padding: 4px; }
-            .logo { font-size: 14px; }
-            .tab-btn { font-size: 10px; padding: 6px 4px; }
-            .card { padding: 6px; }
-            .chat-box { height: 140px; font-size: 11px; }
-            .ttt-grid { grid-template-columns: repeat(3, 35px); gap: 3px; }
-            .ttt-cell { width: 35px; height: 35px; font-size: 14px; }
-            canvas { width: 100% !important; height: auto !important; }
+        .side-chat-drawer { position: fixed; top: 120px; right: -320px; width: 320px; height: 420px; background: white; border: 2px solid #1a4a84; border-right: none; border-radius: 12px 0 0 12px; box-shadow: -4px 4px 15px rgba(0,0,0,0.15); transition: right 0.3s ease; z-index: 1000; display: flex; flex-direction: column; }
+        .side-chat-drawer.open { right: 0; }
+        .chat-tab-btn { position: absolute; left: -42px; top: 20px; width: 42px; height: 110px; background: #1a4a84; color: white; border-radius: 8px 0 0 8px; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; font-weight: bold; font-size: 13px; cursor: pointer; }
+        .chat-header { background: #1a4a84; color: white; padding: 10px; font-weight: bold; font-size: 14px; border-radius: 10px 0 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .chat-body { flex-grow: 1; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+        .chat-messages { height: 280px; overflow-y: auto; border: 1px solid #eee; padding: 8px; border-radius: 6px; background: #fcfcfc; font-size: 13px; margin-bottom: 8px; }
+        .chat-input-area { display: flex; gap: 4px; }
+        .chat-input-area input { flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+        .chat-input-area button { padding: 8px 12px; background: #1a4a84; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
+        /* Стиль підробного завісання/лагання */
+        .lag-status { font-style: italic; color: #d9534f; animation: pulse 1s infinite alternate; }
+        @keyframes pulse { from { opacity: 0.4; } to { opacity: 1; } }
+
+        @media (max-width: 600px) {
+            .search-box { width: 100%; max-width: 100%; }
+            .side-chat-drawer { width: 85%; right: -85%; top: 100px; height: 70vh; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">Acore</div>
+        <div class="logo-group">
+            <div class="logo">Acore</div>
+            <div class="slogan">Все для вас</div>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="ai-search-query" placeholder="Запитати у AI...">
+            <button onclick="askAI()">Запитати AI</button>
+        </div>
     </header>
 
     <div class="top-tabs">
-        <button class="tab-btn active" onclick="openTab('ai', this)">🤖 ШІ Чат</button>
-        <button class="tab-btn" onclick="openTab('news', this)">📰 Новини</button>
-        <button class="tab-btn" onclick="openTab('mail', this)">📧 Пошта</button>
-        <button class="tab-btn" onclick="openTab('extra', this)">⚙️ Додатково</button>
+        <button class="tab-btn active" onclick="switchTopTab('news', this)">📰 Новини</button>
+        <button class="tab-btn" onclick="switchTopTab('ai', this)">🤖 AI Відповідь</button>
+        <button class="tab-btn" onclick="switchTopTab('mail', this)">📧 Пошта Acore</button>
+        <button class="tab-btn" onclick="switchTopTab('extra', this)">⚙️ Додатково</button>
     </div>
 
     <div class="container">
-        <!-- Вкладка ШІ Чат -->
-        <div class="tab-content active" id="tab-ai">
+        <div class="tab-content active" id="content-news">
             <div class="card">
-                <h3>🤖 Вибір AI Моделі</h3>
-                <select id="ai-model" style="width:100%; padding:6px; margin-bottom:8px;">
-                    <option value="google/gemini-2.5-flash:free">Gemini 2.5 Flash (Швидкий)</option>
-                    <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B (Розумний)</option>
-                    <option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B</option>
-                </select>
-                <div class="chat-box" id="ai-chat-logs">
-                    <div class="msg ai">Вітаю! Оберіть модель вище та запустіть діалог.</div>
-                </div>
-                <div class="chat-input">
-                    <input type="text" id="ai-user-input" placeholder="Напишіть повідомлення...">
-                    <button onclick="sendAIMessage()">Надіслати</button>
+                <h3>🌐 Acore Перекладач</h3>
+                <div class="translator-box">
+                    <select id="lang-pair">
+                        <option value="uk|en">Українська ➔ Англійська</option>
+                        <option value="en|uk">Англійська ➔ Українська</option>
+                    </select>
+                    <textarea id="trans-text" placeholder="Введіть текст..."></textarea>
+                    <button onclick="translateText()">Перекласти</button>
+                    <div class="translate-result" id="trans-result">Тут буде переклад...</div>
                 </div>
             </div>
 
-            <!-- Віджети погоди, курсів та підтримки -->
             <div class="card">
-                <h3>⛅ Погода (Черкаси)</h3>
-                <div id="weather-info">Завантаження...</div>
+                <h3>📰 Головні новини</h3>
+                <div id="news-container">Завантаження новин...</div>
             </div>
+        </div>
 
+        <div class="tab-content" id="content-ai">
+            <div class="card">
+                <h3>🤖 Результат AI Пошуку (<span id="active-model-name">Пошук активної моделі...</span>)</h3>
+                <div id="ai-response-text" style="font-size: 14px; line-height: 1.6; white-space: pre-wrap; color: #1b365d;">
+                    Введіть запитання у верхній рядок пошуку та натисніть "Запитати AI".
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="content-mail">
+            <div class="card">
+                <h3>📧 Реєстрація / Вхід Acore</h3>
+                <div id="mail-box">
+                    <input type="text" id="email" placeholder="Логін (@acore.ua)" style="width:100%; padding:8px; margin-bottom:8px; border:1px solid #ccc; border-radius:4px;">
+                    <input type="password" id="password" placeholder="Пароль" style="width:100%; padding:8px; margin-bottom:8px; border:1px solid #ccc; border-radius:4px;">
+                    <button onclick="handleAuth()" style="width:100%; padding:10px; background:#28a745; color:white; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Увійти / Зареєструватися</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="content-extra">
+            <div class="card">
+                <h3>🌤️ Погода (Черкаси)</h3>
+                <div id="weather">Завантаження...</div>
+            </div>
             <div class="card">
                 <h3>💱 Курс валют (НБУ)</h3>
-                <div id="rates-info">Завантаження...</div>
+                <div id="rates">Завантаження...</div>
             </div>
-
             <div class="card">
                 <h3>💳 Підтримати проєкт</h3>
-                <p style="font-size:12px; margin-bottom:8px; color:#555;">Закиньте на банку Monobank для розвитку Acore:</p>
-                <a href="https://send.monobank.ua/jar/2WY5hToE3a" target="_blank" class="btn-mono">Закинути на банку 💳</a>
+                <p style="font-size: 13px; color: #555;">Закиньте на банку Monobank для розвитку Acore:</p>
+                <a href="https://send.monobank.ua/jar/8L2S1UfH8M" target="_blank" class="mono-btn">Закинути на банку 💳</a>
             </div>
         </div>
+    </div>
 
-        <!-- Вкладка Новини -->
-        <div class="tab-content" id="tab-news">
-            <div class="card">
-                <h3>📰 Останні новини</h3>
-                <div id="news-list">Завантаження новин...</div>
-            </div>
+    <div class="side-chat-drawer" id="chatDrawer">
+        <div class="chat-tab-btn" onclick="toggleChatDrawer()">📖 ЧАТ</div>
+        <div class="chat-header">
+            <span>📖 Обговорення Acore</span>
+            <span style="cursor:pointer;" onclick="toggleChatDrawer()">✖</span>
         </div>
-
-        <!-- Вкладка Пошта -->
-        <div class="tab-content" id="tab-mail">
-            <div class="card">
-                <h3>📧 Вхід через зовнішню пошту</h3>
-                <input type="email" id="mail-login" placeholder="Gmail / Outlook / Acore..." style="width:100%; padding:8px; margin-bottom:6px;">
-                <input type="password" id="mail-pass" placeholder="Пароль" style="width:100%; padding:8px; margin-bottom:6px;">
-                <button onclick="loginMail()" style="width:100%; padding:8px; background:#28a745; color:white; border:none; border-radius:4px;">Увійти</button>
+        <div class="chat-body">
+            <div class="chat-messages" id="chat-logs">
+                <div><b>Acore Bot:</b> Вітаємо у чаті!</div>
             </div>
-            <div class="card" id="mail-inbox" style="display:none;">
-                <h3>📥 Ваші Листи</h3>
-                <div id="mail-items">Немає нових листів.</div>
-                <hr style="margin:10px 0;">
-                <h4>Надіслати лист</h4>
-                <input type="email" id="send-to" placeholder="Отримувач" style="width:100%; padding:6px; margin:4px 0;">
-                <textarea id="send-msg" placeholder="Текст листа..." style="width:100%; padding:6px; margin:4px 0;"></textarea>
-                <button onclick="sendMail()" style="width:100%; padding:6px; background:#1a4a84; color:white; border:none; border-radius:4px;">Надіслати</button>
-            </div>
-        </div>
-
-        <!-- Вкладка Додатково -->
-        <div class="tab-content" id="tab-extra">
-            <div class="card">
-                <h3>🌐 Перекладач</h3>
-                <textarea id="trans-input" placeholder="Введіть текст..." style="width:100%; padding:6px; height:50px;"></textarea>
-                <button onclick="runTranslate()" style="width:100%; padding:6px; margin-top:4px; background:#1a4a84; color:white; border:none; border-radius:4px;">Перекласти</button>
-                <div id="trans-out" style="margin-top:6px; font-weight:bold;"></div>
-            </div>
-
-            <div class="card">
-                <h3>🎮 Ігри проти ШІ</h3>
-                <select class="game-select" id="game-choice" onchange="initGame()">
-                    <option value="ttt">Хрестики-Нулики</option>
-                    <option value="pong">Пінг-Понг</option>
-                    <option value="mines">Сапер</option>
-                </select>
-                <div id="game-board"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input-field" placeholder="Повідомлення...">
+                <button onclick="postChatMessage()">Надіслати</button>
             </div>
         </div>
     </div>
 
     <script>
-        const B64_OR = "c2stb3ItdjEtNjE0MWU1NjYxOWI0M2ZhZTNjNGMxYTEyYjQyMmVlZWE2ZmEyNzE4Mjg1YzBhZmNlZDVlM3NiNmIzNzc4NDdjOA==";
+        const K1 = "Z3NrX1FwaUNnNFBmU1F0U0laNmZEY3FrV0dkeWIz";
+        const K2 = "Rll6d3BsOHNCcEx6THZ0Uzd0eUVVaERuSzU=";
 
-        function openTab(name, btn) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`tab-${name}`).classList.add('active');
+        const getGroqKey = () => atob(K1 + K2);
+
+        let currentUser = localStorage.getItem('acore_user') || "";
+        let availableModels = [];
+        let currentModelIndex = 0;
+
+        // Допоміжна затримка (симуляція лагу)
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Отримання та вибір активної моделі
+        async function fetchAndSelectModel() {
+            const statusLabel = document.getElementById('active-model-name');
+            try {
+                const res = await fetch('https://api.groq.com/openai/v1/models', {
+                    headers: { 'Authorization': `Bearer ${getGroqKey()}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    // Отримуємо списком лише ID робочих моделей
+                    availableModels = data.data.map(m => m.id);
+                    if (availableModels.length > 0) {
+                        statusLabel.innerText = availableModels[currentModelIndex];
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('⚠️ Помилка завантаження списку моделей.');
+            }
+            // Резервний список якщо мережа підвела
+            availableModels = ["llama-3.1-8b-instant", "gemma2-9b-it", "qwen-2.5-coder-32b"];
+            statusLabel.innerText = availableModels[0];
+        }
+
+        function switchTopTab(tabName, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`content-${tabName}`).classList.add('active');
             btn.classList.add('active');
         }
 
-        /* Чат ШІ */
-        async function sendAIMessage() {
-            const input = document.getElementById('ai-user-input');
-            const txt = input.value.trim();
-            if (!txt) return;
+        function toggleChatDrawer() {
+            document.getElementById('chatDrawer').classList.toggle('open');
+        }
 
-            const logs = document.getElementById('ai-chat-logs');
-            logs.innerHTML += `<div class="msg user">${txt}</div>`;
-            input.value = '';
-            logs.scrollTop = logs.scrollHeight;
+        async function askAI() {
+            const query = document.getElementById('ai-search-query').value.trim();
+            if (!query) return alert('Введіть запитання!');
 
-            const model = document.getElementById('ai-model').value;
+            switchTopTab('ai', document.querySelectorAll('.tab-btn')[1]);
+            const resContainer = document.getElementById('ai-response-text');
+            const statusLabel = document.getElementById('active-model-name');
 
+            if (availableModels.length === 0) {
+                await fetchAndSelectModel();
+            }
+
+            let success = false;
+
+            // Цикл перебору моделей при помилці/блокуванні
+            while (!success && currentModelIndex < availableModels.length) {
+                const activeModel = availableModels[currentModelIndex];
+                statusLabel.innerText = activeModel;
+                resContainer.innerText = `🤖 Acore AI думає (${activeModel})...`;
+
+                try {
+                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${getGroqKey()}`
+                        },
+                        body: JSON.stringify({
+                            model: activeModel,
+                            messages: [
+                                { role: "system", content: "Ти офіційний помічник Acore. Відповідай українською мовою коротко та чітко." },
+                                { role: "user", content: query }
+                            ]
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        let content = data.choices?.[0]?.message?.content;
+                        if (content) {
+                            resContainer.innerText = content;
+                            success = true;
+                            break;
+                        }
+                    }
+
+                    // Якщо відповідь не OK або блокована — підлаштовуємо "лаг"
+                    throw new Error("Модель недоступна або заблокована");
+
+                } catch (e) {
+                    currentModelIndex++; // Переходимо до наступної моделі
+                    if (currentModelIndex < availableModels.length) {
+                        resContainer.innerHTML = `<span class="lag-status">⚠️ Модель ${activeModel} заблокована. Перепідключення та підбір нового AI...</span>`;
+                        // Удаване зависання на 2.5 секунди
+                        await delay(2500);
+                    } else {
+                        resContainer.innerText = '❌ Усі наявні AI-моделі тимчасово недоступні або API-ключ вичерпав ліміт.';
+                    }
+                }
+            }
+        }
+
+        function handleAuth() {
+            const email = document.getElementById('email').value.trim();
+            if (email) {
+                currentUser = email.includes('@') ? email.split('@')[0] : email;
+                localStorage.setItem('acore_user', currentUser);
+                document.getElementById('mail-box').innerHTML = `<p style="color:green;">Вітаємо, <b>${currentUser}</b>!</p><p style="font-size:12px;">Ви успішно авторизовані.</p>`;
+            }
+        }
+
+        function postChatMessage() {
+            const input = document.getElementById('chat-input-field');
+            const msg = input.value.trim();
+            const sender = currentUser || "Гість";
+            if (msg) {
+                const logs = document.getElementById('chat-logs');
+                logs.innerHTML += `<div><b>${sender}:</b> ${msg}</div>`;
+                input.value = '';
+                logs.scrollTop = logs.scrollHeight;
+            }
+        }
+
+        async function translateText() {
+            const text = document.getElementById('trans-text').value.trim();
+            const pair = document.getElementById('lang-pair').value;
+            const resDiv = document.getElementById('trans-result');
+            if (!text) return resDiv.innerText = "Введіть текст.";
+            resDiv.innerText = "Перекладаю...";
             try {
-                const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${atob(B64_OR)}` },
-                    body: JSON.stringify({
-                        model: model,
-                        messages: [{ role: "user", content: txt }]
-                    })
-                });
+                const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${pair}`);
                 const data = await res.json();
-                const reply = data.choices[0].message.content;
-                logs.innerHTML += `<div class="msg ai">${reply}</div>`;
+                resDiv.innerText = data.responseData.translatedText;
             } catch (e) {
-                logs.innerHTML += `<div class="msg ai">❌ Помилка з'єднання.</div>`;
+                resDiv.innerText = "Помилка перекладу.";
             }
-            logs.scrollTop = logs.scrollHeight;
         }
 
-        /* Погода та Курси */
-        async function loadInfo() {
+        async function fetchNews() {
             try {
-                const wRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=49.44&longitude=32.06&current_weather=true');
-                const wData = await wRes.json();
-                document.getElementById('weather-info').innerHTML = `<b>Температура:</b> ${wData.current_weather.temperature}°C<br><b>Вітер:</b> ${wData.current_weather.windspeed} км/год`;
-            } catch(e) { document.getElementById('weather-info').innerText = 'Помилка завантаження'; }
+                const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.pravda.com.ua/rss/');
+                const data = await res.json();
+                const container = document.getElementById('news-container');
+                container.innerHTML = '';
+                data.items.slice(0, 10).forEach(item => {
+                    const pubDate = new Date(item.pubDate).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+                    container.innerHTML += `<div class="news-item"><a href="${item.link}" target="_blank">${item.title}</a><div class="time">${pubDate}</div></div>`;
+                });
+            } catch (e) {
+                document.getElementById('news-container').innerText = 'Не вдалося завантажити новини.';
+            }
+        }
 
+        async function fetchWeather() {
             try {
-                const rRes = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json');
-                const rData = await rRes.json();
-                const usd = rData.find(c => c.cc === 'USD').rate.toFixed(2);
-                const eur = rData.find(c => c.cc === 'EUR').rate.toFixed(2);
-                document.getElementById('rates-info').innerHTML = `<b>USD:</b> ${usd} грн<br><b>EUR:</b> ${eur} грн`;
-            } catch(e) { document.getElementById('rates-info').innerText = 'Помилка завантаження'; }
-        }
-        loadInfo();
-
-        /* Пошта */
-        function loginMail() {
-            const mail = document.getElementById('mail-login').value;
-            if(mail) {
-                document.getElementById('mail-inbox').style.display = 'block';
-                alert('Успішний вхід: ' + mail);
-            }
-        }
-        function sendMail() {
-            alert('Лист надіслано!');
-            document.getElementById('send-msg').value = '';
-        }
-
-        /* Перекладач */
-        async function runTranslate() {
-            const txt = document.getElementById('trans-input').value;
-            if(!txt) return;
-            const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(txt)}&langpair=uk|en`);
-            const data = await res.json();
-            document.getElementById('trans-out').innerText = data.responseData.translatedText;
-        }
-
-        /* Логіка ігор */
-        let pongInterval = null;
-        function initGame() {
-            if (pongInterval) clearInterval(pongInterval);
-            const choice = document.getElementById('game-choice').value;
-            const gb = document.getElementById('game-board');
-
-            if (choice === 'ttt') {
-                initTTT();
-            } else if (choice === 'pong') {
-                initPong();
-            } else if (choice === 'mines') {
-                initMines();
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=49.44&longitude=32.06&current_weather=true');
+                const data = await res.json();
+                document.getElementById('weather').innerHTML = `<strong>Температура:</strong> ${data.current_weather.temperature}°C<br><strong>Вітер:</strong> ${data.current_weather.windspeed} км/год`;
+            } catch (e) {
+                document.getElementById('weather').innerText = 'Помилка погоди.';
             }
         }
 
-        /* Хрестики-Нулики */
-        let board = ["","","","","","","","",""];
-        function initTTT() {
-            board = ["","","","","","","","",""];
-            renderTTT();
-        }
-        function renderTTT() {
-            let html = '<div class="ttt-grid">';
-            board.forEach((val, i) => { html += `<div class="ttt-cell" onclick="makeTTTMove(${i})">${val}</div>`; });
-            html += '</div>';
-            document.getElementById('game-board').innerHTML = html;
-        }
-        function makeTTTMove(i) {
-            if (board[i] !== "") return;
-            board[i] = "X";
-            renderTTT();
-            if (!board.includes("")) return;
-            let empty = board.map((v, idx) => v === "" ? idx : null).filter(v => v !== null);
-            let aiChoice = empty[Math.floor(Math.random() * empty.length)];
-            board[aiChoice] = "O";
-            setTimeout(renderTTT, 200);
-        }
-
-        /* Пінг-Понг */
-        function initPong() {
-            const gb = document.getElementById('game-board');
-            gb.innerHTML = '<canvas id="pongCanvas" width="240" height="160" style="background:#000; border-radius:4px;"></canvas><p style="font-size:10px; margin-top:4px;">Керуйте пальцем / мишкою</p>';
-            const canvas = document.getElementById('pongCanvas');
-            const ctx = canvas.getContext('2d');
-
-            let pWidth = 40, pHeight = 6;
-            let playerX = 100, aiX = 100;
-            let ballX = 120, ballY = 80, ballDX = 2, ballDY = 2;
-
-            canvas.addEventListener('mousemove', (e) => {
-                let rect = canvas.getBoundingClientRect();
-                playerX = e.clientX - rect.left - pWidth / 2;
-            });
-            canvas.addEventListener('touchmove', (e) => {
-                let rect = canvas.getBoundingClientRect();
-                playerX = e.touches[0].clientX - rect.left - pWidth / 2;
-            });
-
-            pongInterval = setInterval(() => {
-                ballX += ballDX; ballY += ballDY;
-                if (ballX <= 0 || ballX >= canvas.width) ballDX *= -1;
-
-                // ШІ слідує за м'ячем
-                if (aiX + pWidth/2 < ballX) aiX += 1.5;
-                else aiX -= 1.5;
-
-                // Відбивання від платформ
-                if (ballY <= 10 && ballX >= aiX && ballX <= aiX + pWidth) ballDY *= -1;
-                if (ballY >= canvas.height - 10 && ballX >= playerX && ballX <= playerX + pWidth) ballDY *= -1;
-
-                if (ballY <= 0 || ballY >= canvas.height) { ballX = 120; ballY = 80; }
-
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = "#fff";
-                ctx.fillRect(playerX, canvas.height - 8, pWidth, pHeight);
-                ctx.fillRect(aiX, 2, pWidth, pHeight);
-                ctx.beginPath(); ctx.arc(ballX, ballY, 4, 0, Math.PI*2); ctx.fill();
-            }, 1000/30);
-        }
-
-        /* Сапер */
-        function initMines() {
-            let mines = Array(25).fill(false);
-            for(let i=0; i<4; i++) mines[Math.floor(Math.random()*25)] = true;
-            let html = '<div class="mines-grid">';
-            mines.forEach((isMine, idx) => {
-                html += `<div class="mines-cell" onclick="clickMine(this, ${isMine})">❓</div>`;
-            });
-            html += '</div>';
-            document.getElementById('game-board').innerHTML = html;
-        }
-        function clickMine(el, isMine) {
-            if(isMine) {
-                el.innerText = '💣';
-                el.style.background = '#ff4d4d';
-                alert('Бум! Ви натрапили на міну.');
-            } else {
-                el.innerText = '🛡️';
-                el.style.background = '#a8e6cf';
+        async function fetchRates() {
+            try {
+                const res = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json');
+                const data = await res.json();
+                document.getElementById('rates').innerHTML = `<strong>USD:</strong> ${data.find(c => c.cc === 'USD').rate.toFixed(2)} грн<br><strong>EUR:</strong> ${data.find(c => c.cc === 'EUR').rate.toFixed(2)} грн`;
+            } catch (e) {
+                document.getElementById('rates').innerText = 'Помилка курсів.';
             }
         }
 
-        initGame();
+        if (currentUser) {
+            document.getElementById('mail-box').innerHTML = `<p style="color:green;">Вітаємо, <b>${currentUser}</b>!</p>`;
+        }
+
+        // Запуск
+        fetchAndSelectModel();
+        fetchNews();
+        fetchWeather();
+        fetchRates();
     </script>
 </body>
 </html>
