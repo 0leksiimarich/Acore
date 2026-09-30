@@ -220,7 +220,7 @@
             <div class="card">
                 <h3>🎮 Ігри проти ШІ</h3>
                 <select id="game-select-choice" class="mail-input" onchange="switchGame()">
-                    <option value="doom">👹 Mini Doom 3D (Великий екран + Плавне керування)</option>
+                    <option value="doom">👹 Mini Doom 3D (Плавне керування W/S/A/D)</option>
                     <option value="ttt">❌/⭕ Хрестики-Нулики (Розумний ШІ)</option>
                     <option value="pong">🏓 Пінг-Понг проти ШІ</option>
                     <option value="mines">💣 Сапер проти ШІ</option>
@@ -484,17 +484,17 @@
             else if (choice === 'mines') initMines();
         }
 
-        // --- 1. MINI DOOM 3D ENGINE (ПЛАВНЕ КЕРУВАННЯ ТА ВЕЛИКИЙ ЕКРАН) ---
+        // --- 1. MINI DOOM 3D ENGINE (ВИПРАВЛЕНА ПОЗИЦІЯ ТА КОЛІЗІЇ) ---
         let doomState = {};
-        let doomKeys = {}; // Відстеження затиснутих клавіш
+        let doomKeys = {};
 
         const doomMap = [
             [1,1,1,1,1,1,1,1],
             [1,0,0,0,0,0,0,1],
-            [1,0,1,0,1,1,0,1],
-            [1,0,1,0,0,0,0,1],
-            [1,0,0,0,1,1,0,1],
-            [1,0,1,0,0,0,0,1],
+            [1,0,1,0,0,1,0,1],
+            [1,0,1,0,0,1,0,1],
+            [1,0,0,0,0,0,0,1],
+            [1,0,1,1,1,0,0,1],
             [1,0,0,0,0,0,0,1],
             [1,1,1,1,1,1,1,1]
         ];
@@ -504,14 +504,15 @@
             if (doomInterval) clearInterval(doomInterval);
 
             doomKeys = {};
+            // Старт у вільній зоні (1.5, 1.5)
             doomState = {
-                px: 2.5, py: 2.5, dirX: 1, dirY: 0, planeX: 0, planeY: 0.66,
+                px: 1.5, py: 1.5, dirX: 1, dirY: 0, planeX: 0, planeY: 0.66,
                 health: 100, ammo: 10, maxAmmo: 10, score: 0,
                 reloading: false, shooting: 0,
                 enemies: [
-                    { x: 5.5, y: 2.5, hp: 3, alive: true },
-                    { x: 5.5, y: 5.5, hp: 3, alive: true },
-                    { x: 2.5, y: 5.5, hp: 3, alive: true }
+                    { x: 5.5, y: 1.5, hp: 3, alive: true },
+                    { x: 6.5, y: 5.5, hp: 3, alive: true },
+                    { x: 3.5, y: 6.5, hp: 3, alive: true }
                 ]
             };
 
@@ -537,7 +538,6 @@
             doomInterval = setInterval(renderDoomFrame, 1000 / 30);
         }
 
-        // Система затискання клавіш (Smooth Key Handling)
         window.addEventListener('keydown', (e) => {
             if (document.getElementById('game-select-choice')?.value !== 'doom') return;
             if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
@@ -545,7 +545,6 @@
             doomKeys[e.code] = true;
             doomKeys[e.key.toLowerCase()] = true;
 
-            // Запобігаємо прокрутці сторінки стрілками під час гри
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
                 e.preventDefault();
             }
@@ -570,18 +569,41 @@
             const speed = 0.08;
             const rotSpeed = 0.06;
 
-            // Вперед
-            if (doomKeys['KeyW'] || doomKeys['ArrowUp'] || doomKeys['w'] || doomKeys['ц']) {
-                if (doomMap[Math.floor(doomState.px + doomState.dirX * speed)][Math.floor(doomState.py)] === 0) doomState.px += doomState.dirX * speed;
-                if (doomMap[Math.floor(doomState.px)][Math.floor(doomState.py + doomState.dirY * speed)] === 0) doomState.py += doomState.dirY * speed;
+            let moveForward = doomKeys['KeyW'] || doomKeys['ArrowUp'] || doomKeys['w'] || doomKeys['ц'];
+            let moveBackward = doomKeys['KeyS'] || doomKeys['ArrowDown'] || doomKeys['s'] || doomKeys['і'];
+            let turnLeft = doomKeys['KeyA'] || doomKeys['ArrowLeft'] || doomKeys['a'] || doomKeys['ф'];
+            let turnRight = doomKeys['KeyD'] || doomKeys['ArrowRight'] || doomKeys['d'] || doomKeys['в'];
+
+            // Рух вперед
+            if (moveForward) {
+                let moveX = doomState.dirX * speed;
+                let moveY = doomState.dirY * speed;
+                let padX = moveX > 0 ? 0.2 : -0.2;
+                let padY = moveY > 0 ? 0.2 : -0.2;
+
+                if (doomMap[Math.floor(doomState.px + moveX + padX)][Math.floor(doomState.py)] === 0) {
+                    doomState.px += moveX;
+                }
+                if (doomMap[Math.floor(doomState.px)][Math.floor(doomState.py + moveY + padY)] === 0) {
+                    doomState.py += moveY;
+                }
             }
-            // Назад
-            if (doomKeys['KeyS'] || doomKeys['ArrowDown'] || doomKeys['s'] || doomKeys['і']) {
-                if (doomMap[Math.floor(doomState.px - doomState.dirX * speed)][Math.floor(doomState.py)] === 0) doomState.px -= doomState.dirX * speed;
-                if (doomMap[Math.floor(doomState.px)][Math.floor(doomState.py - doomState.dirY * speed)] === 0) doomState.py -= doomState.dirY * speed;
+            // Рух назад
+            if (moveBackward) {
+                let moveX = doomState.dirX * speed;
+                let moveY = doomState.dirY * speed;
+                let padX = moveX > 0 ? -0.2 : 0.2;
+                let padY = moveY > 0 ? -0.2 : 0.2;
+
+                if (doomMap[Math.floor(doomState.px - moveX + padX)][Math.floor(doomState.py)] === 0) {
+                    doomState.px -= moveX;
+                }
+                if (doomMap[Math.floor(doomState.px)][Math.floor(doomState.py - moveY + padY)] === 0) {
+                    doomState.py -= moveY;
+                }
             }
             // Поворот вліво
-            if (doomKeys['KeyA'] || doomKeys['ArrowLeft'] || doomKeys['a'] || doomKeys['ф']) {
+            if (turnLeft) {
                 let oldDirX = doomState.dirX;
                 doomState.dirX = doomState.dirX * Math.cos(rotSpeed) - doomState.dirY * Math.sin(rotSpeed);
                 doomState.dirY = oldDirX * Math.sin(rotSpeed) + doomState.dirY * Math.cos(rotSpeed);
@@ -590,7 +612,7 @@
                 doomState.planeY = oldPlaneX * Math.sin(rotSpeed) + doomState.planeY * Math.cos(rotSpeed);
             }
             // Поворот вправо
-            if (doomKeys['KeyD'] || doomKeys['ArrowRight'] || doomKeys['d'] || doomKeys['в']) {
+            if (turnRight) {
                 let oldDirX = doomState.dirX;
                 doomState.dirX = doomState.dirX * Math.cos(-rotSpeed) - doomState.dirY * Math.sin(-rotSpeed);
                 doomState.dirY = oldDirX * Math.sin(-rotSpeed) + doomState.dirY * Math.cos(-rotSpeed);
@@ -657,13 +679,11 @@
             const ctx = canvas.getContext('2d');
             const w = canvas.width, h = canvas.height;
 
-            // Небо та підлога
             ctx.fillStyle = '#111827'; ctx.fillRect(0, 0, w, h/2);
             ctx.fillStyle = '#1f2937'; ctx.fillRect(0, h/2, w, h/2);
 
             let zBuffer = [];
 
-            // 3D Рендеринг Raycasting
             for (let x = 0; x < w; x++) {
                 let cameraX = 2 * x / w - 1;
                 let rayDirX = doomState.dirX + doomState.planeX * cameraX;
@@ -688,7 +708,7 @@
                 while (hit === 0) {
                     if (sideDistX < sideDistY) { sideDistX += deltaDistX; mapX += stepX; side = 0; }
                     else { sideDistY += deltaDistY; mapY += stepY; side = 1; }
-                    if (doomMap[mapX][mapY] > 0) hit = 1;
+                    if (doomMap[mapX] && doomMap[mapX][mapY] > 0) hit = 1;
                 }
 
                 if (side === 0) perpWallDist = (mapX - doomState.px + (1 - stepX) / 2) / rayDirX;
@@ -706,7 +726,6 @@
                 ctx.fillRect(x, drawStart, 1, drawEnd - drawStart);
             }
 
-            // Малювання Демонів
             doomState.enemies.forEach(enemy => {
                 if (!enemy.alive) return;
                 let spriteX = enemy.x - doomState.px;
@@ -726,7 +745,7 @@
                         ctx.beginPath();
                         ctx.arc(spriteScreenX, h/2 + 20, radius, 0, Math.PI*2);
                         ctx.fill();
-                        // Очі
+
                         ctx.fillStyle = '#fff';
                         ctx.fillRect(spriteScreenX - radius/3, h/2 + 10, radius/4, radius/4);
                         ctx.fillRect(spriteScreenX + radius/6, h/2 + 10, radius/4, radius/4);
@@ -747,7 +766,6 @@
                 }
             });
 
-            // Приціл
             ctx.strokeStyle = '#00ff00';
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -755,7 +773,6 @@
             ctx.moveTo(w/2, h/2 - 8); ctx.lineTo(w/2, h/2 + 8);
             ctx.stroke();
 
-            // Дробовик
             let gunY = h - 60;
             if (doomState.shooting > 0) {
                 doomState.shooting--;
