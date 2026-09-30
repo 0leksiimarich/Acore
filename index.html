@@ -76,20 +76,17 @@
         .ttt-grid { display: grid; grid-template-columns: repeat(3, 65px); gap: 8px; }
         .ttt-cell { width: 65px; height: 65px; background: #eef2f5; border: 2px solid #1a4a84; border-radius: 8px; font-size: 26px; font-weight: bold; color: #1a4a84; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; }
         .ttt-cell:hover { background: #dce4ec; transform: scale(1.05); }
-        .ttt-cell:active { transform: scale(0.95); }
 
         /* Сапер */
         .mines-grid { display: grid; grid-template-columns: repeat(5, 45px); gap: 6px; }
         .mines-cell { width: 45px; height: 45px; background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: all 0.15s; }
-        .mines-cell:hover { background: #cbd5e1; transform: scale(1.05); }
-        .mines-cell.revealed { background: #ffffff; border-color: #94a3b8; cursor: default; transform: none; }
+        .mines-cell.revealed { background: #ffffff; border-color: #94a3b8; cursor: default; }
         .mines-cell.exploded { background: #fee2e2; border-color: #ef4444; animation: shake 0.3s; }
 
         /* Висувний чат */
         .side-chat-drawer { position: fixed; top: 120px; right: -320px; width: 320px; height: 420px; background: white; border: 2px solid #1a4a84; border-right: none; border-radius: 12px 0 0 12px; box-shadow: -4px 4px 15px rgba(0,0,0,0.15); transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; display: flex; flex-direction: column; }
         .side-chat-drawer.open { right: 0; }
-        .chat-tab-btn { position: absolute; left: -42px; top: 20px; width: 42px; height: 110px; background: #1a4a84; color: white; border-radius: 8px 0 0 8px; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; font-weight: bold; font-size: 13px; cursor: pointer; transition: background 0.2s; }
-        .chat-tab-btn:hover { background: #12345e; }
+        .chat-tab-btn { position: absolute; left: -42px; top: 20px; width: 42px; height: 110px; background: #1a4a84; color: white; border-radius: 8px 0 0 8px; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; font-weight: bold; font-size: 13px; cursor: pointer; }
         .chat-header { background: #1a4a84; color: white; padding: 10px; font-weight: bold; font-size: 14px; border-radius: 10px 0 0 0; display: flex; justify-content: space-between; align-items: center; }
         .chat-body { flex-grow: 1; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
         .chat-messages { height: 280px; overflow-y: auto; border: 1px solid #eee; padding: 8px; border-radius: 6px; background: #fcfcfc; font-size: 13px; margin-bottom: 8px; }
@@ -220,6 +217,7 @@
             <div class="card">
                 <h3>🎮 Ігри проти ШІ</h3>
                 <select id="game-select-choice" class="mail-input" onchange="switchGame()">
+                    <option value="doom">👹 Mini Doom 3D (Клавіатура)</option>
                     <option value="ttt">❌/⭕ Хрестики-Нулики (Розумний ШІ)</option>
                     <option value="pong">🏓 Пінг-Понг проти ШІ</option>
                     <option value="mines">💣 Сапер проти ШІ</option>
@@ -271,11 +269,9 @@
         let currentUser = localStorage.getItem('acore_user') || "";
         let selectedProvider = "Acore";
 
-        // Поштове сховище
         let mailStore = JSON.parse(localStorage.getItem('acore_mail_store')) || {
             Acore: [
-                { sender: "Служба безпеки Acore", time: "12:00", subject: "Успішний вхід", body: "Вітаємо у вашій новій поштовій скриньці Acore!" },
-                { sender: "Команда Acore", time: "10:30", subject: "Оновлення платформи", body: "Ми додали нові ігри та покращили ШІ-помічника." }
+                { sender: "Служба безпеки Acore", time: "12:00", subject: "Успішний вхід", body: "Вітаємо у вашій новій поштовій скриньці Acore!" }
             ],
             Gmail: [
                 { sender: "Google", time: "09:15", subject: "Сповіщення системи безпеки", body: "Успішний вхід з нового пристрою." }
@@ -364,7 +360,7 @@
             input.value = '';
         }
 
-        /* Пошта (Повноцінна робота) */
+        /* Пошта */
         function setMailProvider(provider, btn) {
             selectedProvider = provider;
             document.querySelectorAll('.btn-provider').forEach(b => b.classList.remove('active'));
@@ -471,18 +467,279 @@
             }
         }
 
-        /* --- ІГРИ ПРОТИ ШІ --- */
+        /* --- ІГРИ (ВКЛЮЧАЮЧИ MINI DOOM) --- */
         let pongInterval = null;
+        let doomInterval = null;
 
         function switchGame() {
             if (pongInterval) clearInterval(pongInterval);
+            if (doomInterval) clearInterval(doomInterval);
             const choice = document.getElementById('game-select-choice').value;
-            if (choice === 'ttt') initTTT();
+            if (choice === 'doom') initDoom();
+            else if (choice === 'ttt') initTTT();
             else if (choice === 'pong') initPong();
             else if (choice === 'mines') initMines();
         }
 
-        // 1. Хрестики-Нулики (Розумний ШІ)
+        // --- 1. MINI DOOM 3D ENGINE ---
+        let doomState = {};
+        const doomMap = [
+            [1,1,1,1,1,1,1,1],
+            [1,0,0,0,0,0,0,1],
+            [1,0,1,0,1,1,0,1],
+            [1,0,1,0,0,0,0,1],
+            [1,0,0,0,1,1,0,1],
+            [1,0,1,0,0,0,0,1],
+            [1,0,0,0,0,0,0,1],
+            [1,1,1,1,1,1,1,1]
+        ];
+
+        function initDoom() {
+            if (pongInterval) clearInterval(pongInterval);
+            if (doomInterval) clearInterval(doomInterval);
+
+            doomState = {
+                px: 2.5, py: 2.5, dirX: 1, dirY: 0, planeX: 0, planeY: 0.66,
+                health: 100, ammo: 10, maxAmmo: 10, score: 0,
+                reloading: false, shooting: 0,
+                enemies: [
+                    { x: 5.5, y: 2.5, hp: 3, alive: true },
+                    { x: 5.5, y: 5.5, hp: 3, alive: true },
+                    { x: 2.5, y: 5.5, hp: 3, alive: true }
+                ]
+            };
+
+            const gb = document.getElementById('game-board-area');
+            gb.innerHTML = `
+                <div class="game-controls" style="flex-wrap:wrap; justify-content:center;">
+                    <span>❤️ <span id="doom-hp">100</span>%</span> |
+                    <span>⚡ <span id="doom-ammo">10/10</span></span> |
+                    <span>🎯 <span id="doom-score">0</span></span>
+                    <button class="btn-reset-game" onclick="initDoom()">Перезапуск</button>
+                </div>
+                <div style="position:relative; width:280px; height:180px; margin:0 auto;">
+                    <canvas id="doomCanvas" width="280" height="180" style="background:#000; border-radius:8px; width:100%; height:100%;"></canvas>
+                </div>
+                <div style="font-size:11px; color:#555; margin-top:6px; text-align:center; background:#eef2f5; padding:6px; border-radius:6px; width:100%;">
+                    🎮 <b>Керування:</b><br>
+                    <b>[↑ / ↓]</b> Рух вперед/назад | <b>[← / →]</b> Поворот<br>
+                    <b>[E]</b> Стріляти | <b>[R]</b> Перезарядка
+                </div>
+            `;
+
+            doomInterval = setInterval(renderDoomFrame, 1000 / 30);
+        }
+
+        // Обробка клавіш для Doom
+        window.addEventListener('keydown', (e) => {
+            if (document.getElementById('game-select-choice')?.value !== 'doom') return;
+            // Якщо користувач пише в полі вводу, клавіші гри не спрацьовують
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+            const speed = 0.12;
+            const rotSpeed = 0.1;
+
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === 'ц' || e.key === 'Ц') {
+                if(doomMap[Math.floor(doomState.px + doomState.dirX * speed)][Math.floor(doomState.py)] === 0) doomState.px += doomState.dirX * speed;
+                if(doomMap[Math.floor(doomState.px)][Math.floor(doomState.py + doomState.dirY * speed)] === 0) doomState.py += doomState.dirY * speed;
+            }
+            if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S' || e.key === 'і' || e.key === 'І') {
+                if(doomMap[Math.floor(doomState.px - doomState.dirX * speed)][Math.floor(doomState.py)] === 0) doomState.px -= doomState.dirX * speed;
+                if(doomMap[Math.floor(doomState.px)][Math.floor(doomState.py - doomState.dirY * speed)] === 0) doomState.py -= doomState.dirY * speed;
+            }
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A' || e.key === 'ф' || e.key === 'Ф') {
+                let oldDirX = doomState.dirX;
+                doomState.dirX = doomState.dirX * Math.cos(rotSpeed) - doomState.dirY * Math.sin(rotSpeed);
+                doomState.dirY = oldDirX * Math.sin(rotSpeed) + doomState.dirY * Math.cos(rotSpeed);
+                let oldPlaneX = doomState.planeX;
+                doomState.planeX = doomState.planeX * Math.cos(rotSpeed) - doomState.planeY * Math.sin(rotSpeed);
+                doomState.planeY = oldPlaneX * Math.sin(rotSpeed) + doomState.planeY * Math.cos(rotSpeed);
+            }
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' || e.key === 'в' || e.key === 'В') {
+                let oldDirX = doomState.dirX;
+                doomState.dirX = doomState.dirX * Math.cos(-rotSpeed) - doomState.dirY * Math.sin(-rotSpeed);
+                doomState.dirY = oldDirX * Math.sin(-rotSpeed) + doomState.dirY * Math.cos(-rotSpeed);
+                let oldPlaneX = doomState.planeX;
+                doomState.planeX = doomState.planeX * Math.cos(-rotSpeed) - doomState.planeY * Math.sin(-rotSpeed);
+                doomState.planeY = oldPlaneX * Math.sin(-rotSpeed) + doomState.planeY * Math.cos(-rotSpeed);
+            }
+            if (e.key === 'e' || e.key === 'E' || e.key === 'у' || e.key === 'У') {
+                doomShoot();
+            }
+            if (e.key === 'r' || e.key === 'R' || e.key === 'к' || e.key === 'К') {
+                doomReload();
+            }
+        });
+
+        function doomShoot() {
+            if (doomState.reloading || doomState.health <= 0) return;
+            if (doomState.ammo <= 0) {
+                doomReload();
+                return;
+            }
+            doomState.ammo--;
+            doomState.shooting = 3; // Анімація спалаху
+            updateDoomHUD();
+
+            // Перевірка влучання у ворога
+            doomState.enemies.forEach(enemy => {
+                if (!enemy.alive) return;
+                let dx = enemy.x - doomState.px;
+                let dy = enemy.y - doomState.py;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                let angleToEnemy = Math.atan2(dy, dx);
+                let playerAngle = Math.atan2(doomState.dirY, doomState.dirX);
+                let diff = Math.abs(angleToEnemy - playerAngle);
+                while (diff > Math.PI) diff -= Math.PI * 2;
+                diff = Math.abs(diff);
+
+                if (diff < 0.4 && dist < 5) {
+                    enemy.hp--;
+                    if (enemy.hp <= 0) {
+                        enemy.alive = false;
+                        doomState.score += 100;
+                        updateDoomHUD();
+                    }
+                }
+            });
+        }
+
+        function doomReload() {
+            if (doomState.reloading || doomState.ammo === doomState.maxAmmo) return;
+            doomState.reloading = true;
+            document.getElementById('doom-ammo').innerText = 'Перезарядка...';
+            setTimeout(() => {
+                doomState.ammo = doomState.maxAmmo;
+                doomState.reloading = false;
+                updateDoomHUD();
+            }, 1000);
+        }
+
+        function updateDoomHUD() {
+            if (document.getElementById('doom-hp')) document.getElementById('doom-hp').innerText = Math.round(doomState.health);
+            if (document.getElementById('doom-ammo') && !doomState.reloading) document.getElementById('doom-ammo').innerText = `${doomState.ammo}/${doomState.maxAmmo}`;
+            if (document.getElementById('doom-score')) document.getElementById('doom-score').innerText = doomState.score;
+        }
+
+        function renderDoomFrame() {
+            const canvas = document.getElementById('doomCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            // Небо та підлога
+            ctx.fillStyle = '#222'; ctx.fillRect(0, 0, w, h/2);
+            ctx.fillStyle = '#333'; ctx.fillRect(0, h/2, w, h/2);
+
+            let zBuffer = [];
+
+            // 3D Рендеринг стін (Raycaster)
+            for (let x = 0; x < w; x++) {
+                let cameraX = 2 * x / w - 1;
+                let rayDirX = doomState.dirX + doomState.planeX * cameraX;
+                let rayDirY = doomState.dirY + doomState.planeY * cameraX;
+
+                let mapX = Math.floor(doomState.px);
+                let mapY = Math.floor(doomState.py);
+
+                let sideDistX, sideDistY;
+                let deltaDistX = Math.abs(1 / rayDirX);
+                let deltaDistY = Math.abs(1 / rayDirY);
+                let perpWallDist;
+
+                let stepX, stepY;
+                let hit = 0, side = 0;
+
+                if (rayDirX < 0) { stepX = -1; sideDistX = (doomState.px - mapX) * deltaDistX; }
+                else { stepX = 1; sideDistX = (mapX + 1.0 - doomState.px) * deltaDistX; }
+                if (rayDirY < 0) { stepY = -1; sideDistY = (doomState.py - mapY) * deltaDistY; }
+                else { stepY = 1; sideDistY = (mapY + 1.0 - doomState.py) * deltaDistY; }
+
+                while (hit === 0) {
+                    if (sideDistX < sideDistY) { sideDistX += deltaDistX; mapX += stepX; side = 0; }
+                    else { sideDistY += deltaDistY; mapY += stepY; side = 1; }
+                    if (doomMap[mapX][mapY] > 0) hit = 1;
+                }
+
+                if (side === 0) perpWallDist = (mapX - doomState.px + (1 - stepX) / 2) / rayDirX;
+                else perpWallDist = (mapY - doomState.py + (1 - stepY) / 2) / rayDirY;
+
+                zBuffer[x] = perpWallDist;
+
+                let lineHeight = Math.floor(h / perpWallDist);
+                let drawStart = -lineHeight / 2 + h / 2;
+                if (drawStart < 0) drawStart = 0;
+                let drawEnd = lineHeight / 2 + h / 2;
+                if (drawEnd >= h) drawEnd = h - 1;
+
+                ctx.fillStyle = side === 1 ? '#1a4a84' : '#0d2b52';
+                ctx.fillRect(x, drawStart, 1, drawEnd - drawStart);
+            }
+
+            // Малювання Демонів
+            doomState.enemies.forEach(enemy => {
+                if (!enemy.alive) return;
+                let spriteX = enemy.x - doomState.px;
+                let spriteY = enemy.y - doomState.py;
+
+                let invDet = 1.0 / (doomState.planeX * doomState.dirY - doomState.dirX * doomState.planeY);
+                let transformX = invDet * (doomState.dirY * spriteX - doomState.dirX * spriteY);
+                let transformY = invDet * (-doomState.planeY * spriteX + doomState.planeX * spriteY);
+
+                if (transformY > 0) {
+                    let spriteScreenX = Math.floor((w / 2) * (1 + transformX / transformY));
+                    let spriteHeight = Math.abs(Math.floor(h / transformY));
+
+                    if (transformY < zBuffer[Math.floor(spriteScreenX)]) {
+                        // Малюємо демона
+                        ctx.fillStyle = '#dc3545';
+                        ctx.beginPath();
+                        ctx.arc(spriteScreenX, h/2 + 10, Math.min(20, spriteHeight/3), 0, Math.PI*2);
+                        ctx.fill();
+                        // Очі
+                        ctx.fillStyle = '#fff';
+                        ctx.fillRect(spriteScreenX - 4, h/2 + 5, 3, 3);
+                        ctx.fillRect(spriteScreenX + 2, h/2 + 5, 3, 3);
+                    }
+
+                    // Рух демона до гравця
+                    let distToPlayer = Math.sqrt(spriteX*spriteX + spriteY*spriteY);
+                    if (distToPlayer > 0.8) {
+                        enemy.x -= (spriteX / distToPlayer) * 0.012;
+                        enemy.y -= (spriteY / distToPlayer) * 0.012;
+                    } else if (doomState.health > 0) {
+                        // Демон кусає
+                        doomState.health = Math.max(0, doomState.health - 0.3);
+                        updateDoomHUD();
+                        if (doomState.health <= 0) {
+                            alert("☠️ Вас вбив демон! Гра закінчена.");
+                            initDoom();
+                        }
+                    }
+                }
+            });
+
+            // Приціл
+            ctx.strokeStyle = '#00ff00';
+            ctx.beginPath();
+            ctx.moveTo(w/2 - 4, h/2); ctx.lineTo(w/2 + 4, h/2);
+            ctx.moveTo(w/2, h/2 - 4); ctx.lineTo(w/2, h/2 + 4);
+            ctx.stroke();
+
+            // Дробовик та спалах
+            let gunY = h - 35;
+            if (doomState.shooting > 0) {
+                doomState.shooting--;
+                ctx.fillStyle = '#ffcc00';
+                ctx.beginPath();
+                ctx.arc(w/2, gunY - 10, 12, 0, Math.PI*2);
+                ctx.fill();
+            }
+            ctx.fillStyle = '#555'; ctx.fillRect(w/2 - 10, gunY, 20, 35);
+            ctx.fillStyle = '#222'; ctx.fillRect(w/2 - 5, gunY - 8, 10, 18);
+        }
+
+        // --- 2. Хрестики-Нулики ---
         let tttBoard = ["","","","","","","","",""];
         let tttScore = { player: 0, ai: 0, draws: 0 };
         let tttActive = true;
@@ -530,7 +787,6 @@
                 return;
             }
 
-            // Розумний хід ШІ
             tttActive = false;
             setTimeout(() => {
                 let aiMove = getSmartAIMove();
@@ -552,7 +808,6 @@
         }
 
         function getSmartAIMove() {
-            // 1. Перевірка на свій виграш
             for (let i = 0; i < 9; i++) {
                 if (tttBoard[i] === "") {
                     tttBoard[i] = "⭕";
@@ -560,7 +815,6 @@
                     tttBoard[i] = "";
                 }
             }
-            // 2. Блокування виграшу гравця
             for (let i = 0; i < 9; i++) {
                 if (tttBoard[i] === "") {
                     tttBoard[i] = "❌";
@@ -568,10 +822,7 @@
                     tttBoard[i] = "";
                 }
             }
-            // 3. Заняття центру
             if (tttBoard[4] === "") return 4;
-
-            // 4. Випадковий вільний хід
             let empty = tttBoard.map((v, idx) => v === "" ? idx : null).filter(v => v !== null);
             return empty[Math.floor(Math.random() * empty.length)];
         }
@@ -581,7 +832,7 @@
             return wins.some(w => w.every(i => tttBoard[i] === p));
         }
 
-        // 2. Пінг-Понг проти ШІ
+        // --- 3. Пінг-Понг ---
         let pongScore = { player: 0, ai: 0 };
         function initPong() {
             const gb = document.getElementById('game-board-area');
@@ -591,7 +842,6 @@
                     <button class="btn-reset-game" onclick="pongScore={player:0,ai:0}; initPong();">Скинути</button>
                 </div>
                 <canvas id="pongCanvas" width="280" height="180" style="background:#111; border-radius:8px; touch-action: none;"></canvas>
-                <p style="font-size:11px; color:#666; margin-top:6px;">Керуйте курсором або пальцем по полю</p>
             `;
             const canvas = document.getElementById('pongCanvas');
             const ctx = canvas.getContext('2d');
@@ -615,46 +865,23 @@
                 bx += dx; by += dy;
                 if (bx <= 4 || bx >= canvas.width - 4) dx *= -1;
 
-                // Рух ШІ
                 let targetAi = bx - pW / 2;
                 aix += (targetAi - aix) * 0.08;
 
-                // Відбивання ракеткою ШІ (зверху)
-                if (by <= 12 && bx >= aix && bx <= aix + pW) {
-                    dy = Math.abs(dy);
-                }
-                // Відбивання ракеткою Гравця (знизу)
-                if (by >= canvas.height - 12 && bx >= px && bx <= px + pW) {
-                    dy = -Math.abs(dy);
-                }
+                if (by <= 12 && bx >= aix && bx <= aix + pW) dy = Math.abs(dy);
+                if (by >= canvas.height - 12 && bx >= px && bx <= px + pW) dy = -Math.abs(dy);
 
-                // Голи
-                if (by <= 0) {
-                    pongScore.player++;
-                    resetBall();
-                } else if (by >= canvas.height) {
-                    pongScore.ai++;
-                    resetBall();
-                }
-
-                function resetBall() {
-                    bx = canvas.width / 2; by = canvas.height / 2;
-                    dx = (Math.random() > 0.5 ? 1 : -1) * 2.5;
-                    dy = (Math.random() > 0.5 ? 1 : -1) * 2.5;
-                    initPong();
-                }
+                if (by <= 0) { pongScore.player++; initPong(); }
+                else if (by >= canvas.height) { pongScore.ai++; initPong(); }
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                // Ракетка гравця
                 ctx.fillStyle = "#007bff"; ctx.fillRect(px, canvas.height - 8, pW, pH);
-                // Ракетка ШІ
                 ctx.fillStyle = "#e51937"; ctx.fillRect(aix, 2, pW, pH);
-                // М'яч
                 ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(bx, by, 5, 0, Math.PI*2); ctx.fill();
             }, 1000/40);
         }
 
-        // 3. Сапер
+        // --- 4. Сапер ---
         let minesField = [];
         let minesCount = 4;
         let revealedSafeCount = 0;
@@ -665,7 +892,6 @@
             revealedSafeCount = 0;
             minesActive = true;
 
-            // Розставляємо 4 міни
             let placed = 0;
             while (placed < minesCount) {
                 let idx = Math.floor(Math.random() * 25);
@@ -675,7 +901,6 @@
                 }
             }
 
-            // Рахуємо сусідні міни
             for (let i = 0; i < 25; i++) {
                 if (minesField[i].isMine) continue;
                 let adj = getNeighbors(i);
@@ -726,7 +951,6 @@
 
             if (minesField[i].isMine) {
                 minesActive = false;
-                // Відкриваємо всі міни
                 minesField.forEach(c => { if(c.isMine) c.revealed = true; });
                 renderMines();
                 setTimeout(() => alert("💥 Ви натрапили на міну! ШІ переміг!"), 100);
@@ -735,7 +959,6 @@
 
             revealedSafeCount++;
 
-            // Якщо натиснули на порожню (0 сусідів) — відкриваємо сусіди
             if (minesField[i].count === 0) {
                 getNeighbors(i).forEach(n => {
                     if (!minesField[n].revealed && !minesField[n].isMine) {
@@ -807,12 +1030,12 @@
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
-        // Старт
+        // Запуск
         updateMailUI();
         fetchNews();
         fetchWeather();
         fetchRates();
-        initTTT();
+        initDoom();
     </script>
 </body>
 </html>
