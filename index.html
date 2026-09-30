@@ -43,9 +43,10 @@
 
         /* Чат ШІ */
         .ai-chat-box { height: 320px; overflow-y: auto; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #fafafa; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
-        .chat-msg { padding: 8px 12px; border-radius: 8px; max-width: 85%; font-size: 14px; line-height: 1.4; animation: popIn 0.2s ease-out; }
+        .chat-msg { padding: 8px 12px; border-radius: 8px; max-width: 85%; font-size: 14px; line-height: 1.4; animation: popIn 0.2s ease-out; word-break: break-word; }
         .chat-msg.user { background: #1a4a84; color: white; align-self: flex-end; }
         .chat-msg.ai { background: #eef2f5; color: #1c1e21; align-self: flex-start; }
+        .chat-msg a { color: #0066cc; font-weight: bold; text-decoration: underline; }
 
         .translator-box select, .translator-box textarea, .mail-input { width: 100%; padding: 9px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; transition: border-color 0.2s; }
         .translator-box select:focus, .translator-box textarea:focus, .mail-input:focus { border-color: #1a4a84; outline: none; }
@@ -71,7 +72,7 @@
         .game-controls { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; font-weight: bold; font-size: 14px; flex-wrap: wrap; justify-content: center; width: 100%; }
         .btn-reset-game { padding: 6px 14px; background: #dc3545; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; }
 
-        /* Великий екран DOOM */
+        /* Екрани для ігор */
         .doom-viewport { position: relative; width: 100%; height: 360px; max-height: 60vh; background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         .doom-canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
 
@@ -221,8 +222,9 @@
                 <h3>🎮 Ігри проти ШІ</h3>
                 <select id="game-select-choice" class="mail-input" onchange="switchGame()">
                     <option value="doom">👹 Mini Doom 3D (Плавне керування W/S/A/D)</option>
+                    <option value="runner">🏃 Endless Runner (Ранер)</option>
+                    <option value="pong">🏓 Пінг-Понг проти ШІ (Виправлено)</option>
                     <option value="ttt">❌/⭕ Хрестики-Нулики (Розумний ШІ)</option>
-                    <option value="pong">🏓 Пінг-Понг проти ШІ</option>
                     <option value="mines">💣 Сапер проти ШІ</option>
                 </select>
                 <div class="game-board-container" id="game-board-area"></div>
@@ -302,6 +304,17 @@
             document.getElementById('active-model-name').innerText = select.value;
         }
 
+        // Парсинг посилань для створення клікабельних лінків від ШІ
+        function formatAiResponse(text) {
+            let safe = escapeHtml(text);
+            // Формат Markdown: [текст](посилання)
+            safe = safe.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+            // Звичайні посилання: https://...
+            safe = safe.replace(/(?<!href="|">)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank">$1</a>');
+            // Переноси рядків
+            return safe.replace(/\n/g, '<br>');
+        }
+
         /* Повноцінний ШІ Чат */
         async function processAIQuery(queryText) {
             const logs = document.getElementById('ai-chat-logs');
@@ -325,7 +338,7 @@
                     body: JSON.stringify({
                         model: selectedModel,
                         messages: [
-                            { role: "system", content: "Ти офіційний помічник Acore. Відповідай українською мовою коротко, чітко та ввічливо." },
+                            { role: "system", content: "Ти офіційний помічник Acore. Відповідай українською мовою коротко, чітко та ввічливо. Якщо даєш посилання, вказуй їх у форматі https://..." },
                             { role: "user", content: queryText }
                         ]
                     })
@@ -334,7 +347,7 @@
                 if (response.ok) {
                     const data = await response.json();
                     let reply = data.choices?.[0]?.message?.content || "Не вдалося отримати відповідь.";
-                    tempAiMsg.innerText = reply;
+                    tempAiMsg.innerHTML = formatAiResponse(reply);
                 } else {
                     throw new Error("Модель заблокована або недоступна");
                 }
@@ -473,14 +486,18 @@
         /* --- ІГРИ --- */
         let pongInterval = null;
         let doomInterval = null;
+        let runnerInterval = null;
 
         function switchGame() {
             if (pongInterval) clearInterval(pongInterval);
             if (doomInterval) clearInterval(doomInterval);
+            if (runnerInterval) clearInterval(runnerInterval);
+
             const choice = document.getElementById('game-select-choice').value;
             if (choice === 'doom') initDoom();
-            else if (choice === 'ttt') initTTT();
+            else if (choice === 'runner') initRunner();
             else if (choice === 'pong') initPong();
+            else if (choice === 'ttt') initTTT();
             else if (choice === 'mines') initMines();
         }
 
@@ -502,6 +519,7 @@
         function initDoom() {
             if (pongInterval) clearInterval(pongInterval);
             if (doomInterval) clearInterval(doomInterval);
+            if (runnerInterval) clearInterval(runnerInterval);
 
             doomKeys = {};
             doomState = {
@@ -573,7 +591,6 @@
             let turnLeft = doomKeys['KeyA'] || doomKeys['ArrowLeft'] || doomKeys['a'] || doomKeys['ф'];
             let turnRight = doomKeys['KeyD'] || doomKeys['ArrowRight'] || doomKeys['d'] || doomKeys['в'];
 
-            // Рух вперед
             if (moveForward) {
                 let moveX = doomState.dirX * speed;
                 let moveY = doomState.dirY * speed;
@@ -587,7 +604,6 @@
                     doomState.py += moveY;
                 }
             }
-            // Рух назад
             if (moveBackward) {
                 let moveX = doomState.dirX * speed;
                 let moveY = doomState.dirY * speed;
@@ -601,7 +617,6 @@
                     doomState.py -= moveY;
                 }
             }
-            // Поворот вліво (ВИПРАВЛЕНО: напрямок повороту)
             if (turnLeft) {
                 let oldDirX = doomState.dirX;
                 doomState.dirX = doomState.dirX * Math.cos(-rotSpeed) - doomState.dirY * Math.sin(-rotSpeed);
@@ -610,7 +625,6 @@
                 doomState.planeX = doomState.planeX * Math.cos(-rotSpeed) - doomState.planeY * Math.sin(-rotSpeed);
                 doomState.planeY = oldPlaneX * Math.sin(-rotSpeed) + doomState.planeY * Math.cos(-rotSpeed);
             }
-            // Поворот вправо (ВИПРАВЛЕНО: напрямок повороту)
             if (turnRight) {
                 let oldDirX = doomState.dirX;
                 doomState.dirX = doomState.dirX * Math.cos(rotSpeed) - doomState.dirY * Math.sin(rotSpeed);
@@ -784,7 +798,244 @@
             ctx.fillStyle = '#111827'; ctx.fillRect(w/2 - 8, gunY - 15, 16, 30);
         }
 
-        // --- 2. Хрестики-Нулики ---
+        // --- 2. ENDLESS RUNNER (РАНЕР) ---
+        let runnerState = {};
+
+        function initRunner() {
+            if (pongInterval) clearInterval(pongInterval);
+            if (doomInterval) clearInterval(doomInterval);
+            if (runnerInterval) clearInterval(runnerInterval);
+
+            runnerState = {
+                y: 130, vy: 0, gravity: 0.8,
+                isJumping: false, score: 0,
+                obstacles: [], speed: 4, frameCount: 0,
+                gameOver: false
+            };
+
+            const gb = document.getElementById('game-board-area');
+            gb.innerHTML = `
+                <div class="game-controls">
+                    <span>🏆 Рахунок: <span id="runner-score">0</span></span>
+                    <button class="btn-reset-game" onclick="initRunner()">Перезапуск</button>
+                </div>
+                <div class="doom-viewport" style="height:220px;" onclick="runnerJump()">
+                    <canvas id="runnerCanvas" width="600" height="220" class="doom-canvas"></canvas>
+                </div>
+                <div style="font-size:12px; color:#555; margin-top:8px; text-align:center; background:#eef2f5; padding:8px; border-radius:6px; width:100%;">
+                    🏃 <b>Керування:</b> Натисніть <b>[Пробіл]</b>, <b>[Стрілку вгору]</b> або <b>Клікніть по екрану</b> для стрибка!
+                </div>
+            `;
+
+            runnerInterval = setInterval(renderRunnerFrame, 1000 / 40);
+        }
+
+        function runnerJump() {
+            if (!runnerState.isJumping && !runnerState.gameOver) {
+                runnerState.vy = -12;
+                runnerState.isJumping = true;
+            } else if (runnerState.gameOver) {
+                initRunner();
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (document.getElementById('game-select-choice')?.value !== 'runner') return;
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                runnerJump();
+            }
+        });
+
+        function renderRunnerFrame() {
+            const canvas = document.getElementById('runnerCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            if (runnerState.gameOver) return;
+
+            // Фізика стрибка
+            runnerState.vy += runnerState.gravity;
+            runnerState.y += runnerState.vy;
+
+            if (runnerState.y >= 140) {
+                runnerState.y = 140;
+                runnerState.vy = 0;
+                runnerState.isJumping = false;
+            }
+
+            // Поява перешкод
+            runnerState.frameCount++;
+            if (runnerState.frameCount % 75 === 0) {
+                let obstacleHeight = Math.floor(Math.random() * 25) + 25;
+                runnerState.obstacles.push({ x: w, width: 20, height: obstacleHeight });
+            }
+
+            // Фон
+            ctx.fillStyle = '#1a4a84'; ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#22c55e'; ctx.fillRect(0, 175, w, 45); // Земля
+
+            // Малювання персонажа (Acore Runner)
+            ctx.fillStyle = '#007bff';
+            ctx.fillRect(50, runnerState.y, 25, 35);
+            ctx.fillStyle = '#fff'; // Очі
+            ctx.fillRect(66, runnerState.y + 6, 6, 6);
+
+            // Оновлення перешкод
+            for (let i = 0; i < runnerState.obstacles.length; i++) {
+                let obs = runnerState.obstacles[i];
+                obs.x -= runnerState.speed;
+
+                ctx.fillStyle = '#dc3545';
+                ctx.fillRect(obs.x, 175 - obs.height, obs.width, obs.height);
+
+                // Колізія (Зіткнення)
+                if (50 < obs.x + obs.width && 50 + 25 > obs.x && runnerState.y + 35 > 175 - obs.height) {
+                    runnerState.gameOver = true;
+                    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                    ctx.fillRect(0, 0, w, h);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 24px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('💥 Гра Закінчена!', w / 2, h / 2 - 10);
+                    ctx.font = '14px sans-serif';
+                    ctx.fillText('Натисніть для повторної гри', w / 2, h / 2 + 20);
+                    return;
+                }
+            }
+
+            // Видалення старого
+            runnerState.obstacles = runnerState.obstacles.filter(obs => obs.x > -30);
+
+            // Рахунок
+            runnerState.score++;
+            if (runnerState.score % 250 === 0) runnerState.speed += 0.5; // Прискорення
+            document.getElementById('runner-score').innerText = runnerState.score;
+        }
+
+        // --- 3. ПІНГ-ПОНГ ПРОТИ ШІ (ВИПРАВЛЕНО ТА ПОКРАЩЕНО) ---
+        let pongKeys = {};
+        let pongScore = { player: 0, ai: 0 };
+        let pongBall = { x: 140, y: 90, dx: 3, dy: 3 };
+        let pongPlayerX = 115, pongAiX = 115;
+        const paddleWidth = 55, paddleHeight = 8;
+
+        function initPong() {
+            if (pongInterval) clearInterval(pongInterval);
+            if (doomInterval) clearInterval(doomInterval);
+            if (runnerInterval) clearInterval(runnerInterval);
+
+            pongBall = { x: 140, y: 90, dx: (Math.random() > 0.5 ? 3 : -3), dy: (Math.random() > 0.5 ? 3 : -3) };
+            pongPlayerX = 115;
+            pongAiX = 115;
+
+            const gb = document.getElementById('game-board-area');
+            gb.innerHTML = `
+                <div class="game-controls">
+                    <span>Гравець: <b id="pong-p-score">${pongScore.player}</b> | ШІ: <b id="pong-ai-score">${pongScore.ai}</b></span>
+                    <button class="btn-reset-game" onclick="pongScore={player:0,ai:0}; initPong();">Скинути</button>
+                </div>
+                <div class="doom-viewport" style="height:240px;">
+                    <canvas id="pongCanvas" width="280" height="240" class="doom-canvas" style="touch-action:none;"></canvas>
+                </div>
+                <div style="font-size:12px; color:#555; margin-top:8px; text-align:center; background:#eef2f5; padding:8px; border-radius:6px; width:100%;">
+                    🏓 <b>Керування:</b> Використовуйте <b>[A / D]</b>, <b>[← / →]</b>, **мишку** або **ведення пальцем** по екрану!
+                </div>
+            `;
+
+            const canvas = document.getElementById('pongCanvas');
+
+            const updatePos = (clientX) => {
+                let rect = canvas.getBoundingClientRect();
+                let scaleX = canvas.width / rect.width;
+                pongPlayerX = (clientX - rect.left) * scaleX - paddleWidth / 2;
+                if (pongPlayerX < 0) pongPlayerX = 0;
+                if (pongPlayerX > canvas.width - paddleWidth) pongPlayerX = canvas.width - paddleWidth;
+            };
+
+            canvas.addEventListener('mousemove', e => updatePos(e.clientX));
+            canvas.addEventListener('touchmove', e => {
+                e.preventDefault();
+                updatePos(e.touches[0].clientX);
+            }, { passive: false });
+
+            pongInterval = setInterval(renderPongFrame, 1000 / 40);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (document.getElementById('game-select-choice')?.value !== 'pong') return;
+            pongKeys[e.code] = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            if (document.getElementById('game-select-choice')?.value !== 'pong') return;
+            pongKeys[e.code] = false;
+        });
+
+        function renderPongFrame() {
+            const canvas = document.getElementById('pongCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            // Керування клавіатурою
+            if (pongKeys['KeyA'] || pongKeys['ArrowLeft']) pongPlayerX = Math.max(0, pongPlayerX - 5);
+            if (pongKeys['KeyD'] || pongKeys['ArrowRight']) pongPlayerX = Math.min(w - paddleWidth, pongPlayerX + 5);
+
+            // Рух м'яча
+            pongBall.x += pongBall.dx;
+            pongBall.y += pongBall.dy;
+
+            // Відбивання від бічних стінок
+            if (pongBall.x <= 5 || pongBall.x >= w - 5) pongBall.dx *= -1;
+
+            // Рух ШІ
+            let targetAi = pongBall.x - paddleWidth / 2;
+            pongAiX += (targetAi - pongAiX) * 0.085;
+            if (pongAiX < 0) pongAiX = 0;
+            if (pongAiX > w - paddleWidth) pongAiX = w - paddleWidth;
+
+            // Відбивання ракеткою ШІ (вгорі)
+            if (pongBall.y <= 16 && pongBall.x >= pongAiX && pongBall.x <= pongAiX + paddleWidth) {
+                pongBall.dy = Math.abs(pongBall.dy);
+            }
+            // Відбивання ракеткою Гравця (внизу)
+            if (pongBall.y >= h - 16 && pongBall.x >= pongPlayerX && pongBall.x <= pongPlayerX + paddleWidth) {
+                pongBall.dy = -Math.abs(pongBall.dy);
+            }
+
+            // Голи
+            if (pongBall.y <= 0) {
+                pongScore.player++;
+                resetPongBall();
+            } else if (pongBall.y >= h) {
+                pongScore.ai++;
+                resetPongBall();
+            }
+
+            function resetPongBall() {
+                pongBall = { x: w / 2, y: h / 2, dx: (Math.random() > 0.5 ? 3 : -3), dy: (Math.random() > 0.5 ? 3 : -3) };
+                document.getElementById('pong-p-score').innerText = pongScore.player;
+                document.getElementById('pong-ai-score').innerText = pongScore.ai;
+            }
+
+            // Отрисовка
+            ctx.fillStyle = '#111827'; ctx.fillRect(0, 0, w, h);
+
+            // Сітка
+            ctx.strokeStyle = '#374151'; ctx.setLineDash([4, 4]);
+            ctx.beginPath(); ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2); ctx.stroke();
+
+            // Ракетка гравця
+            ctx.fillStyle = '#007bff'; ctx.fillRect(pongPlayerX, h - 12, paddleWidth, paddleHeight);
+            // Ракетка ШІ
+            ctx.fillStyle = '#dc3545'; ctx.fillRect(pongAiX, 4, paddleWidth, paddleHeight);
+            // М'яч
+            ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(pongBall.x, pongBall.y, 5, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // --- 4. Хрестики-Нулики ---
         let tttBoard = ["","","","","","","","",""];
         let tttScore = { player: 0, ai: 0, draws: 0 };
         let tttActive = true;
@@ -877,56 +1128,7 @@
             return wins.some(w => w.every(i => tttBoard[i] === p));
         }
 
-        // --- 3. Пінг-Понг ---
-        let pongScore = { player: 0, ai: 0 };
-        function initPong() {
-            const gb = document.getElementById('game-board-area');
-            gb.innerHTML = `
-                <div class="game-controls">
-                    <span>Гравець: ${pongScore.player} | ШІ: ${pongScore.ai}</span>
-                    <button class="btn-reset-game" onclick="pongScore={player:0,ai:0}; initPong();">Скинути</button>
-                </div>
-                <canvas id="pongCanvas" width="280" height="180" style="background:#111; border-radius:8px; touch-action: none;"></canvas>
-            `;
-            const canvas = document.getElementById('pongCanvas');
-            const ctx = canvas.getContext('2d');
-            let pW = 50, pH = 6, px = 115, aix = 115;
-            let bx = 140, by = 90, dx = 2.5, dy = 2.5;
-
-            const updatePos = (clientX) => {
-                let rect = canvas.getBoundingClientRect();
-                px = clientX - rect.left - pW / 2;
-                if (px < 0) px = 0;
-                if (px > canvas.width - pW) px = canvas.width - pW;
-            };
-
-            canvas.addEventListener('mousemove', e => updatePos(e.clientX));
-            canvas.addEventListener('touchmove', e => {
-                e.preventDefault();
-                updatePos(e.touches[0].clientX);
-            }, { passive: false });
-
-            pongInterval = setInterval(() => {
-                bx += dx; by += dy;
-                if (bx <= 4 || bx >= canvas.width - 4) dx *= -1;
-
-                let targetAi = bx - pW / 2;
-                aix += (targetAi - aix) * 0.08;
-
-                if (by <= 12 && bx >= aix && bx <= aix + pW) dy = Math.abs(dy);
-                if (by >= canvas.height - 12 && bx >= px && bx <= px + pW) dy = -Math.abs(dy);
-
-                if (by <= 0) { pongScore.player++; initPong(); }
-                else if (by >= canvas.height) { pongScore.ai++; initPong(); }
-
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = "#007bff"; ctx.fillRect(px, canvas.height - 8, pW, pH);
-                ctx.fillStyle = "#e51937"; ctx.fillRect(aix, 2, pW, pH);
-                ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(bx, by, 5, 0, Math.PI*2); ctx.fill();
-            }, 1000/40);
-        }
-
-        // --- 4. Сапер ---
+        // --- 5. Сапер ---
         let minesField = [];
         let minesCount = 4;
         let revealedSafeCount = 0;
