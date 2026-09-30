@@ -8,6 +8,46 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #f4f5f7; color: #333; overflow-x: hidden; }
 
+        /* Анімаційне вікно завантаження (Preloader) */
+        #app-preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #1a4a84;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        #app-preloader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .hello-text {
+            font-size: 52px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 3px;
+            animation: helloPulse 1.2s infinite alternate ease-in-out;
+        }
+        .loader-subtext {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.75);
+            margin-top: 12px;
+            letter-spacing: 1px;
+            font-style: italic;
+        }
+
+        @keyframes helloPulse {
+            0% { transform: scale(0.92); opacity: 0.5; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+            100% { transform: scale(1.08); opacity: 1; text-shadow: 0 0 25px rgba(255,255,255,0.9); }
+        }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
@@ -119,6 +159,12 @@
 </head>
 <body>
 
+    <!-- Екран завантаження Hello -->
+    <div id="app-preloader">
+        <div class="hello-text">Hello</div>
+        <div class="loader-subtext">Завантаження Acore...</div>
+    </div>
+
     <header>
         <div class="logo-group">
             <div class="logo">Acore</div>
@@ -223,7 +269,7 @@
                 <select id="game-select-choice" class="mail-input" onchange="switchGame()">
                     <option value="doom">👹 Mini Doom 3D (Плавне керування W/S/A/D)</option>
                     <option value="runner">🏃 Endless Runner (Ранер)</option>
-                    <option value="pong">🏓 Пінг-Понг проти ШІ (Виправлено)</option>
+                    <option value="pong">🏓 Пінг-Понг проти ШІ</option>
                     <option value="ttt">❌/⭕ Хрестики-Нулики (Розумний ШІ)</option>
                     <option value="mines">💣 Сапер проти ШІ</option>
                 </select>
@@ -307,11 +353,8 @@
         // Парсинг посилань для створення клікабельних лінків від ШІ
         function formatAiResponse(text) {
             let safe = escapeHtml(text);
-            // Формат Markdown: [текст](посилання)
             safe = safe.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-            // Звичайні посилання: https://...
             safe = safe.replace(/(?<!href="|">)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank">$1</a>');
-            // Переноси рядків
             return safe.replace(/\n/g, '<br>');
         }
 
@@ -856,7 +899,6 @@
 
             if (runnerState.gameOver) return;
 
-            // Фізика стрибка
             runnerState.vy += runnerState.gravity;
             runnerState.y += runnerState.vy;
 
@@ -866,24 +908,20 @@
                 runnerState.isJumping = false;
             }
 
-            // Поява перешкод
             runnerState.frameCount++;
             if (runnerState.frameCount % 75 === 0) {
                 let obstacleHeight = Math.floor(Math.random() * 25) + 25;
                 runnerState.obstacles.push({ x: w, width: 20, height: obstacleHeight });
             }
 
-            // Фон
             ctx.fillStyle = '#1a4a84'; ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = '#22c55e'; ctx.fillRect(0, 175, w, 45); // Земля
+            ctx.fillStyle = '#22c55e'; ctx.fillRect(0, 175, w, 45);
 
-            // Малювання персонажа (Acore Runner)
             ctx.fillStyle = '#007bff';
             ctx.fillRect(50, runnerState.y, 25, 35);
-            ctx.fillStyle = '#fff'; // Очі
+            ctx.fillStyle = '#fff';
             ctx.fillRect(66, runnerState.y + 6, 6, 6);
 
-            // Оновлення перешкод
             for (let i = 0; i < runnerState.obstacles.length; i++) {
                 let obs = runnerState.obstacles[i];
                 obs.x -= runnerState.speed;
@@ -891,7 +929,6 @@
                 ctx.fillStyle = '#dc3545';
                 ctx.fillRect(obs.x, 175 - obs.height, obs.width, obs.height);
 
-                // Колізія (Зіткнення)
                 if (50 < obs.x + obs.width && 50 + 25 > obs.x && runnerState.y + 35 > 175 - obs.height) {
                     runnerState.gameOver = true;
                     ctx.fillStyle = 'rgba(0,0,0,0.7)';
@@ -906,16 +943,14 @@
                 }
             }
 
-            // Видалення старого
             runnerState.obstacles = runnerState.obstacles.filter(obs => obs.x > -30);
 
-            // Рахунок
             runnerState.score++;
-            if (runnerState.score % 250 === 0) runnerState.speed += 0.5; // Прискорення
+            if (runnerState.score % 250 === 0) runnerState.speed += 0.5;
             document.getElementById('runner-score').innerText = runnerState.score;
         }
 
-        // --- 3. ПІНГ-ПОНГ ПРОТИ ШІ (ВИПРАВЛЕНО ТА ПОКРАЩЕНО) ---
+        // --- 3. ПІНГ-ПОНГ ПРОТИ ШІ ---
         let pongKeys = {};
         let pongScore = { player: 0, ai: 0 };
         let pongBall = { x: 140, y: 90, dx: 3, dy: 3 };
@@ -979,33 +1014,26 @@
             const ctx = canvas.getContext('2d');
             const w = canvas.width, h = canvas.height;
 
-            // Керування клавіатурою
             if (pongKeys['KeyA'] || pongKeys['ArrowLeft']) pongPlayerX = Math.max(0, pongPlayerX - 5);
             if (pongKeys['KeyD'] || pongKeys['ArrowRight']) pongPlayerX = Math.min(w - paddleWidth, pongPlayerX + 5);
 
-            // Рух м'яча
             pongBall.x += pongBall.dx;
             pongBall.y += pongBall.dy;
 
-            // Відбивання від бічних стінок
             if (pongBall.x <= 5 || pongBall.x >= w - 5) pongBall.dx *= -1;
 
-            // Рух ШІ
             let targetAi = pongBall.x - paddleWidth / 2;
             pongAiX += (targetAi - pongAiX) * 0.085;
             if (pongAiX < 0) pongAiX = 0;
             if (pongAiX > w - paddleWidth) pongAiX = w - paddleWidth;
 
-            // Відбивання ракеткою ШІ (вгорі)
             if (pongBall.y <= 16 && pongBall.x >= pongAiX && pongBall.x <= pongAiX + paddleWidth) {
                 pongBall.dy = Math.abs(pongBall.dy);
             }
-            // Відбивання ракеткою Гравця (внизу)
             if (pongBall.y >= h - 16 && pongBall.x >= pongPlayerX && pongBall.x <= pongPlayerX + paddleWidth) {
                 pongBall.dy = -Math.abs(pongBall.dy);
             }
 
-            // Голи
             if (pongBall.y <= 0) {
                 pongScore.player++;
                 resetPongBall();
@@ -1020,18 +1048,13 @@
                 document.getElementById('pong-ai-score').innerText = pongScore.ai;
             }
 
-            // Отрисовка
             ctx.fillStyle = '#111827'; ctx.fillRect(0, 0, w, h);
 
-            // Сітка
             ctx.strokeStyle = '#374151'; ctx.setLineDash([4, 4]);
             ctx.beginPath(); ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2); ctx.stroke();
 
-            // Ракетка гравця
             ctx.fillStyle = '#007bff'; ctx.fillRect(pongPlayerX, h - 12, paddleWidth, paddleHeight);
-            // Ракетка ШІ
             ctx.fillStyle = '#dc3545'; ctx.fillRect(pongAiX, 4, paddleWidth, paddleHeight);
-            // М'яч
             ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(pongBall.x, pongBall.y, 5, 0, Math.PI * 2); ctx.fill();
         }
 
@@ -1277,7 +1300,17 @@
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
-        // Запуск
+        // Контроль анімації завантаження (Hello)
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const preloader = document.getElementById('app-preloader');
+                if (preloader) {
+                    preloader.classList.add('hidden');
+                }
+            }, 1800);
+        });
+
+        // Запуск функцій
         updateMailUI();
         fetchNews();
         fetchWeather();
