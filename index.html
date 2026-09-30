@@ -484,7 +484,7 @@
             else if (choice === 'mines') initMines();
         }
 
-        // --- 1. MINI DOOM 3D ENGINE (ВИПРАВЛЕНА ПОЗИЦІЯ ТА КОЛІЗІЇ) ---
+        // --- 1. MINI DOOM 3D ENGINE ---
         let doomState = {};
         let doomKeys = {};
 
@@ -504,7 +504,6 @@
             if (doomInterval) clearInterval(doomInterval);
 
             doomKeys = {};
-            // Старт у вільній зоні (1.5, 1.5)
             doomState = {
                 px: 1.5, py: 1.5, dirX: 1, dirY: 0, planeX: 0, planeY: 0.66,
                 health: 100, ammo: 10, maxAmmo: 10, score: 0,
@@ -602,23 +601,23 @@
                     doomState.py -= moveY;
                 }
             }
-            // Поворот вліво
+            // Поворот вліво (ВИПРАВЛЕНО: напрямок повороту)
             if (turnLeft) {
-                let oldDirX = doomState.dirX;
-                doomState.dirX = doomState.dirX * Math.cos(rotSpeed) - doomState.dirY * Math.sin(rotSpeed);
-                doomState.dirY = oldDirX * Math.sin(rotSpeed) + doomState.dirY * Math.cos(rotSpeed);
-                let oldPlaneX = doomState.planeX;
-                doomState.planeX = doomState.planeX * Math.cos(rotSpeed) - doomState.planeY * Math.sin(rotSpeed);
-                doomState.planeY = oldPlaneX * Math.sin(rotSpeed) + doomState.planeY * Math.cos(rotSpeed);
-            }
-            // Поворот вправо
-            if (turnRight) {
                 let oldDirX = doomState.dirX;
                 doomState.dirX = doomState.dirX * Math.cos(-rotSpeed) - doomState.dirY * Math.sin(-rotSpeed);
                 doomState.dirY = oldDirX * Math.sin(-rotSpeed) + doomState.dirY * Math.cos(-rotSpeed);
                 let oldPlaneX = doomState.planeX;
                 doomState.planeX = doomState.planeX * Math.cos(-rotSpeed) - doomState.planeY * Math.sin(-rotSpeed);
                 doomState.planeY = oldPlaneX * Math.sin(-rotSpeed) + doomState.planeY * Math.cos(-rotSpeed);
+            }
+            // Поворот вправо (ВИПРАВЛЕНО: напрямок повороту)
+            if (turnRight) {
+                let oldDirX = doomState.dirX;
+                doomState.dirX = doomState.dirX * Math.cos(rotSpeed) - doomState.dirY * Math.sin(rotSpeed);
+                doomState.dirY = oldDirX * Math.sin(rotSpeed) + doomState.dirY * Math.cos(rotSpeed);
+                let oldPlaneX = doomState.planeX;
+                doomState.planeX = doomState.planeX * Math.cos(rotSpeed) - doomState.planeY * Math.sin(rotSpeed);
+                doomState.planeY = oldPlaneX * Math.sin(rotSpeed) + doomState.planeY * Math.cos(rotSpeed);
             }
         }
 
