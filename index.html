@@ -8,59 +8,88 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #f4f5f7; color: #333; overflow-x: hidden; }
 
-        header { background: #1a4a84; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        /* Анімації */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+        @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
+
+        header { background: #1a4a84; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
         .logo-group { display: flex; align-items: baseline; gap: 8px; }
         .logo { font-size: 24px; font-weight: bold; letter-spacing: 0.5px; }
         .slogan { font-size: 12px; opacity: 0.85; font-style: italic; }
 
         .search-box { display: flex; flex-grow: 1; max-width: 500px; gap: 6px; }
         .search-box input { flex-grow: 1; padding: 8px 12px; border: none; border-radius: 6px; outline: none; font-size: 14px; }
-        .search-box button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; background: #007bff; color: white; }
+        .search-box button { padding: 8px 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 13px; background: #007bff; color: white; cursor: pointer; transition: background 0.2s; }
+        .search-box button:hover { background: #0056b3; }
 
-        .top-tabs { display: flex; justify-content: center; background: white; border-bottom: 1px solid #e2e8f0; padding: 5px 10px; gap: 8px; overflow-x: auto; }
-        .tab-btn { padding: 8px 16px; border: none; background: #eef2f5; border-radius: 20px; font-weight: bold; font-size: 13px; color: #555; cursor: pointer; white-space: nowrap; }
-        .tab-btn.active { background: #1a4a84; color: white; }
+        .top-tabs { display: flex; justify-content: center; background: white; border-bottom: 1px solid #e2e8f0; padding: 6px 10px; gap: 8px; overflow-x: auto; }
+        .tab-btn { padding: 8px 16px; border: none; background: #eef2f5; border-radius: 20px; font-weight: bold; font-size: 13px; color: #555; cursor: pointer; white-space: nowrap; transition: all 0.25s ease; }
+        .tab-btn:hover { background: #dce4ec; color: #1a4a84; }
+        .tab-btn.active { background: #1a4a84; color: white; transform: scale(1.02); }
 
         .container { max-width: 1000px; margin: 15px auto; padding: 0 12px; }
         .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-out; }
 
-        .card { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); margin-bottom: 15px; }
+        .card { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); margin-bottom: 15px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .card h3 { font-size: 16px; margin-bottom: 12px; color: #1a4a84; border-bottom: 2px solid #eef2f5; padding-bottom: 6px; }
 
-        .news-item { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .news-item { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px; transition: transform 0.15s; }
+        .news-item:hover { transform: translateX(3px); }
         .news-item a { color: #1a4a84; text-decoration: none; font-weight: bold; font-size: 15px; display: block; }
         .news-item .time { font-size: 11px; color: #777; margin-top: 4px; }
 
         /* Чат ШІ */
-        .ai-chat-box { height: 320px; overflow-y: auto; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #fafafa; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
-        .chat-msg { padding: 8px 12px; border-radius: 8px; max-width: 85%; font-size: 14px; line-height: 1.4; }
+        .ai-chat-box { height: 320px; overflow-y: auto; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #fafafa; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
+        .chat-msg { padding: 8px 12px; border-radius: 8px; max-width: 85%; font-size: 14px; line-height: 1.4; animation: popIn 0.2s ease-out; }
         .chat-msg.user { background: #1a4a84; color: white; align-self: flex-end; }
         .chat-msg.ai { background: #eef2f5; color: #1c1e21; align-self: flex-start; }
 
-        .translator-box select, .translator-box textarea, .mail-input { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-        .translator-box textarea { resize: vertical; height: 60px; }
-        .translator-box button, .btn-action { width: 100%; padding: 10px; background: #1a4a84; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .translator-box select, .translator-box textarea, .mail-input { width: 100%; padding: 9px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; transition: border-color 0.2s; }
+        .translator-box select:focus, .translator-box textarea:focus, .mail-input:focus { border-color: #1a4a84; outline: none; }
+        .translator-box textarea { resize: vertical; height: 65px; }
+        .btn-action { width: 100%; padding: 10px; background: #1a4a84; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .btn-action:hover { background: #12345e; transform: translateY(-1px); }
+        .btn-action:active { transform: translateY(0); }
         .translate-result { background: #f8f9fa; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; margin-top: 8px; min-height: 40px; font-size: 14px; }
 
-        .mono-btn { display: block; width: 100%; padding: 10px; background: #e51937; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 8px; }
+        .mono-btn { display: block; width: 100%; padding: 10px; background: #e51937; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 8px; transition: background 0.2s; }
+        .mono-btn:hover { background: #c4122c; }
 
         /* Пошта */
         .provider-btns { display: flex; gap: 6px; margin-bottom: 10px; }
-        .btn-provider { flex: 1; padding: 8px; border: 1px solid #ccc; background: #f8f9fa; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .btn-provider { flex: 1; padding: 8px; border: 1px solid #ccc; background: #f8f9fa; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; transition: all 0.2s; }
         .btn-provider.active { background: #1a4a84; color: white; border-color: #1a4a84; }
-        .email-item { padding: 8px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 6px; background: #fafafa; }
+        .email-item { padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; background: #fafafa; animation: fadeIn 0.25s ease-out; }
+        .email-item b { color: #1a4a84; }
+        .email-header { display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 4px; }
 
         /* Ігри */
-        .game-board-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; }
-        .ttt-grid { display: grid; grid-template-columns: repeat(3, 60px); gap: 6px; margin-top: 10px; }
-        .ttt-cell { width: 60px; height: 60px; background: #eef2f5; border: 2px solid #1a4a84; border-radius: 6px; font-size: 24px; font-weight: bold; color: #1a4a84; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .mines-grid { display: grid; grid-template-columns: repeat(5, 40px); gap: 5px; margin-top: 10px; }
-        .mines-cell { width: 40px; height: 40px; background: #ddd; border: 1px solid #aaa; border-radius: 4px; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .game-board-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 220px; padding: 10px 0; }
+        .game-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; font-weight: bold; font-size: 14px; }
+        .btn-reset-game { padding: 5px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; }
 
-        .side-chat-drawer { position: fixed; top: 120px; right: -320px; width: 320px; height: 420px; background: white; border: 2px solid #1a4a84; border-right: none; border-radius: 12px 0 0 12px; box-shadow: -4px 4px 15px rgba(0,0,0,0.15); transition: right 0.3s ease; z-index: 1000; display: flex; flex-direction: column; }
+        /* Хрестики-Нулики */
+        .ttt-grid { display: grid; grid-template-columns: repeat(3, 65px); gap: 8px; }
+        .ttt-cell { width: 65px; height: 65px; background: #eef2f5; border: 2px solid #1a4a84; border-radius: 8px; font-size: 26px; font-weight: bold; color: #1a4a84; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; }
+        .ttt-cell:hover { background: #dce4ec; transform: scale(1.05); }
+        .ttt-cell:active { transform: scale(0.95); }
+
+        /* Сапер */
+        .mines-grid { display: grid; grid-template-columns: repeat(5, 45px); gap: 6px; }
+        .mines-cell { width: 45px; height: 45px; background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: all 0.15s; }
+        .mines-cell:hover { background: #cbd5e1; transform: scale(1.05); }
+        .mines-cell.revealed { background: #ffffff; border-color: #94a3b8; cursor: default; transform: none; }
+        .mines-cell.exploded { background: #fee2e2; border-color: #ef4444; animation: shake 0.3s; }
+
+        /* Висувний чат */
+        .side-chat-drawer { position: fixed; top: 120px; right: -320px; width: 320px; height: 420px; background: white; border: 2px solid #1a4a84; border-right: none; border-radius: 12px 0 0 12px; box-shadow: -4px 4px 15px rgba(0,0,0,0.15); transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; display: flex; flex-direction: column; }
         .side-chat-drawer.open { right: 0; }
-        .chat-tab-btn { position: absolute; left: -42px; top: 20px; width: 42px; height: 110px; background: #1a4a84; color: white; border-radius: 8px 0 0 8px; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; font-weight: bold; font-size: 13px; cursor: pointer; }
+        .chat-tab-btn { position: absolute; left: -42px; top: 20px; width: 42px; height: 110px; background: #1a4a84; color: white; border-radius: 8px 0 0 8px; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; font-weight: bold; font-size: 13px; cursor: pointer; transition: background 0.2s; }
+        .chat-tab-btn:hover { background: #12345e; }
         .chat-header { background: #1a4a84; color: white; padding: 10px; font-weight: bold; font-size: 14px; border-radius: 10px 0 0 0; display: flex; justify-content: space-between; align-items: center; }
         .chat-body { flex-grow: 1; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
         .chat-messages { height: 280px; overflow-y: auto; border: 1px solid #eee; padding: 8px; border-radius: 6px; background: #fcfcfc; font-size: 13px; margin-bottom: 8px; }
@@ -69,9 +98,8 @@
         .chat-input-area button { padding: 8px 12px; background: #1a4a84; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
         .lag-status { font-style: italic; color: #d9534f; animation: pulse 1s infinite alternate; }
-        @keyframes pulse { from { opacity: 0.4; } to { opacity: 1; } }
 
-        /* Адаптація під годинники (Samsung Galaxy Watch та інші) та маленькі екрани */
+        /* Адаптація під маленькі екрани / годинники */
         @media (max-width: 340px) {
             header { padding: 6px 8px; flex-direction: column; text-align: center; }
             .logo { font-size: 18px; }
@@ -80,11 +108,10 @@
             .tab-btn { padding: 6px 10px; font-size: 11px; }
             .card { padding: 10px; }
             .ai-chat-box { height: 180px; }
-            .ttt-grid { grid-template-columns: repeat(3, 45px); gap: 4px; }
-            .ttt-cell { width: 45px; height: 45px; font-size: 18px; }
-            .mines-grid { grid-template-columns: repeat(5, 30px); gap: 3px; }
-            .mines-cell { width: 30px; height: 30px; font-size: 12px; }
-            canvas { width: 100% !important; height: auto !important; }
+            .ttt-grid { grid-template-columns: repeat(3, 48px); gap: 5px; }
+            .ttt-cell { width: 48px; height: 48px; font-size: 20px; }
+            .mines-grid { grid-template-columns: repeat(5, 34px); gap: 4px; }
+            .mines-cell { width: 34px; height: 34px; font-size: 12px; }
             .side-chat-drawer { width: 95%; right: -95%; top: 80px; height: 75vh; }
         }
     </style>
@@ -136,7 +163,7 @@
                 </div>
 
                 <div style="display:flex; gap:6px;">
-                    <input type="text" id="ai-tab-input" placeholder="Напишіть ШІ..." style="flex:1; padding:8px; border:1px solid #ccc; border-radius:6px;">
+                    <input type="text" id="ai-tab-input" placeholder="Напишіть ШІ..." onkeypress="if(event.key==='Enter') sendTabAIMessage()" style="flex:1; padding:8px; border:1px solid #ccc; border-radius:6px;">
                     <button onclick="sendTabAIMessage()" class="btn-action" style="width:auto; padding:8px 16px;">Надіслати</button>
                 </div>
             </div>
@@ -145,29 +172,30 @@
         <!-- Вкладка Пошта -->
         <div class="tab-content" id="content-mail">
             <div class="card">
-                <h3>📧 Вхід / Реєстрація Пошти</h3>
+                <h3>📧 Вхід / Керування Поштою</h3>
                 <div class="provider-btns">
                     <button class="btn-provider active" onclick="setMailProvider('Acore', this)">Acore</button>
                     <button class="btn-provider" onclick="setMailProvider('Gmail', this)">Gmail</button>
                     <button class="btn-provider" onclick="setMailProvider('Outlook', this)">Outlook</button>
                 </div>
-                <div id="mail-box">
+                <div id="mail-auth-box">
                     <input type="email" id="email" class="mail-input" placeholder="Ваша адреса електронної пошти">
                     <input type="password" id="password" class="mail-input" placeholder="Пароль">
-                    <button onclick="handleAuth()" style="background:#28a745;" class="btn-action">Увійти / Зареєструватися</button>
+                    <button onclick="handleAuth()" style="background:#28a745;" class="btn-action">Увійти в пошту</button>
                 </div>
             </div>
 
             <div class="card" id="mail-inbox-section" style="display:none;">
-                <h3>📥 Ваші Листи (<span id="current-mail-provider">Acore</span>)</h3>
-                <div id="mail-list">
-                    <div class="email-item"><b>Служба безпеки:</b> Успішний вхід у систему. <span style="font-size:10px; color:#777;">12:00</span></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h3>📥 Ваші Листи (<span id="current-mail-provider">Acore</span>)</h3>
+                    <button onclick="logoutMail()" style="padding:4px 8px; background:#dc3545; color:white; border:none; border-radius:4px; font-size:12px; cursor:pointer;">Вийти</button>
                 </div>
-                <hr style="margin:12px 0;">
+                <div id="mail-list"></div>
+                <hr style="margin:15px 0;">
                 <h4>✉️ Написати новий лист</h4>
-                <input type="email" id="send-to" class="mail-input" placeholder="Кому (email)" style="margin-top:6px;">
+                <input type="email" id="send-to" class="mail-input" placeholder="Кому (email)" style="margin-top:8px;">
                 <input type="text" id="send-subject" class="mail-input" placeholder="Тема">
-                <textarea id="send-body" class="mail-input" placeholder="Текст листа..." style="height:60px;"></textarea>
+                <textarea id="send-body" class="mail-input" placeholder="Текст листа..."></textarea>
                 <button onclick="sendUserMail()" class="btn-action">Надіслати лист</button>
             </div>
         </div>
@@ -184,7 +212,7 @@
                         <option value="uk|pl">Українська ➔ Польська</option>
                     </select>
                     <textarea id="trans-text" placeholder="Введіть текст для перекладу..."></textarea>
-                    <button onclick="translateText()">Перекласти</button>
+                    <button class="btn-action" onclick="translateText()">Перекласти</button>
                     <div class="translate-result" id="trans-result">Тут буде результат перекладу...</div>
                 </div>
             </div>
@@ -192,7 +220,7 @@
             <div class="card">
                 <h3>🎮 Ігри проти ШІ</h3>
                 <select id="game-select-choice" class="mail-input" onchange="switchGame()">
-                    <option value="ttt">❌/⭕ Хрестики-Нулики проти ШІ</option>
+                    <option value="ttt">❌/⭕ Хрестики-Нулики (Розумний ШІ)</option>
                     <option value="pong">🏓 Пінг-Понг проти ШІ</option>
                     <option value="mines">💣 Сапер проти ШІ</option>
                 </select>
@@ -229,7 +257,7 @@
                 <div><b>Acore Bot:</b> Вітаємо у чаті спільноти!</div>
             </div>
             <div class="chat-input-area">
-                <input type="text" id="chat-input-field" placeholder="Повідомлення...">
+                <input type="text" id="chat-input-field" placeholder="Повідомлення..." onkeypress="if(event.key==='Enter') postChatMessage()">
                 <button onclick="postChatMessage()">Надіслати</button>
             </div>
         </div>
@@ -242,8 +270,20 @@
 
         let currentUser = localStorage.getItem('acore_user') || "";
         let selectedProvider = "Acore";
-        let availableModels = ["openai/gpt-oss-20b", "llama-3.3-70b-versatile", "llama-3.1-8b-instant", "gemma2-9b-it"];
-        let currentModelIndex = 0;
+
+        // Поштове сховище
+        let mailStore = JSON.parse(localStorage.getItem('acore_mail_store')) || {
+            Acore: [
+                { sender: "Служба безпеки Acore", time: "12:00", subject: "Успішний вхід", body: "Вітаємо у вашій новій поштовій скриньці Acore!" },
+                { sender: "Команда Acore", time: "10:30", subject: "Оновлення платформи", body: "Ми додали нові ігри та покращили ШІ-помічника." }
+            ],
+            Gmail: [
+                { sender: "Google", time: "09:15", subject: "Сповіщення системи безпеки", body: "Успішний вхід з нового пристрою." }
+            ],
+            Outlook: [
+                { sender: "Microsoft", time: "Вчора", subject: "Вітаємо в Outlook", body: "Налаштуйте ваш обліковий запис." }
+            ]
+        };
 
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -266,7 +306,7 @@
         /* Повноцінний ШІ Чат */
         async function processAIQuery(queryText) {
             const logs = document.getElementById('ai-chat-logs');
-            logs.innerHTML += `<div class="chat-msg user">${queryText}</div>`;
+            logs.innerHTML += `<div class="chat-msg user">${escapeHtml(queryText)}</div>`;
             logs.scrollTop = logs.scrollHeight;
 
             const selectedModel = document.getElementById('model-select').value;
@@ -301,7 +341,7 @@
                 }
             } catch (e) {
                 tempAiMsg.innerHTML = `<span class="lag-status">⚠️ Модель ${selectedModel} недоступна. Підключення резервного AI...</span>`;
-                await delay(2000);
+                await delay(1500);
                 tempAiMsg.innerText = "❌ Помилка з'єднання з ШІ. Спробуйте змінити модель у списку вище.";
             }
             logs.scrollTop = logs.scrollHeight;
@@ -324,12 +364,13 @@
             input.value = '';
         }
 
-        /* Пошта */
+        /* Пошта (Повноцінна робота) */
         function setMailProvider(provider, btn) {
             selectedProvider = provider;
             document.querySelectorAll('.btn-provider').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             document.getElementById('current-mail-provider').innerText = provider;
+            renderMails();
         }
 
         function handleAuth() {
@@ -338,23 +379,79 @@
                 currentUser = email;
                 localStorage.setItem('acore_user', currentUser);
                 updateMailUI();
+            } else {
+                alert("Будь ласка, введіть email!");
             }
+        }
+
+        function logoutMail() {
+            currentUser = "";
+            localStorage.removeItem('acore_user');
+            updateMailUI();
         }
 
         function updateMailUI() {
+            const authBox = document.getElementById('mail-auth-box');
+            const inboxSec = document.getElementById('mail-inbox-section');
+
             if (currentUser) {
-                document.getElementById('mail-box').innerHTML = `<p style="color:green; font-weight:bold;">Успішний вхід: ${currentUser} (${selectedProvider})</p>`;
-                document.getElementById('mail-inbox-section').style.display = 'block';
+                authBox.innerHTML = `<p style="color:#28a745; font-weight:bold; padding:8px; background:#e8f5e9; border-radius:6px;">
+                    ✅ Авторизовано як: ${escapeHtml(currentUser)} (${selectedProvider})
+                </p>`;
+                inboxSec.style.display = 'block';
+                renderMails();
+            } else {
+                authBox.innerHTML = `
+                    <input type="email" id="email" class="mail-input" placeholder="Ваша адреса електронної пошти">
+                    <input type="password" id="password" class="mail-input" placeholder="Пароль">
+                    <button onclick="handleAuth()" style="background:#28a745;" class="btn-action">Увійти в пошту</button>
+                `;
+                inboxSec.style.display = 'none';
             }
         }
 
-        function sendUserMail() {
-            const to = document.getElementById('send-to').value;
-            const body = document.getElementById('send-body').value;
-            if(!to || !body) return alert('Заповніть отримувача та текст!');
+        function renderMails() {
             const list = document.getElementById('mail-list');
-            list.innerHTML += `<div class="email-item"><b>Кому (${to}):</b> ${body.substring(0, 30)}... <span style="font-size:10px; color:green;">Надіслано</span></div>`;
+            const mails = mailStore[selectedProvider] || [];
+            if (mails.length === 0) {
+                list.innerHTML = `<p style="color:#777; font-style:italic;">Скринька порожня.</p>`;
+                return;
+            }
+            list.innerHTML = mails.map(m => `
+                <div class="email-item">
+                    <div class="email-header">
+                        <span><b>${escapeHtml(m.sender)}</b></span>
+                        <span>${m.time}</span>
+                    </div>
+                    <div style="font-weight:bold; font-size:13px; color:#333;">${escapeHtml(m.subject)}</div>
+                    <div style="font-size:12px; color:#555; margin-top:3px;">${escapeHtml(m.body)}</div>
+                </div>
+            `).join('');
+        }
+
+        function sendUserMail() {
+            const to = document.getElementById('send-to').value.trim();
+            const subject = document.getElementById('send-subject').value.trim() || "Без теми";
+            const body = document.getElementById('send-body').value.trim();
+
+            if (!to || !body) return alert('Заповніть отримувача та текст листа!');
+
+            const now = new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+            if (!mailStore[selectedProvider]) mailStore[selectedProvider] = [];
+
+            mailStore[selectedProvider].unshift({
+                sender: `Я (${currentUser}) ➔ ${to}`,
+                time: now,
+                subject: subject,
+                body: body
+            });
+
+            localStorage.setItem('acore_mail_store', JSON.stringify(mailStore));
+            document.getElementById('send-to').value = '';
+            document.getElementById('send-subject').value = '';
             document.getElementById('send-body').value = '';
+
+            renderMails();
             alert('Лист успішно надіслано!');
         }
 
@@ -374,100 +471,285 @@
             }
         }
 
-        /* Ігри проти ШІ */
+        /* --- ІГРИ ПРОТИ ШІ --- */
         let pongInterval = null;
+
         function switchGame() {
-            if(pongInterval) clearInterval(pongInterval);
+            if (pongInterval) clearInterval(pongInterval);
             const choice = document.getElementById('game-select-choice').value;
-            if(choice === 'ttt') initTTT();
-            else if(choice === 'pong') initPong();
-            else if(choice === 'mines') initMines();
+            if (choice === 'ttt') initTTT();
+            else if (choice === 'pong') initPong();
+            else if (choice === 'mines') initMines();
         }
 
-        // 1. Хрестики-Нулики проти ШІ
+        // 1. Хрестики-Нулики (Розумний ШІ)
         let tttBoard = ["","","","","","","","",""];
+        let tttScore = { player: 0, ai: 0, draws: 0 };
+        let tttActive = true;
+
         function initTTT() {
             tttBoard = ["","","","","","","","",""];
+            tttActive = true;
             renderTTT();
         }
+
         function renderTTT() {
-            let html = '<div style="text-align:center;"><b>Хрестики (Ви) проти Нуликів (ШІ)</b></div><div class="ttt-grid">';
+            let html = `
+                <div class="game-controls">
+                    <span>Гравець (❌): ${tttScore.player} | ШІ (⭕): ${tttScore.ai}</span>
+                    <button class="btn-reset-game" onclick="initTTT()">Заново</button>
+                </div>
+                <div class="ttt-grid">
+            `;
             tttBoard.forEach((val, i) => {
                 html += `<div class="ttt-cell" onclick="makeTTTMove(${i})">${val}</div>`;
             });
             html += '</div>';
             document.getElementById('game-board-area').innerHTML = html;
         }
+
         function makeTTTMove(i) {
-            if (tttBoard[i] !== "") return;
+            if (!tttActive || tttBoard[i] !== "") return;
+
             tttBoard[i] = "❌";
             renderTTT();
-            if (checkWin("❌")) return alert("🎉 Ви перемогли ШІ!");
-            if (!tttBoard.includes("")) return alert("🤝 Нічия!");
 
-            // Хід ШІ
-            let empty = tttBoard.map((v, idx) => v === "" ? idx : null).filter(v => v !== null);
-            let aiChoice = empty[Math.floor(Math.random() * empty.length)];
-            tttBoard[aiChoice] = "⭕";
-            setTimeout(() => {
+            if (checkTTTWin("❌")) {
+                tttScore.player++;
+                tttActive = false;
                 renderTTT();
-                if (checkWin("⭕")) alert("🤖 ШІ переміг!");
-            }, 300);
+                setTimeout(() => alert("🎉 Ви перемогли ШІ!"), 100);
+                return;
+            }
+
+            if (!tttBoard.includes("")) {
+                tttScore.draws++;
+                tttActive = false;
+                renderTTT();
+                setTimeout(() => alert("🤝 Нічия!"), 100);
+                return;
+            }
+
+            // Розумний хід ШІ
+            tttActive = false;
+            setTimeout(() => {
+                let aiMove = getSmartAIMove();
+                tttBoard[aiMove] = "⭕";
+
+                if (checkTTTWin("⭕")) {
+                    tttScore.ai++;
+                    renderTTT();
+                    alert("🤖 ШІ переміг!");
+                } else if (!tttBoard.includes("")) {
+                    tttScore.draws++;
+                    renderTTT();
+                    alert("🤝 Нічия!");
+                } else {
+                    tttActive = true;
+                    renderTTT();
+                }
+            }, 250);
         }
-        function checkWin(p) {
+
+        function getSmartAIMove() {
+            // 1. Перевірка на свій виграш
+            for (let i = 0; i < 9; i++) {
+                if (tttBoard[i] === "") {
+                    tttBoard[i] = "⭕";
+                    if (checkTTTWin("⭕")) { tttBoard[i] = ""; return i; }
+                    tttBoard[i] = "";
+                }
+            }
+            // 2. Блокування виграшу гравця
+            for (let i = 0; i < 9; i++) {
+                if (tttBoard[i] === "") {
+                    tttBoard[i] = "❌";
+                    if (checkTTTWin("❌")) { tttBoard[i] = ""; return i; }
+                    tttBoard[i] = "";
+                }
+            }
+            // 3. Заняття центру
+            if (tttBoard[4] === "") return 4;
+
+            // 4. Випадковий вільний хід
+            let empty = tttBoard.map((v, idx) => v === "" ? idx : null).filter(v => v !== null);
+            return empty[Math.floor(Math.random() * empty.length)];
+        }
+
+        function checkTTTWin(p) {
             const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
             return wins.some(w => w.every(i => tttBoard[i] === p));
         }
 
         // 2. Пінг-Понг проти ШІ
+        let pongScore = { player: 0, ai: 0 };
         function initPong() {
             const gb = document.getElementById('game-board-area');
-            gb.innerHTML = '<canvas id="pongCanvas" width="260" height="180" style="background:#111; border-radius:8px;"></canvas><p style="font-size:11px; margin-top:4px;">Ведіть пальцем/мишкою по полю</p>';
+            gb.innerHTML = `
+                <div class="game-controls">
+                    <span>Гравець: ${pongScore.player} | ШІ: ${pongScore.ai}</span>
+                    <button class="btn-reset-game" onclick="pongScore={player:0,ai:0}; initPong();">Скинути</button>
+                </div>
+                <canvas id="pongCanvas" width="280" height="180" style="background:#111; border-radius:8px; touch-action: none;"></canvas>
+                <p style="font-size:11px; color:#666; margin-top:6px;">Керуйте курсором або пальцем по полю</p>
+            `;
             const canvas = document.getElementById('pongCanvas');
             const ctx = canvas.getContext('2d');
-            let pW = 45, pH = 6, px = 110, aix = 110;
-            let bx = 130, by = 90, dx = 2, dy = 2;
+            let pW = 50, pH = 6, px = 115, aix = 115;
+            let bx = 140, by = 90, dx = 2.5, dy = 2.5;
 
             const updatePos = (clientX) => {
                 let rect = canvas.getBoundingClientRect();
                 px = clientX - rect.left - pW / 2;
+                if (px < 0) px = 0;
+                if (px > canvas.width - pW) px = canvas.width - pW;
             };
+
             canvas.addEventListener('mousemove', e => updatePos(e.clientX));
-            canvas.addEventListener('touchmove', e => updatePos(e.touches[0].clientX));
+            canvas.addEventListener('touchmove', e => {
+                e.preventDefault();
+                updatePos(e.touches[0].clientX);
+            }, { passive: false });
 
             pongInterval = setInterval(() => {
                 bx += dx; by += dy;
-                if (bx <= 0 || bx >= canvas.width) dx *= -1;
-                if (aix + pW/2 < bx) aix += 1.6; else aix -= 1.6;
+                if (bx <= 4 || bx >= canvas.width - 4) dx *= -1;
 
-                if (by <= 10 && bx >= aix && bx <= aix + pW) dy *= -1;
-                if (by >= canvas.height - 10 && bx >= px && bx <= px + pW) dy *= -1;
-                if (by <= 0 || by >= canvas.height) { bx = 130; by = 90; }
+                // Рух ШІ
+                let targetAi = bx - pW / 2;
+                aix += (targetAi - aix) * 0.08;
+
+                // Відбивання ракеткою ШІ (зверху)
+                if (by <= 12 && bx >= aix && bx <= aix + pW) {
+                    dy = Math.abs(dy);
+                }
+                // Відбивання ракеткою Гравця (знизу)
+                if (by >= canvas.height - 12 && bx >= px && bx <= px + pW) {
+                    dy = -Math.abs(dy);
+                }
+
+                // Голи
+                if (by <= 0) {
+                    pongScore.player++;
+                    resetBall();
+                } else if (by >= canvas.height) {
+                    pongScore.ai++;
+                    resetBall();
+                }
+
+                function resetBall() {
+                    bx = canvas.width / 2; by = canvas.height / 2;
+                    dx = (Math.random() > 0.5 ? 1 : -1) * 2.5;
+                    dy = (Math.random() > 0.5 ? 1 : -1) * 2.5;
+                    initPong();
+                }
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // Ракетка гравця
                 ctx.fillStyle = "#007bff"; ctx.fillRect(px, canvas.height - 8, pW, pH);
+                // Ракетка ШІ
                 ctx.fillStyle = "#e51937"; ctx.fillRect(aix, 2, pW, pH);
-                ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(bx, by, 4, 0, Math.PI*2); ctx.fill();
-            }, 1000/30);
+                // М'яч
+                ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(bx, by, 5, 0, Math.PI*2); ctx.fill();
+            }, 1000/40);
         }
 
-        // 3. Сапер проти ШІ
+        // 3. Сапер
+        let minesField = [];
+        let minesCount = 4;
+        let revealedSafeCount = 0;
+        let minesActive = true;
+
         function initMines() {
-            let mines = Array(25).fill(false);
-            for(let i=0; i<5; i++) mines[Math.floor(Math.random()*25)] = true;
-            let html = '<div style="text-align:center;"><b>Знайдіть безпечні клітинки раніше за ШІ!</b></div><div class="mines-grid">';
-            mines.forEach((m, idx) => {
-                html += `<div class="mines-cell" onclick="clickMine(this, ${m})">❓</div>`;
+            minesField = Array(25).fill(0).map(() => ({ isMine: false, revealed: false, count: 0 }));
+            revealedSafeCount = 0;
+            minesActive = true;
+
+            // Розставляємо 4 міни
+            let placed = 0;
+            while (placed < minesCount) {
+                let idx = Math.floor(Math.random() * 25);
+                if (!minesField[idx].isMine) {
+                    minesField[idx].isMine = true;
+                    placed++;
+                }
+            }
+
+            // Рахуємо сусідні міни
+            for (let i = 0; i < 25; i++) {
+                if (minesField[i].isMine) continue;
+                let adj = getNeighbors(i);
+                minesField[i].count = adj.filter(n => minesField[n].isMine).length;
+            }
+
+            renderMines();
+        }
+
+        function getNeighbors(i) {
+            let row = Math.floor(i / 5), col = i % 5;
+            let neighbors = [];
+            for (let r = row - 1; r <= row + 1; r++) {
+                for (let c = col - 1; c <= col + 1; c++) {
+                    if (r >= 0 && r < 5 && c >= 0 && c < 5 && !(r === row && c === col)) {
+                        neighbors.push(r * 5 + c);
+                    }
+                }
+            }
+            return neighbors;
+        }
+
+        function renderMines() {
+            let html = `
+                <div class="game-controls">
+                    <span>Міни: 💣 ${minesCount}</span>
+                    <button class="btn-reset-game" onclick="initMines()">Нова гра</button>
+                </div>
+                <div class="mines-grid">
+            `;
+            minesField.forEach((cell, i) => {
+                let cellClass = "mines-cell";
+                let content = "❓";
+                if (cell.revealed) {
+                    cellClass += cell.isMine ? " exploded" : " revealed";
+                    content = cell.isMine ? "💣" : (cell.count > 0 ? cell.count : "");
+                }
+                html += `<div class="${cellClass}" onclick="clickMineCell(${i})">${content}</div>`;
             });
             html += '</div>';
             document.getElementById('game-board-area').innerHTML = html;
         }
-        function clickMine(el, isMine) {
-            if (isMine) {
-                el.innerText = '💣'; el.style.background = '#ff4d4d';
-                alert('💥 Бум! Ви натрапили на міну. ШІ переміг!');
-            } else {
-                el.innerText = '🛡️'; el.style.background = '#28a745'; el.style.color = 'white';
+
+        function clickMineCell(i) {
+            if (!minesActive || minesField[i].revealed) return;
+
+            minesField[i].revealed = true;
+
+            if (minesField[i].isMine) {
+                minesActive = false;
+                // Відкриваємо всі міни
+                minesField.forEach(c => { if(c.isMine) c.revealed = true; });
+                renderMines();
+                setTimeout(() => alert("💥 Ви натрапили на міну! ШІ переміг!"), 100);
+                return;
+            }
+
+            revealedSafeCount++;
+
+            // Якщо натиснули на порожню (0 сусідів) — відкриваємо сусіди
+            if (minesField[i].count === 0) {
+                getNeighbors(i).forEach(n => {
+                    if (!minesField[n].revealed && !minesField[n].isMine) {
+                        minesField[n].revealed = true;
+                        revealedSafeCount++;
+                    }
+                });
+            }
+
+            renderMines();
+
+            if (revealedSafeCount >= (25 - minesCount)) {
+                minesActive = false;
+                alert("🎉 Вітаємо! Ви розмінували поле!");
             }
         }
 
@@ -478,9 +760,9 @@
                 const data = await res.json();
                 const container = document.getElementById('news-container');
                 container.innerHTML = '';
-                data.items.slice(0, 10).forEach(item => {
+                data.items.slice(0, 8).forEach(item => {
                     const pubDate = new Date(item.pubDate).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
-                    container.innerHTML += `<div class="news-item"><a href="${item.link}" target="_blank">${item.title}</a><div class="time">${pubDate}</div></div>`;
+                    container.innerHTML += `<div class="news-item"><a href="${item.link}" target="_blank">${escapeHtml(item.title)}</a><div class="time">${pubDate}</div></div>`;
                 });
             } catch (e) {
                 document.getElementById('news-container').innerText = 'Не вдалося завантажити новини.';
@@ -493,7 +775,7 @@
                 const data = await res.json();
                 document.getElementById('weather').innerHTML = `<strong>Температура:</strong> ${data.current_weather.temperature}°C<br><strong>Вітер:</strong> ${data.current_weather.windspeed} км/год`;
             } catch (e) {
-                document.getElementById('weather').innerText = 'Помилка погоди.';
+                document.getElementById('weather').innerText = 'Помилка завантаження погоди.';
             }
         }
 
@@ -501,9 +783,11 @@
             try {
                 const res = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json');
                 const data = await res.json();
-                document.getElementById('rates').innerHTML = `<strong>USD:</strong> ${data.find(c => c.cc === 'USD').rate.toFixed(2)} грн<br><strong>EUR:</strong> ${data.find(c => c.cc === 'EUR').rate.toFixed(2)} грн`;
+                const usd = data.find(c => c.cc === 'USD')?.rate.toFixed(2);
+                const eur = data.find(c => c.cc === 'EUR')?.rate.toFixed(2);
+                document.getElementById('rates').innerHTML = `<strong>USD:</strong> ${usd} грн<br><strong>EUR:</strong> ${eur} грн`;
             } catch (e) {
-                document.getElementById('rates').innerText = 'Помилка курсів.';
+                document.getElementById('rates').innerText = 'Помилка завантаження курсів.';
             }
         }
 
@@ -513,10 +797,14 @@
             const sender = currentUser || "Гість";
             if (msg) {
                 const logs = document.getElementById('chat-logs');
-                logs.innerHTML += `<div><b>${sender}:</b> ${msg}</div>`;
+                logs.innerHTML += `<div style="margin-bottom:4px;"><b>${escapeHtml(sender)}:</b> ${escapeHtml(msg)}</div>`;
                 input.value = '';
                 logs.scrollTop = logs.scrollHeight;
             }
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
         // Старт
