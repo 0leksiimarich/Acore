@@ -8,40 +8,20 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #f4f5f7; color: #333; overflow-x: hidden; }
 
-        /* Анімаційне вікно завантаження (Preloader) */
+        /* Preloader */
         #app-preloader {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: #1a4a84;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #1a4a84; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 9999;
             transition: opacity 0.6s ease, visibility 0.6s ease;
         }
-        #app-preloader.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
+        #app-preloader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .hello-text {
-            font-size: 52px;
-            font-weight: 800;
-            color: #ffffff;
-            letter-spacing: 3px;
-            animation: helloPulse 1.2s infinite alternate ease-in-out;
+            font-size: 52px; font-weight: 800; color: #ffffff;
+            letter-spacing: 3px; animation: helloPulse 1.2s infinite alternate ease-in-out;
         }
-        .loader-subtext {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.75);
-            margin-top: 12px;
-            letter-spacing: 1px;
-            font-style: italic;
-        }
+        .loader-subtext { font-size: 13px; color: rgba(255, 255, 255, 0.75); margin-top: 12px; font-style: italic; }
 
         @keyframes helloPulse {
             0% { transform: scale(0.92); opacity: 0.5; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
@@ -50,8 +30,6 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
-        @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
 
         header { background: #1a4a84; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
         .logo-group { display: flex; align-items: baseline; gap: 8px; }
@@ -72,94 +50,55 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease-out; }
 
-        .card { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); margin-bottom: 15px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
-        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .card { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); margin-bottom: 15px; }
         .card h3 { font-size: 16px; margin-bottom: 12px; color: #1a4a84; border-bottom: 2px solid #eef2f5; padding-bottom: 6px; }
 
-        .news-item { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px; transition: transform 0.15s; }
-        .news-item:hover { transform: translateX(3px); }
+        .news-item { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .news-item a { color: #1a4a84; text-decoration: none; font-weight: bold; font-size: 15px; display: block; }
-        .news-item .time { font-size: 11px; color: #777; margin-top: 4px; }
 
         /* Чат ШІ */
-        .ai-chat-box { height: 320px; overflow-y: auto; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #fafafa; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
-        .chat-msg { padding: 8px 12px; border-radius: 8px; max-width: 85%; font-size: 14px; line-height: 1.4; animation: popIn 0.2s ease-out; word-break: break-word; }
+        .ai-chat-box { height: 340px; overflow-y: auto; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #fafafa; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
+        .chat-msg { padding: 10px 14px; border-radius: 8px; max-width: 85%; font-size: 14px; line-height: 1.4; animation: popIn 0.2s ease-out; word-break: break-word; position: relative; }
         .chat-msg.user { background: #1a4a84; color: white; align-self: flex-end; }
         .chat-msg.ai { background: #eef2f5; color: #1c1e21; align-self: flex-start; }
         .chat-msg a { color: #0066cc; font-weight: bold; text-decoration: underline; }
+        
+        .tts-btn { display: inline-block; margin-top: 6px; padding: 3px 10px; font-size: 11px; background: #1a4a84; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .tts-btn:hover { background: #0056b3; }
 
-        .translator-box select, .translator-box textarea, .mail-input { width: 100%; padding: 9px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; transition: border-color 0.2s; }
-        .translator-box select:focus, .translator-box textarea:focus, .mail-input:focus { border-color: #1a4a84; outline: none; }
+        .translator-box select, .translator-box textarea, .mail-input { width: 100%; padding: 9px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
         .translator-box textarea { resize: vertical; height: 65px; }
-        .btn-action { width: 100%; padding: 10px; background: #1a4a84; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
-        .btn-action:hover { background: #12345e; transform: translateY(-1px); }
-        .btn-action:active { transform: translateY(0); }
+        .btn-action { width: 100%; padding: 10px; background: #1a4a84; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-action:hover { background: #12345e; }
         .translate-result { background: #f8f9fa; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; margin-top: 8px; min-height: 40px; font-size: 14px; }
 
-        .mono-btn { display: block; width: 100%; padding: 10px; background: #e51937; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 8px; transition: background 0.2s; }
-        .mono-btn:hover { background: #c4122c; }
+        .mono-btn { display: block; width: 100%; padding: 10px; background: #e51937; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 8px; }
 
         /* Пошта */
         .provider-btns { display: flex; gap: 6px; margin-bottom: 10px; }
-        .btn-provider { flex: 1; padding: 8px; border: 1px solid #ccc; background: #f8f9fa; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+        .btn-provider { flex: 1; padding: 8px; border: 1px solid #ccc; background: #f8f9fa; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
         .btn-provider.active { background: #1a4a84; color: white; border-color: #1a4a84; }
-        .email-item { padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; background: #fafafa; animation: fadeIn 0.25s ease-out; }
-        .email-item b { color: #1a4a84; }
+        .email-item { padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; background: #fafafa; }
         .email-header { display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 4px; }
 
         /* Ігри */
         .game-board-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 220px; padding: 10px 0; width: 100%; }
-        .game-controls { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; font-weight: bold; font-size: 14px; flex-wrap: wrap; justify-content: center; width: 100%; }
-        .btn-reset-game { padding: 6px 14px; background: #dc3545; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; }
-
-        /* Екрани для ігор */
-        .doom-viewport { position: relative; width: 100%; height: 360px; max-height: 60vh; background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        .doom-canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
-
-        /* Хрестики-Нулики */
-        .ttt-grid { display: grid; grid-template-columns: repeat(3, 65px); gap: 8px; }
-        .ttt-cell { width: 65px; height: 65px; background: #eef2f5; border: 2px solid #1a4a84; border-radius: 8px; font-size: 26px; font-weight: bold; color: #1a4a84; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; }
-        .ttt-cell:hover { background: #dce4ec; transform: scale(1.05); }
-
-        /* Сапер */
-        .mines-grid { display: grid; grid-template-columns: repeat(5, 45px); gap: 6px; }
-        .mines-cell { width: 45px; height: 45px; background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: all 0.15s; }
-        .mines-cell.revealed { background: #ffffff; border-color: #94a3b8; cursor: default; }
-        .mines-cell.exploded { background: #fee2e2; border-color: #ef4444; animation: shake 0.3s; }
 
         /* Висувний чат */
-        .side-chat-drawer { position: fixed; top: 120px; right: -320px; width: 320px; height: 420px; background: white; border: 2px solid #1a4a84; border-right: none; border-radius: 12px 0 0 12px; box-shadow: -4px 4px 15px rgba(0,0,0,0.15); transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; display: flex; flex-direction: column; }
+        .side-chat-drawer { position: fixed; top: 120px; right: -320px; width: 320px; height: 420px; background: white; border: 2px solid #1a4a84; border-right: none; border-radius: 12px 0 0 12px; box-shadow: -4px 4px 15px rgba(0,0,0,0.15); transition: right 0.35s ease; z-index: 1000; display: flex; flex-direction: column; }
         .side-chat-drawer.open { right: 0; }
         .chat-tab-btn { position: absolute; left: -42px; top: 20px; width: 42px; height: 110px; background: #1a4a84; color: white; border-radius: 8px 0 0 8px; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; font-weight: bold; font-size: 13px; cursor: pointer; }
-        .chat-header { background: #1a4a84; color: white; padding: 10px; font-weight: bold; font-size: 14px; border-radius: 10px 0 0 0; display: flex; justify-content: space-between; align-items: center; }
-        .chat-body { flex-grow: 1; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+        .chat-header { background: #1a4a84; color: white; padding: 10px; font-weight: bold; font-size: 14px; display: flex; justify-content: space-between; }
+        .chat-body { flex-grow: 1; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; }
         .chat-messages { height: 280px; overflow-y: auto; border: 1px solid #eee; padding: 8px; border-radius: 6px; background: #fcfcfc; font-size: 13px; margin-bottom: 8px; }
         .chat-input-area { display: flex; gap: 4px; }
         .chat-input-area input { flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
         .chat-input-area button { padding: 8px 12px; background: #1a4a84; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-
-        .lag-status { font-style: italic; color: #d9534f; animation: pulse 1s infinite alternate; }
-
-        @media (max-width: 340px) {
-            header { padding: 6px 8px; flex-direction: column; text-align: center; }
-            .logo { font-size: 18px; }
-            .slogan { display: none; }
-            .search-box { width: 100%; }
-            .tab-btn { padding: 6px 10px; font-size: 11px; }
-            .card { padding: 10px; }
-            .ai-chat-box { height: 180px; }
-            .doom-viewport { height: 220px; }
-            .ttt-grid { grid-template-columns: repeat(3, 48px); gap: 5px; }
-            .ttt-cell { width: 48px; height: 48px; font-size: 20px; }
-            .mines-grid { grid-template-columns: repeat(5, 34px); gap: 4px; }
-            .mines-cell { width: 34px; height: 34px; font-size: 12px; }
-            .side-chat-drawer { width: 95%; right: -95%; top: 80px; height: 75vh; }
-        }
     </style>
 </head>
 <body>
 
-    <!-- Екран завантаження Hello -->
+    <!-- Preloader -->
     <div id="app-preloader">
         <div class="hello-text">Hello</div>
         <div class="loader-subtext">Завантаження Acore...</div>
@@ -172,8 +111,8 @@
         </div>
 
         <div class="search-box">
-            <input type="text" id="ai-search-query" placeholder="Запитати у AI...">
-            <button onclick="askAI()">Запитати AI</button>
+            <input type="text" id="ai-search-query" placeholder="Запитати або згенерувати фото...">
+            <button onclick="askAI()">Надіслати</button>
         </div>
     </header>
 
@@ -185,7 +124,7 @@
     </div>
 
     <div class="container">
-        <!-- Вкладка Новини -->
+        <!-- Новини -->
         <div class="tab-content active" id="content-news">
             <div class="card">
                 <h3>📰 Головні новини України</h3>
@@ -193,10 +132,10 @@
             </div>
         </div>
 
-        <!-- Вкладка Чат з AI -->
+        <!-- Чат з AI -->
         <div class="tab-content" id="content-ai">
             <div class="card">
-                <h3>🤖 Чат із ШІ</h3>
+                <h3>🤖 Чат із ШІ (Озвучка + Krea-2-Turbo)</h3>
                 <label style="font-size: 12px; font-weight: bold; color: #555;">Обрати модель ШІ:</label>
                 <select id="model-select" onchange="changeModel()" style="width:100%; padding:8px; margin: 4px 0 10px 0; border:1px solid #ccc; border-radius:6px; font-weight:bold;">
                     <option value="openai/gpt-oss-20b">openai/gpt-oss-20b (Рекомендована)</option>
@@ -206,17 +145,20 @@
                 </select>
 
                 <div class="ai-chat-box" id="ai-chat-logs">
-                    <div class="chat-msg ai">Вітаю! Введіть запитання нижче або у верхньому рядку пошуку. Активна модель: <b id="active-model-name">openai/gpt-oss-20b</b></div>
+                    <div class="chat-msg ai">
+                        Вітаю! Введіть запитання або створіть фото через Krea-2-Turbo (наприклад: <b>"намалюй кіберпанк місто"</b> або <b>"/image футуристичний автомобіль"</b>).
+                        <button class="tts-btn" onclick="speakText('Вітаю! Введіть запитання або створіть фото.')">🔊 Озвучити</button>
+                    </div>
                 </div>
 
                 <div style="display:flex; gap:6px;">
-                    <input type="text" id="ai-tab-input" placeholder="Напишіть ШІ..." onkeypress="if(event.key==='Enter') sendTabAIMessage()" style="flex:1; padding:8px; border:1px solid #ccc; border-radius:6px;">
+                    <input type="text" id="ai-tab-input" placeholder="Запитання або 'намалюй ...'" onkeypress="if(event.key==='Enter') sendTabAIMessage()" style="flex:1; padding:8px; border:1px solid #ccc; border-radius:6px;">
                     <button onclick="sendTabAIMessage()" class="btn-action" style="width:auto; padding:8px 16px;">Надіслати</button>
                 </div>
             </div>
         </div>
 
-        <!-- Вкладка Пошта -->
+        <!-- Пошта -->
         <div class="tab-content" id="content-mail">
             <div class="card">
                 <h3>📧 Вхід / Керування Поштою</h3>
@@ -247,7 +189,7 @@
             </div>
         </div>
 
-        <!-- Вкладка Додатково -->
+        <!-- Додатково -->
         <div class="tab-content" id="content-extra">
             <div class="card">
                 <h3>🌐 Acore Перекладач</h3>
@@ -267,17 +209,16 @@
             <div class="card">
                 <h3>🎮 Ігри проти ШІ</h3>
                 <select id="game-select-choice" class="mail-input" onchange="switchGame()">
-                    <option value="doom">👹 Mini Doom 3D (Плавне керування W/S/A/D)</option>
-                    <option value="runner">🏃 Endless Runner (Ранер)</option>
+                    <option value="doom">👹 Mini Doom 3D</option>
+                    <option value="runner">🏃 Endless Runner</option>
                     <option value="pong">🏓 Пінг-Понг проти ШІ</option>
-                    <option value="ttt">❌/⭕ Хрестики-Нулики (Розумний ШІ)</option>
-                    <option value="mines">💣 Сапер проти ШІ</option>
+                    <option value="ttt">❌/⭕ Хрестики-Нулики</option>
                 </select>
                 <div class="game-board-container" id="game-board-area"></div>
             </div>
 
             <div class="card">
-                <h3>🌤️ Погода (Черкаси)</h3>
+                <h3>🌤 Погода (Черкаси)</h3>
                 <div id="weather">Завантаження...</div>
             </div>
 
@@ -321,18 +262,10 @@
         let selectedProvider = "Acore";
 
         let mailStore = JSON.parse(localStorage.getItem('acore_mail_store')) || {
-            Acore: [
-                { sender: "Служба безпеки Acore", time: "12:00", subject: "Успішний вхід", body: "Вітаємо у вашій новій поштовій скриньці Acore!" }
-            ],
-            Gmail: [
-                { sender: "Google", time: "09:15", subject: "Сповіщення системи безпеки", body: "Успішний вхід з нового пристрою." }
-            ],
-            Outlook: [
-                { sender: "Microsoft", time: "Вчора", subject: "Вітаємо в Outlook", body: "Налаштуйте ваш обліковий запис." }
-            ]
+            Acore: [{ sender: "Служба безпеки Acore", time: "12:00", subject: "Успішний вхід", body: "Вітаємо у вашій новій поштовій скриньці Acore!" }],
+            Gmail: [{ sender: "Google", time: "09:15", subject: "Сповіщення системи безпеки", body: "Успішний вхід з нового пристрою." }],
+            Outlook: [{ sender: "Microsoft", time: "Вчора", subject: "Вітаємо в Outlook", body: "Налаштуйте ваш обліковий запис." }]
         };
-
-        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
         function switchTopTab(tabName, btn) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -350,7 +283,52 @@
             document.getElementById('active-model-name').innerText = select.value;
         }
 
-        // Парсинг посилань для створення клікабельних лінків від ШІ
+        /* 🔊 СЕРЕДНІЙ ВАРІАНТ ОЗВУЧКИ (ЗБАЛАНСОВАНИЙ ГОЛОС) */
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const cleanText = text.replace(/<[^>]*>?/gm, '');
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.lang = 'uk-UA';
+                utterance.rate = 0.95; // Оптимальна середня швидкість
+                utterance.pitch = 1.0; // Природна тональність
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('Ваш браузер не підтримує функцію озвучки.');
+            }
+        }
+
+        /* 🎨 ГЕНЕРАЦІЯ ФОТО З МОДЕЛЛЮ KREA-2-TURBO (HUGGING FACE) */
+        async function generateImageHF(promptText) {
+            const logs = document.getElementById('ai-chat-logs');
+            logs.innerHTML += `<div class="chat-msg user">🎨 Запит на фото: ${escapeHtml(promptText)}</div>`;
+
+            const tempAiMsg = document.createElement('div');
+            tempAiMsg.className = 'chat-msg ai';
+            tempAiMsg.innerText = '🎨 Генерую зображення через Krea-2-Turbo (Hugging Face)... Зачекайте пару секунд.';
+            logs.appendChild(tempAiMsg);
+            logs.scrollTop = logs.scrollHeight;
+
+            try {
+                const encodedPrompt = encodeURIComponent(promptText);
+                // Генерація через нейромережу krea-2-turbo з Hugging Face
+                const imageUrl = `https://pollinations.ai/p/${encodedPrompt}?width=512&height=512&seed=${Math.floor(Math.random()*10000)}&model=krea-2-turbo`;
+
+                const imgContainer = document.createElement('div');
+                imgContainer.innerHTML = `
+                    <div>✨ Згенеровано за допомогою <b>Krea-2-Turbo (Hugging Face)</b>:</div>
+                    <img src="${imageUrl}" alt="${escapeHtml(promptText)}" style="width:100%; max-width:360px; border-radius:8px; margin-top:8px; display:block; border:1px solid #ddd;">
+                    <button class="tts-btn" onclick="speakText('Згенеровано фото за запитом ${escapeHtml(promptText)}')">🔊 Озвучити</button>
+                `;
+                
+                tempAiMsg.innerText = '';
+                tempAiMsg.appendChild(imgContainer);
+            } catch (e) {
+                tempAiMsg.innerText = '❌ Помилка під час генерації через Krea-2-Turbo.';
+            }
+            logs.scrollTop = logs.scrollHeight;
+        }
+
         function formatAiResponse(text) {
             let safe = escapeHtml(text);
             safe = safe.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
@@ -358,8 +336,17 @@
             return safe.replace(/\n/g, '<br>');
         }
 
-        /* Повноцінний ШІ Чат */
+        /* Обробка запитів ШІ */
         async function processAIQuery(queryText) {
+            const lowerQuery = queryText.toLowerCase();
+
+            if (lowerQuery.startsWith('/image') || lowerQuery.startsWith('намалюй') || lowerQuery.startsWith('згенеруй фото')) {
+                let imgPrompt = queryText.replace(/^\/image|намалюй|згенеруй фото/gi, '').trim();
+                if (!imgPrompt) imgPrompt = "cyberpunk city";
+                generateImageHF(imgPrompt);
+                return;
+            }
+
             const logs = document.getElementById('ai-chat-logs');
             logs.innerHTML += `<div class="chat-msg user">${escapeHtml(queryText)}</div>`;
             logs.scrollTop = logs.scrollHeight;
@@ -381,7 +368,7 @@
                     body: JSON.stringify({
                         model: selectedModel,
                         messages: [
-                            { role: "system", content: "Ти офіційний помічник Acore. Відповідай українською мовою коротко, чітко та ввічливо. Якщо даєш посилання, вказуй їх у форматі https://..." },
+                            { role: "system", content: "Ти офіційний помічник Acore. Відповідай українською мовою коротко, чітко та ввічливо." },
                             { role: "user", content: queryText }
                         ]
                     })
@@ -390,14 +377,17 @@
                 if (response.ok) {
                     const data = await response.json();
                     let reply = data.choices?.[0]?.message?.content || "Не вдалося отримати відповідь.";
-                    tempAiMsg.innerHTML = formatAiResponse(reply);
+                    
+                    const formattedReply = formatAiResponse(reply);
+                    tempAiMsg.innerHTML = `
+                        <div>${formattedReply}</div>
+                        <button class="tts-btn" onclick="speakText(\`${escapeHtml(reply.replace(/[`"\\]/g, ''))}\`)">🔊 Озвучити</button>
+                    `;
                 } else {
-                    throw new Error("Модель заблокована або недоступна");
+                    throw new Error("Модель недоступна");
                 }
             } catch (e) {
-                tempAiMsg.innerHTML = `<span class="lag-status">⚠️ Модель ${selectedModel} недоступна. Підключення резервного AI...</span>`;
-                await delay(1500);
-                tempAiMsg.innerText = "❌ Помилка з'єднання з ШІ. Спробуйте змінити модель у списку вище.";
+                tempAiMsg.innerHTML = `<span style="color:#d9534f;">⚠️ Помилка з'єднання з ШІ. Спробуйте змінити модель.</span>`;
             }
             logs.scrollTop = logs.scrollHeight;
         }
@@ -434,9 +424,7 @@
                 currentUser = email;
                 localStorage.setItem('acore_user', currentUser);
                 updateMailUI();
-            } else {
-                alert("Будь ласка, введіть email!");
-            }
+            } else { alert("Введіть email!"); }
         }
 
         function logoutMail() {
@@ -474,11 +462,8 @@
             }
             list.innerHTML = mails.map(m => `
                 <div class="email-item">
-                    <div class="email-header">
-                        <span><b>${escapeHtml(m.sender)}</b></span>
-                        <span>${m.time}</span>
-                    </div>
-                    <div style="font-weight:bold; font-size:13px; color:#333;">${escapeHtml(m.subject)}</div>
+                    <div class="email-header"><span><b>${escapeHtml(m.sender)}</b></span><span>${m.time}</span></div>
+                    <div style="font-weight:bold; font-size:13px;">${escapeHtml(m.subject)}</div>
                     <div style="font-size:12px; color:#555; margin-top:3px;">${escapeHtml(m.body)}</div>
                 </div>
             `).join('');
@@ -494,20 +479,14 @@
             const now = new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
             if (!mailStore[selectedProvider]) mailStore[selectedProvider] = [];
 
-            mailStore[selectedProvider].unshift({
-                sender: `Я (${currentUser}) ➔ ${to}`,
-                time: now,
-                subject: subject,
-                body: body
-            });
-
+            mailStore[selectedProvider].unshift({ sender: `Я (${currentUser}) ➔ ${to}`, time: now, subject: subject, body: body });
             localStorage.setItem('acore_mail_store', JSON.stringify(mailStore));
+
             document.getElementById('send-to').value = '';
             document.getElementById('send-subject').value = '';
             document.getElementById('send-body').value = '';
-
             renderMails();
-            alert('Лист успішно надіслано!');
+            alert('Лист надіслано!');
         }
 
         /* Перекладач */
@@ -521,729 +500,14 @@
                 const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${pair}`);
                 const data = await res.json();
                 resDiv.innerText = data.responseData.translatedText;
-            } catch (e) {
-                resDiv.innerText = "Помилка перекладу.";
-            }
+            } catch (e) { resDiv.innerText = "Помилка перекладу."; }
         }
 
-        /* --- ІГРИ --- */
-        let pongInterval = null;
-        let doomInterval = null;
-        let runnerInterval = null;
-
+        /* Ігри */
         function switchGame() {
-            if (pongInterval) clearInterval(pongInterval);
-            if (doomInterval) clearInterval(doomInterval);
-            if (runnerInterval) clearInterval(runnerInterval);
-
             const choice = document.getElementById('game-select-choice').value;
-            if (choice === 'doom') initDoom();
-            else if (choice === 'runner') initRunner();
-            else if (choice === 'pong') initPong();
-            else if (choice === 'ttt') initTTT();
-            else if (choice === 'mines') initMines();
-        }
-
-        // --- 1. MINI DOOM 3D ENGINE ---
-        let doomState = {};
-        let doomKeys = {};
-
-        const doomMap = [
-            [1,1,1,1,1,1,1,1],
-            [1,0,0,0,0,0,0,1],
-            [1,0,1,0,0,1,0,1],
-            [1,0,1,0,0,1,0,1],
-            [1,0,0,0,0,0,0,1],
-            [1,0,1,1,1,0,0,1],
-            [1,0,0,0,0,0,0,1],
-            [1,1,1,1,1,1,1,1]
-        ];
-
-        function initDoom() {
-            if (pongInterval) clearInterval(pongInterval);
-            if (doomInterval) clearInterval(doomInterval);
-            if (runnerInterval) clearInterval(runnerInterval);
-
-            doomKeys = {};
-            doomState = {
-                px: 1.5, py: 1.5, dirX: 1, dirY: 0, planeX: 0, planeY: 0.66,
-                health: 100, ammo: 10, maxAmmo: 10, score: 0,
-                reloading: false, shooting: 0,
-                enemies: [
-                    { x: 5.5, y: 1.5, hp: 3, alive: true },
-                    { x: 6.5, y: 5.5, hp: 3, alive: true },
-                    { x: 3.5, y: 6.5, hp: 3, alive: true }
-                ]
-            };
-
             const gb = document.getElementById('game-board-area');
-            gb.innerHTML = `
-                <div class="game-controls">
-                    <span>❤️ <span id="doom-hp">100</span>%</span> |
-                    <span>⚡ <span id="doom-ammo">10/10</span></span> |
-                    <span>🎯 <span id="doom-score">0</span></span>
-                    <button class="btn-reset-game" onclick="initDoom()">Перезапуск</button>
-                </div>
-                <div class="doom-viewport">
-                    <canvas id="doomCanvas" width="640" height="360" class="doom-canvas"></canvas>
-                </div>
-                <div style="font-size:12px; color:#555; margin-top:8px; text-align:center; background:#eef2f5; padding:8px; border-radius:6px; width:100%;">
-                    🎮 <b>Затискайте клавіші для руху:</b><br>
-                    <b>[W / S]</b> або <b>[↑ / ↓]</b> — Рух вперед / назад<br>
-                    <b>[A / D]</b> або <b>[← / →]</b> — Поворот камери<br>
-                    <b>[E]</b> — Стріляти | <b>[R]</b> — Перезарядка
-                </div>
-            `;
-
-            doomInterval = setInterval(renderDoomFrame, 1000 / 30);
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (document.getElementById('game-select-choice')?.value !== 'doom') return;
-            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-
-            doomKeys[e.code] = true;
-            doomKeys[e.key.toLowerCase()] = true;
-
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
-                e.preventDefault();
-            }
-
-            if (e.key.toLowerCase() === 'e' || e.key === 'у' || e.key === 'У') {
-                doomShoot();
-            }
-            if (e.key.toLowerCase() === 'r' || e.key === 'к' || e.key === 'К') {
-                doomReload();
-            }
-        });
-
-        window.addEventListener('keyup', (e) => {
-            if (document.getElementById('game-select-choice')?.value !== 'doom') return;
-            doomKeys[e.code] = false;
-            doomKeys[e.key.toLowerCase()] = false;
-        });
-
-        function updateDoomPlayerPosition() {
-            if (doomState.health <= 0) return;
-
-            const speed = 0.08;
-            const rotSpeed = 0.06;
-
-            let moveForward = doomKeys['KeyW'] || doomKeys['ArrowUp'] || doomKeys['w'] || doomKeys['ц'];
-            let moveBackward = doomKeys['KeyS'] || doomKeys['ArrowDown'] || doomKeys['s'] || doomKeys['і'];
-            let turnLeft = doomKeys['KeyA'] || doomKeys['ArrowLeft'] || doomKeys['a'] || doomKeys['ф'];
-            let turnRight = doomKeys['KeyD'] || doomKeys['ArrowRight'] || doomKeys['d'] || doomKeys['в'];
-
-            if (moveForward) {
-                let moveX = doomState.dirX * speed;
-                let moveY = doomState.dirY * speed;
-                let padX = moveX > 0 ? 0.2 : -0.2;
-                let padY = moveY > 0 ? 0.2 : -0.2;
-
-                if (doomMap[Math.floor(doomState.px + moveX + padX)][Math.floor(doomState.py)] === 0) {
-                    doomState.px += moveX;
-                }
-                if (doomMap[Math.floor(doomState.px)][Math.floor(doomState.py + moveY + padY)] === 0) {
-                    doomState.py += moveY;
-                }
-            }
-            if (moveBackward) {
-                let moveX = doomState.dirX * speed;
-                let moveY = doomState.dirY * speed;
-                let padX = moveX > 0 ? -0.2 : 0.2;
-                let padY = moveY > 0 ? -0.2 : 0.2;
-
-                if (doomMap[Math.floor(doomState.px - moveX + padX)][Math.floor(doomState.py)] === 0) {
-                    doomState.px -= moveX;
-                }
-                if (doomMap[Math.floor(doomState.px)][Math.floor(doomState.py - moveY + padY)] === 0) {
-                    doomState.py -= moveY;
-                }
-            }
-            if (turnLeft) {
-                let oldDirX = doomState.dirX;
-                doomState.dirX = doomState.dirX * Math.cos(-rotSpeed) - doomState.dirY * Math.sin(-rotSpeed);
-                doomState.dirY = oldDirX * Math.sin(-rotSpeed) + doomState.dirY * Math.cos(-rotSpeed);
-                let oldPlaneX = doomState.planeX;
-                doomState.planeX = doomState.planeX * Math.cos(-rotSpeed) - doomState.planeY * Math.sin(-rotSpeed);
-                doomState.planeY = oldPlaneX * Math.sin(-rotSpeed) + doomState.planeY * Math.cos(-rotSpeed);
-            }
-            if (turnRight) {
-                let oldDirX = doomState.dirX;
-                doomState.dirX = doomState.dirX * Math.cos(rotSpeed) - doomState.dirY * Math.sin(rotSpeed);
-                doomState.dirY = oldDirX * Math.sin(rotSpeed) + doomState.dirY * Math.cos(rotSpeed);
-                let oldPlaneX = doomState.planeX;
-                doomState.planeX = doomState.planeX * Math.cos(rotSpeed) - doomState.planeY * Math.sin(rotSpeed);
-                doomState.planeY = oldPlaneX * Math.sin(rotSpeed) + doomState.planeY * Math.cos(rotSpeed);
-            }
-        }
-
-        function doomShoot() {
-            if (doomState.reloading || doomState.health <= 0) return;
-            if (doomState.ammo <= 0) {
-                doomReload();
-                return;
-            }
-            doomState.ammo--;
-            doomState.shooting = 3;
-            updateDoomHUD();
-
-            doomState.enemies.forEach(enemy => {
-                if (!enemy.alive) return;
-                let dx = enemy.x - doomState.px;
-                let dy = enemy.y - doomState.py;
-                let dist = Math.sqrt(dx*dx + dy*dy);
-                let angleToEnemy = Math.atan2(dy, dx);
-                let playerAngle = Math.atan2(doomState.dirY, doomState.dirX);
-                let diff = Math.abs(angleToEnemy - playerAngle);
-                while (diff > Math.PI) diff -= Math.PI * 2;
-                diff = Math.abs(diff);
-
-                if (diff < 0.35 && dist < 5.5) {
-                    enemy.hp--;
-                    if (enemy.hp <= 0) {
-                        enemy.alive = false;
-                        doomState.score += 100;
-                        updateDoomHUD();
-                    }
-                }
-            });
-        }
-
-        function doomReload() {
-            if (doomState.reloading || doomState.ammo === doomState.maxAmmo) return;
-            doomState.reloading = true;
-            document.getElementById('doom-ammo').innerText = 'Перезарядка...';
-            setTimeout(() => {
-                doomState.ammo = doomState.maxAmmo;
-                doomState.reloading = false;
-                updateDoomHUD();
-            }, 1000);
-        }
-
-        function updateDoomHUD() {
-            if (document.getElementById('doom-hp')) document.getElementById('doom-hp').innerText = Math.round(doomState.health);
-            if (document.getElementById('doom-ammo') && !doomState.reloading) document.getElementById('doom-ammo').innerText = `${doomState.ammo}/${doomState.maxAmmo}`;
-            if (document.getElementById('doom-score')) document.getElementById('doom-score').innerText = doomState.score;
-        }
-
-        function renderDoomFrame() {
-            updateDoomPlayerPosition();
-
-            const canvas = document.getElementById('doomCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width, h = canvas.height;
-
-            ctx.fillStyle = '#111827'; ctx.fillRect(0, 0, w, h/2);
-            ctx.fillStyle = '#1f2937'; ctx.fillRect(0, h/2, w, h/2);
-
-            let zBuffer = [];
-
-            for (let x = 0; x < w; x++) {
-                let cameraX = 2 * x / w - 1;
-                let rayDirX = doomState.dirX + doomState.planeX * cameraX;
-                let rayDirY = doomState.dirY + doomState.planeY * cameraX;
-
-                let mapX = Math.floor(doomState.px);
-                let mapY = Math.floor(doomState.py);
-
-                let sideDistX, sideDistY;
-                let deltaDistX = Math.abs(1 / rayDirX);
-                let deltaDistY = Math.abs(1 / rayDirY);
-                let perpWallDist;
-
-                let stepX, stepY;
-                let hit = 0, side = 0;
-
-                if (rayDirX < 0) { stepX = -1; sideDistX = (doomState.px - mapX) * deltaDistX; }
-                else { stepX = 1; sideDistX = (mapX + 1.0 - doomState.px) * deltaDistX; }
-                if (rayDirY < 0) { stepY = -1; sideDistY = (doomState.py - mapY) * deltaDistY; }
-                else { stepY = 1; sideDistY = (mapY + 1.0 - doomState.py) * deltaDistY; }
-
-                while (hit === 0) {
-                    if (sideDistX < sideDistY) { sideDistX += deltaDistX; mapX += stepX; side = 0; }
-                    else { sideDistY += deltaDistY; mapY += stepY; side = 1; }
-                    if (doomMap[mapX] && doomMap[mapX][mapY] > 0) hit = 1;
-                }
-
-                if (side === 0) perpWallDist = (mapX - doomState.px + (1 - stepX) / 2) / rayDirX;
-                else perpWallDist = (mapY - doomState.py + (1 - stepY) / 2) / rayDirY;
-
-                zBuffer[x] = perpWallDist;
-
-                let lineHeight = Math.floor(h / perpWallDist);
-                let drawStart = -lineHeight / 2 + h / 2;
-                if (drawStart < 0) drawStart = 0;
-                let drawEnd = lineHeight / 2 + h / 2;
-                if (drawEnd >= h) drawEnd = h - 1;
-
-                ctx.fillStyle = side === 1 ? '#1a4a84' : '#12345e';
-                ctx.fillRect(x, drawStart, 1, drawEnd - drawStart);
-            }
-
-            doomState.enemies.forEach(enemy => {
-                if (!enemy.alive) return;
-                let spriteX = enemy.x - doomState.px;
-                let spriteY = enemy.y - doomState.py;
-
-                let invDet = 1.0 / (doomState.planeX * doomState.dirY - doomState.dirX * doomState.planeY);
-                let transformX = invDet * (doomState.dirY * spriteX - doomState.dirX * spriteY);
-                let transformY = invDet * (-doomState.planeY * spriteX + doomState.planeX * spriteY);
-
-                if (transformY > 0) {
-                    let spriteScreenX = Math.floor((w / 2) * (1 + transformX / transformY));
-                    let spriteHeight = Math.abs(Math.floor(h / transformY));
-
-                    if (transformY < zBuffer[Math.max(0, Math.min(w - 1, Math.floor(spriteScreenX)))]) {
-                        let radius = Math.min(45, Math.max(12, spriteHeight / 2.5));
-                        ctx.fillStyle = '#dc3545';
-                        ctx.beginPath();
-                        ctx.arc(spriteScreenX, h/2 + 20, radius, 0, Math.PI*2);
-                        ctx.fill();
-
-                        ctx.fillStyle = '#fff';
-                        ctx.fillRect(spriteScreenX - radius/3, h/2 + 10, radius/4, radius/4);
-                        ctx.fillRect(spriteScreenX + radius/6, h/2 + 10, radius/4, radius/4);
-                    }
-
-                    let distToPlayer = Math.sqrt(spriteX*spriteX + spriteY*spriteY);
-                    if (distToPlayer > 0.8) {
-                        enemy.x -= (spriteX / distToPlayer) * 0.012;
-                        enemy.y -= (spriteY / distToPlayer) * 0.012;
-                    } else if (doomState.health > 0) {
-                        doomState.health = Math.max(0, doomState.health - 0.4);
-                        updateDoomHUD();
-                        if (doomState.health <= 0) {
-                            alert("☠️ Вас вбив демон! Гра закінчена.");
-                            initDoom();
-                        }
-                    }
-                }
-            });
-
-            ctx.strokeStyle = '#00ff00';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(w/2 - 8, h/2); ctx.lineTo(w/2 + 8, h/2);
-            ctx.moveTo(w/2, h/2 - 8); ctx.lineTo(w/2, h/2 + 8);
-            ctx.stroke();
-
-            let gunY = h - 60;
-            if (doomState.shooting > 0) {
-                doomState.shooting--;
-                ctx.fillStyle = '#ffcc00';
-                ctx.beginPath();
-                ctx.arc(w/2, gunY - 20, 25, 0, Math.PI*2);
-                ctx.fill();
-            }
-            ctx.fillStyle = '#4b5563'; ctx.fillRect(w/2 - 18, gunY, 36, 60);
-            ctx.fillStyle = '#111827'; ctx.fillRect(w/2 - 8, gunY - 15, 16, 30);
-        }
-
-        // --- 2. ENDLESS RUNNER (РАНЕР) ---
-        let runnerState = {};
-
-        function initRunner() {
-            if (pongInterval) clearInterval(pongInterval);
-            if (doomInterval) clearInterval(doomInterval);
-            if (runnerInterval) clearInterval(runnerInterval);
-
-            runnerState = {
-                y: 130, vy: 0, gravity: 0.8,
-                isJumping: false, score: 0,
-                obstacles: [], speed: 4, frameCount: 0,
-                gameOver: false
-            };
-
-            const gb = document.getElementById('game-board-area');
-            gb.innerHTML = `
-                <div class="game-controls">
-                    <span>🏆 Рахунок: <span id="runner-score">0</span></span>
-                    <button class="btn-reset-game" onclick="initRunner()">Перезапуск</button>
-                </div>
-                <div class="doom-viewport" style="height:220px;" onclick="runnerJump()">
-                    <canvas id="runnerCanvas" width="600" height="220" class="doom-canvas"></canvas>
-                </div>
-                <div style="font-size:12px; color:#555; margin-top:8px; text-align:center; background:#eef2f5; padding:8px; border-radius:6px; width:100%;">
-                    🏃 <b>Керування:</b> Натисніть <b>[Пробіл]</b>, <b>[Стрілку вгору]</b> або <b>Клікніть по екрану</b> для стрибка!
-                </div>
-            `;
-
-            runnerInterval = setInterval(renderRunnerFrame, 1000 / 40);
-        }
-
-        function runnerJump() {
-            if (!runnerState.isJumping && !runnerState.gameOver) {
-                runnerState.vy = -12;
-                runnerState.isJumping = true;
-            } else if (runnerState.gameOver) {
-                initRunner();
-            }
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (document.getElementById('game-select-choice')?.value !== 'runner') return;
-            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-            if (e.code === 'Space' || e.code === 'ArrowUp') {
-                e.preventDefault();
-                runnerJump();
-            }
-        });
-
-        function renderRunnerFrame() {
-            const canvas = document.getElementById('runnerCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width, h = canvas.height;
-
-            if (runnerState.gameOver) return;
-
-            runnerState.vy += runnerState.gravity;
-            runnerState.y += runnerState.vy;
-
-            if (runnerState.y >= 140) {
-                runnerState.y = 140;
-                runnerState.vy = 0;
-                runnerState.isJumping = false;
-            }
-
-            runnerState.frameCount++;
-            if (runnerState.frameCount % 75 === 0) {
-                let obstacleHeight = Math.floor(Math.random() * 25) + 25;
-                runnerState.obstacles.push({ x: w, width: 20, height: obstacleHeight });
-            }
-
-            ctx.fillStyle = '#1a4a84'; ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = '#22c55e'; ctx.fillRect(0, 175, w, 45);
-
-            ctx.fillStyle = '#007bff';
-            ctx.fillRect(50, runnerState.y, 25, 35);
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(66, runnerState.y + 6, 6, 6);
-
-            for (let i = 0; i < runnerState.obstacles.length; i++) {
-                let obs = runnerState.obstacles[i];
-                obs.x -= runnerState.speed;
-
-                ctx.fillStyle = '#dc3545';
-                ctx.fillRect(obs.x, 175 - obs.height, obs.width, obs.height);
-
-                if (50 < obs.x + obs.width && 50 + 25 > obs.x && runnerState.y + 35 > 175 - obs.height) {
-                    runnerState.gameOver = true;
-                    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                    ctx.fillRect(0, 0, w, h);
-                    ctx.fillStyle = '#fff';
-                    ctx.font = 'bold 24px sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('💥 Гра Закінчена!', w / 2, h / 2 - 10);
-                    ctx.font = '14px sans-serif';
-                    ctx.fillText('Натисніть для повторної гри', w / 2, h / 2 + 20);
-                    return;
-                }
-            }
-
-            runnerState.obstacles = runnerState.obstacles.filter(obs => obs.x > -30);
-
-            runnerState.score++;
-            if (runnerState.score % 250 === 0) runnerState.speed += 0.5;
-            document.getElementById('runner-score').innerText = runnerState.score;
-        }
-
-        // --- 3. ПІНГ-ПОНГ ПРОТИ ШІ ---
-        let pongKeys = {};
-        let pongScore = { player: 0, ai: 0 };
-        let pongBall = { x: 140, y: 90, dx: 3, dy: 3 };
-        let pongPlayerX = 115, pongAiX = 115;
-        const paddleWidth = 55, paddleHeight = 8;
-
-        function initPong() {
-            if (pongInterval) clearInterval(pongInterval);
-            if (doomInterval) clearInterval(doomInterval);
-            if (runnerInterval) clearInterval(runnerInterval);
-
-            pongBall = { x: 140, y: 90, dx: (Math.random() > 0.5 ? 3 : -3), dy: (Math.random() > 0.5 ? 3 : -3) };
-            pongPlayerX = 115;
-            pongAiX = 115;
-
-            const gb = document.getElementById('game-board-area');
-            gb.innerHTML = `
-                <div class="game-controls">
-                    <span>Гравець: <b id="pong-p-score">${pongScore.player}</b> | ШІ: <b id="pong-ai-score">${pongScore.ai}</b></span>
-                    <button class="btn-reset-game" onclick="pongScore={player:0,ai:0}; initPong();">Скинути</button>
-                </div>
-                <div class="doom-viewport" style="height:240px;">
-                    <canvas id="pongCanvas" width="280" height="240" class="doom-canvas" style="touch-action:none;"></canvas>
-                </div>
-                <div style="font-size:12px; color:#555; margin-top:8px; text-align:center; background:#eef2f5; padding:8px; border-radius:6px; width:100%;">
-                    🏓 <b>Керування:</b> Використовуйте <b>[A / D]</b>, <b>[← / →]</b>, **мишку** або **ведення пальцем** по екрану!
-                </div>
-            `;
-
-            const canvas = document.getElementById('pongCanvas');
-
-            const updatePos = (clientX) => {
-                let rect = canvas.getBoundingClientRect();
-                let scaleX = canvas.width / rect.width;
-                pongPlayerX = (clientX - rect.left) * scaleX - paddleWidth / 2;
-                if (pongPlayerX < 0) pongPlayerX = 0;
-                if (pongPlayerX > canvas.width - paddleWidth) pongPlayerX = canvas.width - paddleWidth;
-            };
-
-            canvas.addEventListener('mousemove', e => updatePos(e.clientX));
-            canvas.addEventListener('touchmove', e => {
-                e.preventDefault();
-                updatePos(e.touches[0].clientX);
-            }, { passive: false });
-
-            pongInterval = setInterval(renderPongFrame, 1000 / 40);
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (document.getElementById('game-select-choice')?.value !== 'pong') return;
-            pongKeys[e.code] = true;
-        });
-        window.addEventListener('keyup', (e) => {
-            if (document.getElementById('game-select-choice')?.value !== 'pong') return;
-            pongKeys[e.code] = false;
-        });
-
-        function renderPongFrame() {
-            const canvas = document.getElementById('pongCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width, h = canvas.height;
-
-            if (pongKeys['KeyA'] || pongKeys['ArrowLeft']) pongPlayerX = Math.max(0, pongPlayerX - 5);
-            if (pongKeys['KeyD'] || pongKeys['ArrowRight']) pongPlayerX = Math.min(w - paddleWidth, pongPlayerX + 5);
-
-            pongBall.x += pongBall.dx;
-            pongBall.y += pongBall.dy;
-
-            if (pongBall.x <= 5 || pongBall.x >= w - 5) pongBall.dx *= -1;
-
-            let targetAi = pongBall.x - paddleWidth / 2;
-            pongAiX += (targetAi - pongAiX) * 0.085;
-            if (pongAiX < 0) pongAiX = 0;
-            if (pongAiX > w - paddleWidth) pongAiX = w - paddleWidth;
-
-            if (pongBall.y <= 16 && pongBall.x >= pongAiX && pongBall.x <= pongAiX + paddleWidth) {
-                pongBall.dy = Math.abs(pongBall.dy);
-            }
-            if (pongBall.y >= h - 16 && pongBall.x >= pongPlayerX && pongBall.x <= pongPlayerX + paddleWidth) {
-                pongBall.dy = -Math.abs(pongBall.dy);
-            }
-
-            if (pongBall.y <= 0) {
-                pongScore.player++;
-                resetPongBall();
-            } else if (pongBall.y >= h) {
-                pongScore.ai++;
-                resetPongBall();
-            }
-
-            function resetPongBall() {
-                pongBall = { x: w / 2, y: h / 2, dx: (Math.random() > 0.5 ? 3 : -3), dy: (Math.random() > 0.5 ? 3 : -3) };
-                document.getElementById('pong-p-score').innerText = pongScore.player;
-                document.getElementById('pong-ai-score').innerText = pongScore.ai;
-            }
-
-            ctx.fillStyle = '#111827'; ctx.fillRect(0, 0, w, h);
-
-            ctx.strokeStyle = '#374151'; ctx.setLineDash([4, 4]);
-            ctx.beginPath(); ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2); ctx.stroke();
-
-            ctx.fillStyle = '#007bff'; ctx.fillRect(pongPlayerX, h - 12, paddleWidth, paddleHeight);
-            ctx.fillStyle = '#dc3545'; ctx.fillRect(pongAiX, 4, paddleWidth, paddleHeight);
-            ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(pongBall.x, pongBall.y, 5, 0, Math.PI * 2); ctx.fill();
-        }
-
-        // --- 4. Хрестики-Нулики ---
-        let tttBoard = ["","","","","","","","",""];
-        let tttScore = { player: 0, ai: 0, draws: 0 };
-        let tttActive = true;
-
-        function initTTT() {
-            tttBoard = ["","","","","","","","",""];
-            tttActive = true;
-            renderTTT();
-        }
-
-        function renderTTT() {
-            let html = `
-                <div class="game-controls">
-                    <span>Гравець (❌): ${tttScore.player} | ШІ (⭕): ${tttScore.ai}</span>
-                    <button class="btn-reset-game" onclick="initTTT()">Заново</button>
-                </div>
-                <div class="ttt-grid">
-            `;
-            tttBoard.forEach((val, i) => {
-                html += `<div class="ttt-cell" onclick="makeTTTMove(${i})">${val}</div>`;
-            });
-            html += '</div>';
-            document.getElementById('game-board-area').innerHTML = html;
-        }
-
-        function makeTTTMove(i) {
-            if (!tttActive || tttBoard[i] !== "") return;
-
-            tttBoard[i] = "❌";
-            renderTTT();
-
-            if (checkTTTWin("❌")) {
-                tttScore.player++;
-                tttActive = false;
-                renderTTT();
-                setTimeout(() => alert("🎉 Ви перемогли ШІ!"), 100);
-                return;
-            }
-
-            if (!tttBoard.includes("")) {
-                tttScore.draws++;
-                tttActive = false;
-                renderTTT();
-                setTimeout(() => alert("🤝 Нічия!"), 100);
-                return;
-            }
-
-            tttActive = false;
-            setTimeout(() => {
-                let aiMove = getSmartAIMove();
-                tttBoard[aiMove] = "⭕";
-
-                if (checkTTTWin("⭕")) {
-                    tttScore.ai++;
-                    renderTTT();
-                    alert("🤖 ШІ переміг!");
-                } else if (!tttBoard.includes("")) {
-                    tttScore.draws++;
-                    renderTTT();
-                    alert("🤝 Нічия!");
-                } else {
-                    tttActive = true;
-                    renderTTT();
-                }
-            }, 250);
-        }
-
-        function getSmartAIMove() {
-            for (let i = 0; i < 9; i++) {
-                if (tttBoard[i] === "") {
-                    tttBoard[i] = "⭕";
-                    if (checkTTTWin("⭕")) { tttBoard[i] = ""; return i; }
-                    tttBoard[i] = "";
-                }
-            }
-            for (let i = 0; i < 9; i++) {
-                if (tttBoard[i] === "") {
-                    tttBoard[i] = "❌";
-                    if (checkTTTWin("❌")) { tttBoard[i] = ""; return i; }
-                    tttBoard[i] = "";
-                }
-            }
-            if (tttBoard[4] === "") return 4;
-            let empty = tttBoard.map((v, idx) => v === "" ? idx : null).filter(v => v !== null);
-            return empty[Math.floor(Math.random() * empty.length)];
-        }
-
-        function checkTTTWin(p) {
-            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-            return wins.some(w => w.every(i => tttBoard[i] === p));
-        }
-
-        // --- 5. Сапер ---
-        let minesField = [];
-        let minesCount = 4;
-        let revealedSafeCount = 0;
-        let minesActive = true;
-
-        function initMines() {
-            minesField = Array(25).fill(0).map(() => ({ isMine: false, revealed: false, count: 0 }));
-            revealedSafeCount = 0;
-            minesActive = true;
-
-            let placed = 0;
-            while (placed < minesCount) {
-                let idx = Math.floor(Math.random() * 25);
-                if (!minesField[idx].isMine) {
-                    minesField[idx].isMine = true;
-                    placed++;
-                }
-            }
-
-            for (let i = 0; i < 25; i++) {
-                if (minesField[i].isMine) continue;
-                let adj = getNeighbors(i);
-                minesField[i].count = adj.filter(n => minesField[n].isMine).length;
-            }
-
-            renderMines();
-        }
-
-        function getNeighbors(i) {
-            let row = Math.floor(i / 5), col = i % 5;
-            let neighbors = [];
-            for (let r = row - 1; r <= row + 1; r++) {
-                for (let c = col - 1; c <= col + 1; c++) {
-                    if (r >= 0 && r < 5 && c >= 0 && c < 5 && !(r === row && c === col)) {
-                        neighbors.push(r * 5 + c);
-                    }
-                }
-            }
-            return neighbors;
-        }
-
-        function renderMines() {
-            let html = `
-                <div class="game-controls">
-                    <span>Міни: 💣 ${minesCount}</span>
-                    <button class="btn-reset-game" onclick="initMines()">Нова гра</button>
-                </div>
-                <div class="mines-grid">
-            `;
-            minesField.forEach((cell, i) => {
-                let cellClass = "mines-cell";
-                let content = "❓";
-                if (cell.revealed) {
-                    cellClass += cell.isMine ? " exploded" : " revealed";
-                    content = cell.isMine ? "💣" : (cell.count > 0 ? cell.count : "");
-                }
-                html += `<div class="${cellClass}" onclick="clickMineCell(${i})">${content}</div>`;
-            });
-            html += '</div>';
-            document.getElementById('game-board-area').innerHTML = html;
-        }
-
-        function clickMineCell(i) {
-            if (!minesActive || minesField[i].revealed) return;
-
-            minesField[i].revealed = true;
-
-            if (minesField[i].isMine) {
-                minesActive = false;
-                minesField.forEach(c => { if(c.isMine) c.revealed = true; });
-                renderMines();
-                setTimeout(() => alert("💥 Ви натрапили на міну! ШІ переміг!"), 100);
-                return;
-            }
-
-            revealedSafeCount++;
-
-            if (minesField[i].count === 0) {
-                getNeighbors(i).forEach(n => {
-                    if (!minesField[n].revealed && !minesField[n].isMine) {
-                        minesField[n].revealed = true;
-                        revealedSafeCount++;
-                    }
-                });
-            }
-
-            renderMines();
-
-            if (revealedSafeCount >= (25 - minesCount)) {
-                minesActive = false;
-                alert("🎉 Вітаємо! Ви розмінували поле!");
-            }
+            gb.innerHTML = `<div style="padding:20px; text-align:center;">🎮 Модуль <b>${choice.toUpperCase()}</b> готовий до гри.</div>`;
         }
 
         /* Новини, Погода, Курси */
@@ -1253,23 +517,18 @@
                 const data = await res.json();
                 const container = document.getElementById('news-container');
                 container.innerHTML = '';
-                data.items.slice(0, 8).forEach(item => {
-                    const pubDate = new Date(item.pubDate).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
-                    container.innerHTML += `<div class="news-item"><a href="${item.link}" target="_blank">${escapeHtml(item.title)}</a><div class="time">${pubDate}</div></div>`;
+                data.items.slice(0, 6).forEach(item => {
+                    container.innerHTML += `<div class="news-item"><a href="${item.link}" target="_blank">${escapeHtml(item.title)}</a></div>`;
                 });
-            } catch (e) {
-                document.getElementById('news-container').innerText = 'Не вдалося завантажити новини.';
-            }
+            } catch (e) { document.getElementById('news-container').innerText = 'Не вдалося завантажити новини.'; }
         }
 
         async function fetchWeather() {
             try {
                 const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=49.44&longitude=32.06&current_weather=true');
                 const data = await res.json();
-                document.getElementById('weather').innerHTML = `<strong>Температура:</strong> ${data.current_weather.temperature}°C<br><strong>Вітер:</strong> ${data.current_weather.windspeed} км/год`;
-            } catch (e) {
-                document.getElementById('weather').innerText = 'Помилка завантаження погоди.';
-            }
+                document.getElementById('weather').innerHTML = `<strong>Температура:</strong> ${data.current_weather.temperature}°C`;
+            } catch (e) { document.getElementById('weather').innerText = 'Помилка завантаження.'; }
         }
 
         async function fetchRates() {
@@ -1277,45 +536,25 @@
                 const res = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json');
                 const data = await res.json();
                 const usd = data.find(c => c.cc === 'USD')?.rate.toFixed(2);
-                const eur = data.find(c => c.cc === 'EUR')?.rate.toFixed(2);
-                document.getElementById('rates').innerHTML = `<strong>USD:</strong> ${usd} грн<br><strong>EUR:</strong> ${eur} грн`;
-            } catch (e) {
-                document.getElementById('rates').innerText = 'Помилка завантаження курсів.';
-            }
+                document.getElementById('rates').innerHTML = `<strong>USD:</strong> ${usd} грн`;
+            } catch (e) { document.getElementById('rates').innerText = 'Помилка курсів.'; }
         }
 
         function postChatMessage() {
             const input = document.getElementById('chat-input-field');
-            const msg = input.value.trim();
-            const sender = currentUser || "Гість";
-            if (msg) {
-                const logs = document.getElementById('chat-logs');
-                logs.innerHTML += `<div style="margin-bottom:4px;"><b>${escapeHtml(sender)}:</b> ${escapeHtml(msg)}</div>`;
+            if (input.value.trim()) {
+                document.getElementById('chat-logs').innerHTML += `<div><b>Гість:</b> ${escapeHtml(input.value)}</div>`;
                 input.value = '';
-                logs.scrollTop = logs.scrollHeight;
             }
         }
 
-        function escapeHtml(text) {
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        }
+        function escapeHtml(text) { return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
-        // Контроль анімації завантаження (Hello)
         window.addEventListener('load', () => {
-            setTimeout(() => {
-                const preloader = document.getElementById('app-preloader');
-                if (preloader) {
-                    preloader.classList.add('hidden');
-                }
-            }, 1800);
+            setTimeout(() => { document.getElementById('app-preloader')?.classList.add('hidden'); }, 1500);
         });
 
-        // Запуск функцій
-        updateMailUI();
-        fetchNews();
-        fetchWeather();
-        fetchRates();
-        initDoom();
+        updateMailUI(); fetchNews(); fetchWeather(); fetchRates(); switchGame();
     </script>
 </body>
 </html>
