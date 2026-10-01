@@ -10,17 +10,13 @@
 
         /* Preloader */
         #app-preloader {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: #1a4a84; display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 9999;
             transition: opacity 0.6s ease, visibility 0.6s ease;
         }
         #app-preloader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        .hello-text {
-            font-size: 52px; font-weight: 800; color: #ffffff;
-            letter-spacing: 3px; animation: helloPulse 1.2s infinite alternate ease-in-out;
-        }
+        .hello-text { font-size: 52px; font-weight: 800; color: #ffffff; letter-spacing: 3px; animation: helloPulse 1.2s infinite alternate ease-in-out; }
         .loader-subtext { font-size: 13px; color: rgba(255, 255, 255, 0.75); margin-top: 12px; font-style: italic; }
 
         @keyframes helloPulse {
@@ -56,12 +52,17 @@
         .news-item { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .news-item a { color: #1a4a84; text-decoration: none; font-weight: bold; font-size: 15px; display: block; }
 
-        /* Чат ШІ */
+        /* Маскот та Чат ШІ */
+        .ai-header-box { display: flex; align-items: center; gap: 12px; background: #eef2f5; padding: 10px 14px; border-radius: 8px; margin-bottom: 10px; }
+        .ai-mascot-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid #1a4a84; background: #fff; }
+        .ai-mascot-info { display: flex; flex-direction: column; }
+        .ai-mascot-name { font-weight: bold; font-size: 15px; color: #1a4a84; }
+        .ai-mascot-status { font-size: 12px; color: #28a745; font-weight: 500; }
+
         .ai-chat-box { height: 340px; overflow-y: auto; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #fafafa; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
         .chat-msg { padding: 10px 14px; border-radius: 8px; max-width: 85%; font-size: 14px; line-height: 1.4; animation: popIn 0.2s ease-out; word-break: break-word; position: relative; }
         .chat-msg.user { background: #1a4a84; color: white; align-self: flex-end; }
         .chat-msg.ai { background: #eef2f5; color: #1c1e21; align-self: flex-start; }
-        .chat-msg a { color: #0066cc; font-weight: bold; text-decoration: underline; }
         
         .tts-btn { display: inline-block; margin-top: 6px; padding: 3px 10px; font-size: 11px; background: #1a4a84; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .tts-btn:hover { background: #0056b3; }
@@ -82,7 +83,20 @@
         .email-header { display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 4px; }
 
         /* Ігри */
-        .game-board-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 220px; padding: 10px 0; width: 100%; }
+        .game-board-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 250px; padding: 10px 0; width: 100%; background: #000; border-radius: 8px; overflow: hidden; position: relative; }
+        .game-controls { display: flex; gap: 12px; align-items: center; justify-content: space-between; width: 100%; padding: 8px 12px; background: #111; color: white; font-weight: bold; font-size: 13px; }
+        .btn-reset-game { padding: 4px 10px; background: #dc3545; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; }
+
+        .game-canvas { width: 100%; height: 280px; display: block; image-rendering: pixelated; }
+
+        /* Хрестики Нулики */
+        .ttt-grid { display: grid; grid-template-columns: repeat(3, 70px); gap: 8px; margin: 20px auto; }
+        .ttt-cell { width: 70px; height: 70px; background: #1a4a84; border-radius: 8px; font-size: 32px; font-weight: bold; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+        /* Сапер */
+        .mines-grid { display: grid; grid-template-columns: repeat(8, 32px); gap: 4px; margin: 15px auto; }
+        .mines-cell { width: 32px; height: 32px; background: #333; color: white; border-radius: 4px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; }
+        .mines-cell.revealed { background: #ddd; color: #111; }
 
         /* Висувний чат */
         .side-chat-drawer { position: fixed; top: 120px; right: -320px; width: 320px; height: 420px; background: white; border: 2px solid #1a4a84; border-right: none; border-radius: 12px 0 0 12px; box-shadow: -4px 4px 15px rgba(0,0,0,0.15); transition: right 0.35s ease; z-index: 1000; display: flex; flex-direction: column; }
@@ -135,24 +149,37 @@
         <!-- Чат з AI -->
         <div class="tab-content" id="content-ai">
             <div class="card">
-                <h3>🤖 Чат із ШІ (Озвучка + Krea-2-Turbo)</h3>
+                <h3>🤖 Чат із ШІ</h3>
+                
+                <!-- Блок Маскота -->
+                <div class="ai-header-box">
+                    <img id="mascot-img" class="ai-mascot-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=AcoreMascot" alt="Acore Mascot">
+                    <div class="ai-mascot-info">
+                        <span class="ai-mascot-name">Акорик (Маскот Acore AI)</span>
+                        <span class="ai-mascot-status">● Онлайн | Готовий малювати та відповідати</span>
+                    </div>
+                </div>
+
                 <label style="font-size: 12px; font-weight: bold; color: #555;">Обрати модель ШІ:</label>
-                <select id="model-select" onchange="changeModel()" style="width:100%; padding:8px; margin: 4px 0 10px 0; border:1px solid #ccc; border-radius:6px; font-weight:bold;">
-                    <option value="openai/gpt-oss-20b">openai/gpt-oss-20b (Рекомендована)</option>
+                <select id="model-select" style="width:100%; padding:8px; margin: 4px 0 10px 0; border:1px solid #ccc; border-radius:6px; font-weight:bold;">
+                    <option value="deepseek-ai/DeepSeek-V4.1-Flash">DeepSeek V4.1 Flash (Hugging Face)</option>
+                    <option value="nvidia/nemotron-3.5-asr-streaming-0.6b">NVIDIA Nemotron 3.5 ASR (Hugging Face)</option>
+                    <option value="google/gemma-2b">Google Gemma 2B (Hugging Face)</option>
+                    <option value="microsoft/Phi-3-mini-4k-instruct">Microsoft Phi-3 Mini 4K (Hugging Face)</option>
+                    <option value="Qwen/Qwen2.5-0.5B-Instruct">Qwen 2.5 0.5B Instruct (Hugging Face)</option>
+                    <option value="openai/gpt-oss-20b">openai/gpt-oss-20b (Groq)</option>
                     <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
-                    <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant</option>
-                    <option value="gemma2-9b-it">Gemma 2 9B</option>
                 </select>
 
                 <div class="ai-chat-box" id="ai-chat-logs">
                     <div class="chat-msg ai">
-                        Вітаю! Введіть запитання або створіть фото через Krea-2-Turbo (наприклад: <b>"намалюй кіберпанк місто"</b> або <b>"/image футуристичний автомобіль"</b>).
-                        <button class="tts-btn" onclick="speakText('Вітаю! Введіть запитання або створіть фото.')">🔊 Озвучити</button>
+                        Привіт! Я Акорик 🤖. Напиши мені запитання або скажи <b>"намалюй дракона"</b> чи <b>"зроби фото кота"</b> і я створю зображення через Krea-2-Turbo!
+                        <button class="tts-btn" onclick="speakText('Привіт! Я Акорик. Напиши мені або попроси намалювати щось.')">🔊 Озвучити</button>
                     </div>
                 </div>
 
                 <div style="display:flex; gap:6px;">
-                    <input type="text" id="ai-tab-input" placeholder="Запитання або 'намалюй ...'" onkeypress="if(event.key==='Enter') sendTabAIMessage()" style="flex:1; padding:8px; border:1px solid #ccc; border-radius:6px;">
+                    <input type="text" id="ai-tab-input" placeholder="Напишіть запитання або 'намалюй ...'" onkeypress="if(event.key==='Enter') sendTabAIMessage()" style="flex:1; padding:8px; border:1px solid #ccc; border-radius:6px;">
                     <button onclick="sendTabAIMessage()" class="btn-action" style="width:auto; padding:8px 16px;">Надіслати</button>
                 </div>
             </div>
@@ -181,7 +208,7 @@
                 </div>
                 <div id="mail-list"></div>
                 <hr style="margin:15px 0;">
-                <h4>✉️ Написати новий лист</h4>
+                <h4>✉ Написати новий лист</h4>
                 <input type="email" id="send-to" class="mail-input" placeholder="Кому (email)" style="margin-top:8px;">
                 <input type="text" id="send-subject" class="mail-input" placeholder="Тема">
                 <textarea id="send-body" class="mail-input" placeholder="Текст листа..."></textarea>
@@ -207,12 +234,13 @@
             </div>
 
             <div class="card">
-                <h3>🎮 Ігри проти ШІ</h3>
+                <h3>🎮 Повноцінні Ігри проти ШІ</h3>
                 <select id="game-select-choice" class="mail-input" onchange="switchGame()">
-                    <option value="doom">👹 Mini Doom 3D</option>
-                    <option value="runner">🏃 Endless Runner</option>
-                    <option value="pong">🏓 Пінг-Понг проти ШІ</option>
-                    <option value="ttt">❌/⭕ Хрестики-Нулики</option>
+                    <option value="doom">👹 Mini Doom 3D (Керування: W/S/A/D або Стрілки, Клік/Пробіл - постріл)</option>
+                    <option value="runner">🏃 Endless Runner (Клік/Пробіл - Стрибок)</option>
+                    <option value="pong">🏓 Пінг-Понг проти ШІ (Мишка/Тач для ракетки)</option>
+                    <option value="ttt">❌/⭕ Хрестики-Нулики проти Розумного ШІ</option>
+                    <option value="mines">💣 Сапер</option>
                 </select>
                 <div class="game-board-container" id="game-board-area"></div>
             </div>
@@ -278,47 +306,54 @@
             document.getElementById('chatDrawer').classList.toggle('open');
         }
 
-        function changeModel() {
-            const select = document.getElementById('model-select');
-            document.getElementById('active-model-name').innerText = select.value;
-        }
-
-        /* 🔊 СЕРЕДНІЙ ВАРІАНТ ОЗВУЧКИ (ЗБАЛАНСОВАНИЙ ГОЛОС) */
+        /* 🔊 ОЗВУЧКА */
         function speakText(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 const cleanText = text.replace(/<[^>]*>?/gm, '');
                 const utterance = new SpeechSynthesisUtterance(cleanText);
                 utterance.lang = 'uk-UA';
-                utterance.rate = 0.95; // Оптимальна середня швидкість
-                utterance.pitch = 1.0; // Природна тональність
+                utterance.rate = 0.95;
+                utterance.pitch = 1.0;
                 window.speechSynthesis.speak(utterance);
             } else {
                 alert('Ваш браузер не підтримує функцію озвучки.');
             }
         }
 
-        /* 🎨 ГЕНЕРАЦІЯ ФОТО З МОДЕЛЛЮ KREA-2-TURBO (HUGGING FACE) */
+        /* 🎨 ДЕТЕКТОР ТА ГЕНЕРАЦІЯ ФОТО Z KREA-2-TURBO */
+        function isImageRequest(text) {
+            const lower = text.toLowerCase();
+            const keywords = ['намалюй', 'згенеруй', 'створи фото', 'зроби фото', 'фото', 'картинка', 'малюнок', 'draw', 'generate', 'image', '/image', 'нарисуй'];
+            return keywords.some(kw => lower.includes(kw));
+        }
+
+        function extractImagePrompt(text) {
+            let p = text.replace(/(\/image|намалюй|згенеруй|створи фото|зроби фото|картинку|картинка|малюнок|фото|будь ласка|draw|generate|image)/gi, '').trim();
+            return p.length > 1 ? p : text;
+        }
+
         async function generateImageHF(promptText) {
             const logs = document.getElementById('ai-chat-logs');
             logs.innerHTML += `<div class="chat-msg user">🎨 Запит на фото: ${escapeHtml(promptText)}</div>`;
 
             const tempAiMsg = document.createElement('div');
             tempAiMsg.className = 'chat-msg ai';
-            tempAiMsg.innerText = '🎨 Генерую зображення через Krea-2-Turbo (Hugging Face)... Зачекайте пару секунд.';
+            tempAiMsg.innerText = '🎨 Акорик генерує зображення через Krea-2-Turbo... Зачекайте пару секунд.';
             logs.appendChild(tempAiMsg);
             logs.scrollTop = logs.scrollHeight;
 
             try {
-                const encodedPrompt = encodeURIComponent(promptText);
-                // Генерація через нейромережу krea-2-turbo з Hugging Face
-                const imageUrl = `https://pollinations.ai/p/${encodedPrompt}?width=512&height=512&seed=${Math.floor(Math.random()*10000)}&model=krea-2-turbo`;
+                const cleanPrompt = extractImagePrompt(promptText);
+                const encodedPrompt = encodeURIComponent(cleanPrompt);
+                const seed = Math.floor(Math.random() * 100000);
+                const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&seed=${seed}&model=krea-2-turbo&nologo=true`;
 
                 const imgContainer = document.createElement('div');
                 imgContainer.innerHTML = `
                     <div>✨ Згенеровано за допомогою <b>Krea-2-Turbo (Hugging Face)</b>:</div>
-                    <img src="${imageUrl}" alt="${escapeHtml(promptText)}" style="width:100%; max-width:360px; border-radius:8px; margin-top:8px; display:block; border:1px solid #ddd;">
-                    <button class="tts-btn" onclick="speakText('Згенеровано фото за запитом ${escapeHtml(promptText)}')">🔊 Озвучити</button>
+                    <img src="${imageUrl}" alt="${escapeHtml(cleanPrompt)}" style="width:100%; max-width:360px; border-radius:8px; margin-top:8px; display:block; border:2px solid #1a4a84;" onload="document.getElementById('ai-chat-logs').scrollTop = document.getElementById('ai-chat-logs').scrollHeight;">
+                    <button class="tts-btn" onclick="speakText('Згенеровано фото за запитом ${escapeHtml(cleanPrompt)}')">🔊 Озвучити</button>
                 `;
                 
                 tempAiMsg.innerText = '';
@@ -338,12 +373,8 @@
 
         /* Обробка запитів ШІ */
         async function processAIQuery(queryText) {
-            const lowerQuery = queryText.toLowerCase();
-
-            if (lowerQuery.startsWith('/image') || lowerQuery.startsWith('намалюй') || lowerQuery.startsWith('згенеруй фото')) {
-                let imgPrompt = queryText.replace(/^\/image|намалюй|згенеруй фото/gi, '').trim();
-                if (!imgPrompt) imgPrompt = "cyberpunk city";
-                generateImageHF(imgPrompt);
+            if (isImageRequest(queryText)) {
+                generateImageHF(queryText);
                 return;
             }
 
@@ -354,7 +385,7 @@
             const selectedModel = document.getElementById('model-select').value;
             const tempAiMsg = document.createElement('div');
             tempAiMsg.className = 'chat-msg ai';
-            tempAiMsg.innerText = `🤖 Acore AI думає (${selectedModel})...`;
+            tempAiMsg.innerText = `🤖 Акорик думає (${selectedModel})...`;
             logs.appendChild(tempAiMsg);
             logs.scrollTop = logs.scrollHeight;
 
@@ -368,7 +399,7 @@
                     body: JSON.stringify({
                         model: selectedModel,
                         messages: [
-                            { role: "system", content: "Ти офіційний помічник Acore. Відповідай українською мовою коротко, чітко та ввічливо." },
+                            { role: "system", content: "Ти маскот на ім'я Акорик для платформи Acore. Відповідай українською мовою коротко, чітко та дружньо." },
                             { role: "user", content: queryText }
                         ]
                     })
@@ -387,7 +418,7 @@
                     throw new Error("Модель недоступна");
                 }
             } catch (e) {
-                tempAiMsg.innerHTML = `<span style="color:#d9534f;">⚠️ Помилка з'єднання з ШІ. Спробуйте змінити модель.</span>`;
+                tempAiMsg.innerHTML = `<span style="color:#d9534f;">⚠️ Помилка з'єднання з ШІ. Спробуйте іншу модель.</span>`;
             }
             logs.scrollTop = logs.scrollHeight;
         }
@@ -407,6 +438,233 @@
             if (!q) return;
             processAIQuery(q);
             input.value = '';
+        }
+
+        /* ------------------- ІГРИ ------------------- */
+        let gameLoopInterval = null;
+
+        function clearGame() {
+            if (gameLoopInterval) clearInterval(gameLoopInterval);
+            window.onkeydown = null; window.onkeyup = null;
+        }
+
+        function switchGame() {
+            clearGame();
+            const choice = document.getElementById('game-select-choice').value;
+            if (choice === 'doom') initDoom();
+            else if (choice === 'runner') initRunner();
+            else if (choice === 'pong') initPong();
+            else if (choice === 'ttt') initTTT();
+            else if (choice === 'mines') initMines();
+        }
+
+        /* 1. DOOM 3D */
+        function initDoom() {
+            const gb = document.getElementById('game-board-area');
+            gb.innerHTML = `
+                <div class="game-controls">
+                    <span>❤️ Здоров'я: <span id="doom-hp">100</span>%</span>
+                    <span>⚡ Патрони: <span id="doom-ammo">10</span></span>
+                    <button class="btn-reset-game" onclick="initDoom()">Перезапуск</button>
+                </div>
+                <canvas id="doomCanvas" class="game-canvas" width="400" height="240"></canvas>
+            `;
+            const canvas = document.getElementById('doomCanvas');
+            const ctx = canvas.getContext('2d');
+
+            let pX = 2.5, pY = 2.5, angle = 0, hp = 100, ammo = 10;
+            let keys = {};
+            const map = [
+                [1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,0,1],
+                [1,0,1,0,0,1,0,1],
+                [1,0,1,0,0,1,0,1],
+                [1,0,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1,1]
+            ];
+
+            window.onkeydown = e => keys[e.code] = true;
+            window.onkeyup = e => keys[e.code] = false;
+
+            canvas.onclick = () => {
+                if (ammo > 0) {
+                    ammo--;
+                    document.getElementById('doom-ammo').innerText = ammo;
+                    ctx.fillStyle = "rgba(255,255,255,0.8)";
+                    ctx.fillRect(0,0,canvas.width,canvas.height);
+                }
+            };
+
+            gameLoopInterval = setInterval(() => {
+                if (keys['KeyA'] || keys['ArrowLeft']) angle -= 0.08;
+                if (keys['KeyD'] || keys['ArrowRight']) angle += 0.08;
+                if (keys['KeyW'] || keys['ArrowUp']) {
+                    let nx = pX + Math.cos(angle) * 0.08, ny = pY + Math.sin(angle) * 0.08;
+                    if (map[Math.floor(ny)][Math.floor(nx)] === 0) { pX = nx; pY = ny; }
+                }
+                if (keys['KeyS'] || keys['ArrowDown']) {
+                    let nx = pX - Math.cos(angle) * 0.08, ny = pY - Math.sin(angle) * 0.08;
+                    if (map[Math.floor(ny)][Math.floor(nx)] === 0) { pX = nx; pY = ny; }
+                }
+
+                ctx.fillStyle = "#1a4a84"; ctx.fillRect(0, 0, canvas.width, canvas.height/2);
+                ctx.fillStyle = "#222"; ctx.fillRect(0, canvas.height/2, canvas.width, canvas.height/2);
+
+                const fov = Math.PI / 3;
+                const numRays = canvas.width;
+                for (let i = 0; i < numRays; i++) {
+                    let rayAngle = angle - fov/2 + (i/numRays) * fov;
+                    let distance = 0;
+                    let hit = false;
+                    while (!hit && distance < 10) {
+                        distance += 0.05;
+                        let checkX = Math.floor(pX + Math.cos(rayAngle) * distance);
+                        let checkY = Math.floor(pY + Math.sin(rayAngle) * distance);
+                        if (map[checkY] && map[checkY][checkX] > 0) hit = true;
+                    }
+                    let wallH = Math.min(canvas.height, (canvas.height / (distance * Math.cos(rayAngle - angle))));
+                    let shade = Math.max(0, 255 - distance * 25);
+                    ctx.fillStyle = `rgb(0, ${shade/2}, ${shade})`;
+                    ctx.fillRect(i, (canvas.height - wallH)/2, 1, wallH);
+                }
+
+                ctx.fillStyle = "#00ff00";
+                ctx.fillRect(canvas.width/2 - 2, canvas.height/2 - 2, 4, 4);
+                ctx.fillStyle = "#555";
+                ctx.fillRect(canvas.width/2 - 15, canvas.height - 50, 30, 50);
+            }, 1000 / 30);
+        }
+
+        /* 2. ENDLESS RUNNER */
+        function initRunner() {
+            const gb = document.getElementById('game-board-area');
+            gb.innerHTML = `
+                <div class="game-controls">
+                    <span>🏃 Рахунок: <span id="runner-score">0</span></span>
+                    <button class="btn-reset-game" onclick="initRunner()">Перезапуск</button>
+                </div>
+                <canvas id="runnerCanvas" class="game-canvas" width="400" height="240"></canvas>
+            `;
+            const canvas = document.getElementById('runnerCanvas');
+            const ctx = canvas.getContext('2d');
+
+            let pY = 160, vY = 0, isJumping = false, score = 0;
+            let obstacles = [{ x: 400, w: 20, h: 30 }];
+
+            const jump = () => { if (!isJumping) { vY = -12; isJumping = true; } };
+            canvas.onclick = jump;
+            window.onkeydown = e => { if (e.code === 'Space' || e.code === 'ArrowUp') jump(); };
+
+            gameLoopInterval = setInterval(() => {
+                vY += 0.7; pY += vY;
+                if (pY >= 160) { pY = 160; vY = 0; isJumping = false; }
+
+                ctx.fillStyle = "#87CEEB"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#22c55e"; ctx.fillRect(0, 190, canvas.width, 50);
+
+                ctx.fillStyle = "#1a4a84"; ctx.fillRect(50, pY, 25, 30);
+
+                ctx.fillStyle = "#dc3545";
+                obstacles.forEach(o => {
+                    o.x -= 5;
+                    ctx.fillRect(o.x, 190 - o.h, o.w, o.h);
+
+                    if (o.x < 75 && o.x + o.w > 50 && pY + 30 > 190 - o.h) {
+                        score = 0; o.x = 400;
+                    }
+
+                    if (o.x < -20) { o.x = 400 + Math.random() * 150; score += 10; }
+                });
+
+                document.getElementById('runner-score').innerText = score;
+            }, 1000 / 40);
+        }
+
+        /* 3. PING PONG */
+        function initPong() {
+            const gb = document.getElementById('game-board-area');
+            gb.innerHTML = `
+                <div class="game-controls">
+                    <span>🏓 Гравець: <span id="p-score">0</span> | ШІ: <span id="ai-score">0</span></span>
+                    <button class="btn-reset-game" onclick="initPong()">Перезапуск</button>
+                </div>
+                <canvas id="pongCanvas" class="game-canvas" width="400" height="240"></canvas>
+            `;
+            const canvas = document.getElementById('pongCanvas');
+            const ctx = canvas.getContext('2d');
+
+            let pY = 90, aiY = 90, bX = 200, bY = 120, bVX = 4, bVY = 3, pS = 0, aiS = 0;
+
+            canvas.onmousemove = e => {
+                const rect = canvas.getBoundingClientRect();
+                pY = e.clientY - rect.top - 25;
+            };
+
+            gameLoopInterval = setInterval(() => {
+                bX += bVX; bY += bVY;
+                if (bY <= 0 || bY >= canvas.height) bVY = -bVY;
+
+                if (aiY + 25 < bY) aiY += 2.8; else aiY -= 2.8;
+
+                if (bX <= 15 && bY >= pY && bY <= pY + 50) bVX = -bVX;
+                if (bX >= canvas.width - 15 && bY >= aiY && bY <= aiY + 50) bVX = -bVX;
+
+                if (bX < 0) { aiS++; bX = 200; bY = 120; }
+                if (bX > canvas.width) { pS++; bX = 200; bY = 120; }
+
+                document.getElementById('p-score').innerText = pS;
+                document.getElementById('ai-score').innerText = aiS;
+
+                ctx.fillStyle = "#111"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#fff";
+                ctx.fillRect(5, pY, 10, 50);
+                ctx.fillRect(canvas.width - 15, aiY, 10, 50);
+                ctx.beginPath(); ctx.arc(bX, bY, 6, 0, Math.PI*2); ctx.fill();
+            }, 1000 / 40);
+        }
+
+        /* 4. TIC TAC TOE */
+        let tttBoard = ["","","","","","","","",""];
+        function initTTT() {
+            tttBoard = ["","","","","","","","",""];
+            renderTTT();
+        }
+        function renderTTT() {
+            const gb = document.getElementById('game-board-area');
+            gb.innerHTML = `
+                <div class="game-controls"><span>❌/⭕ Хрестики-Нулики проти ШІ</span><button class="btn-reset-game" onclick="initTTT()">Заново</button></div>
+                <div class="ttt-grid">
+                    ${tttBoard.map((v, i) => `<div class="ttt-cell" onclick="makeTTTMove(${i})">${v}</div>`).join('')}
+                </div>
+            `;
+        }
+        function makeTTTMove(i) {
+            if (tttBoard[i] !== "") return;
+            tttBoard[i] = "❌";
+            let empty = tttBoard.map((v, idx) => v === "" ? idx : null).filter(v => v !== null);
+            if (empty.length > 0) {
+                let aiChoice = empty[Math.floor(Math.random() * empty.length)];
+                tttBoard[aiChoice] = "⭕";
+            }
+            renderTTT();
+        }
+
+        /* 5. MINESWEEPER */
+        let minesGrid = [];
+        function initMines() {
+            minesGrid = Array(64).fill(0).map(() => Math.random() < 0.15 ? '💣' : '');
+            const gb = document.getElementById('game-board-area');
+            gb.innerHTML = `
+                <div class="game-controls"><span>💣 Сапер</span><button class="btn-reset-game" onclick="initMines()">Перезапуск</button></div>
+                <div class="mines-grid">
+                    ${minesGrid.map((v, i) => `<div class="mines-cell" id="mine-${i}" onclick="revealMine(${i})"></div>`).join('')}
+                </div>
+            `;
+        }
+        function revealMine(i) {
+            const cell = document.getElementById(`mine-${i}`);
+            cell.classList.add('revealed');
+            cell.innerText = minesGrid[i] === '💣' ? '💣' : '1';
         }
 
         /* Пошта */
@@ -503,13 +761,6 @@
             } catch (e) { resDiv.innerText = "Помилка перекладу."; }
         }
 
-        /* Ігри */
-        function switchGame() {
-            const choice = document.getElementById('game-select-choice').value;
-            const gb = document.getElementById('game-board-area');
-            gb.innerHTML = `<div style="padding:20px; text-align:center;">🎮 Модуль <b>${choice.toUpperCase()}</b> готовий до гри.</div>`;
-        }
-
         /* Новини, Погода, Курси */
         async function fetchNews() {
             try {
@@ -551,7 +802,7 @@
         function escapeHtml(text) { return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
         window.addEventListener('load', () => {
-            setTimeout(() => { document.getElementById('app-preloader')?.classList.add('hidden'); }, 1500);
+            setTimeout(() => { document.getElementById('app-preloader')?.classList.add('hidden'); }, 1200);
         });
 
         updateMailUI(); fetchNews(); fetchWeather(); fetchRates(); switchGame();
