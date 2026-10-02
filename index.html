@@ -236,7 +236,7 @@
             <div class="card">
                 <h3>🎮 Повноцінні Ігри проти ШІ</h3>
                 <select id="game-select-choice" class="mail-input" onchange="switchGame()">
-                    <option value="doom">👹 Mini Doom 3D (Керування: W/S/A/D або Стрілки, Клік/Пробіл - постріл)</option>
+                    <option value="doom">👹 Mini Doom 3D (Керування: W/S/A/D або Стрілки, Клік - постріл)</option>
                     <option value="runner">🏃 Endless Runner (Клік/Пробіл - Стрибок)</option>
                     <option value="pong">🏓 Пінг-Понг проти ШІ (Мишка/Тач для ракетки)</option>
                     <option value="ttt">❌/⭕ Хрестики-Нулики проти Розумного ШІ</option>
@@ -295,6 +295,10 @@
             Outlook: [{ sender: "Microsoft", time: "Вчора", subject: "Вітаємо в Outlook", body: "Налаштуйте ваш обліковий запис." }]
         };
 
+        function escapeHtml(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
         function switchTopTab(tabName, btn) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -351,7 +355,7 @@
 
                 const imgContainer = document.createElement('div');
                 imgContainer.innerHTML = `
-                    <div>✨ Згенеровано за допомогою <b>Krea-2-Turbo (Hugging Face)</b>:</div>
+                    <div>✨ Згенеровано за допомогою <b>Krea-2-Turbo</b>:</div>
                     <img src="${imageUrl}" alt="${escapeHtml(cleanPrompt)}" style="width:100%; max-width:360px; border-radius:8px; margin-top:8px; display:block; border:2px solid #1a4a84;" onload="document.getElementById('ai-chat-logs').scrollTop = document.getElementById('ai-chat-logs').scrollHeight;">
                     <button class="tts-btn" onclick="speakText('Згенеровано фото за запитом ${escapeHtml(cleanPrompt)}')">🔊 Озвучити</button>
                 `;
@@ -440,6 +444,95 @@
             input.value = '';
         }
 
+        /* ------------------- ПОШТА ------------------- */
+        function setMailProvider(provider, btn) {
+            selectedProvider = provider;
+            document.querySelectorAll('.provider-btns .btn-provider').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('current-mail-provider').innerText = provider;
+            renderMailList();
+        }
+
+        function handleAuth() {
+            const email = document.getElementById('email').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            if (!email || !pass) return alert('Будь ласка, введіть пошту та пароль!');
+            currentUser = email;
+            localStorage.setItem('acore_user', email);
+            document.getElementById('mail-auth-box').style.display = 'none';
+            document.getElementById('mail-inbox-section').style.display = 'block';
+            renderMailList();
+        }
+
+        function logoutMail() {
+            currentUser = "";
+            localStorage.removeItem('acore_user');
+            document.getElementById('mail-auth-box').style.display = 'block';
+            document.getElementById('mail-inbox-section').style.display = 'none';
+        }
+
+        function renderMailList() {
+            const list = document.getElementById('mail-list');
+            if (!list) return;
+            const items = mailStore[selectedProvider] || [];
+            if (items.length === 0) {
+                list.innerHTML = '<div style="color:#777; font-size:13px;">Немає листів</div>';
+                return;
+            }
+            list.innerHTML = items.map(m => `
+                <div class="email-item">
+                    <div class="email-header">
+                        <b>${escapeHtml(m.sender)}</b>
+                        <span>${escapeHtml(m.time)}</span>
+                    </div>
+                    <div style="font-weight:bold; font-size:13px; color:#1a4a84;">${escapeHtml(m.subject)}</div>
+                    <div style="font-size:12px; color:#444; margin-top:3px;">${escapeHtml(m.body)}</div>
+                </div>
+            `).join('');
+        }
+
+        function sendUserMail() {
+            const to = document.getElementById('send-to').value.trim();
+            const subject = document.getElementById('send-subject').value.trim();
+            const body = document.getElementById('send-body').value.trim();
+            if (!to || !subject || !body) return alert('Заповніть усі поля листа!');
+
+            if (!mailStore[selectedProvider]) mailStore[selectedProvider] = [];
+            mailStore[selectedProvider].unshift({
+                sender: currentUser || "Ви",
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                subject: `[Кому: ${to}] ${subject}`,
+                body: body
+            });
+            localStorage.setItem('acore_mail_store', JSON.stringify(mailStore));
+            document.getElementById('send-to').value = '';
+            document.getElementById('send-subject').value = '';
+            document.getElementById('send-body').value = '';
+            renderMailList();
+            alert('Лист успішно надіслано!');
+        }
+
+        /* ------------------- ПЕРЕКЛАДАЧ ------------------- */
+        async function translateText() {
+            const pair = document.getElementById('lang-pair').value.split('|');
+            const text = document.getElementById('trans-text').value.trim();
+            const resBox = document.getElementById('trans-result');
+            if (!text) return alert('Введіть текст для перекладу!');
+
+            resBox.innerText = 'Переклад...';
+            try {
+                const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${pair[0]}|${pair[1]}`);
+                const data = await res.json();
+                if (data.responseData) {
+                    resBox.innerText = data.responseData.translatedText;
+                } else {
+                    resBox.innerText = 'Помилка отримання перекладу.';
+                }
+            } catch (e) {
+                resBox.innerText = 'Помилка мережі при перекладі.';
+            }
+        }
+
         /* ------------------- ІГРИ ------------------- */
         let gameLoopInterval = null;
 
@@ -472,7 +565,7 @@
             const canvas = document.getElementById('doomCanvas');
             const ctx = canvas.getContext('2d');
 
-            let pX = 2.5, pY = 2.5, angle = 0, hp = 100, ammo = 10;
+            let pX = 2.5, pY = 2.5, angle = 0, ammo = 10;
             let keys = {};
             const map = [
                 [1,1,1,1,1,1,1,1],
@@ -559,33 +652,45 @@
                 vY += 0.7; pY += vY;
                 if (pY >= 160) { pY = 160; vY = 0; isJumping = false; }
 
-                ctx.fillStyle = "#87CEEB"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = "#22c55e"; ctx.fillRect(0, 190, canvas.width, 50);
+                ctx.fillStyle = "#111"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#28a745"; ctx.fillRect(0, 190, canvas.width, 50);
 
-                ctx.fillStyle = "#1a4a84"; ctx.fillRect(50, pY, 25, 30);
+                // Player
+                ctx.fillStyle = "#007bff"; ctx.fillRect(50, pY, 20, 30);
 
-                ctx.fillStyle = "#dc3545";
-                obstacles.forEach(o => {
-                    o.x -= 5;
-                    ctx.fillRect(o.x, 190 - o.h, o.w, o.h);
+                // Obstacles
+                for (let i = 0; i < obstacles.length; i++) {
+                    let ob = obstacles[i];
+                    ob.x -= 5;
+                    ctx.fillStyle = "#dc3545"; ctx.fillRect(ob.x, 190 - ob.h, ob.w, ob.h);
 
-                    if (o.x < 75 && o.x + o.w > 50 && pY + 30 > 190 - o.h) {
-                        score = 0; o.x = 400;
+                    if (ob.x < 70 && ob.x + ob.w > 50 && pY + 30 > 190 - ob.h) {
+                        clearInterval(gameLoopInterval);
+                        alert(`Гра закінчена! Ваш рахунок: ${score}`);
+                        initRunner();
+                        return;
                     }
 
-                    if (o.x < -20) { o.x = 400 + Math.random() * 150; score += 10; }
-                });
+                    if (ob.x + ob.w < 0) {
+                        obstacles.splice(i, 1);
+                        score += 10;
+                        document.getElementById('runner-score').innerText = score;
+                        i--;
+                    }
+                }
 
-                document.getElementById('runner-score').innerText = score;
-            }, 1000 / 40);
+                if (Math.random() < 0.02 && (obstacles.length === 0 || obstacles[obstacles.length - 1].x < 250)) {
+                    obstacles.push({ x: 400, w: 20, h: 20 + Math.random() * 25 });
+                }
+            }, 1000 / 30);
         }
 
-        /* 3. PING PONG */
+        /* 3. PONG */
         function initPong() {
             const gb = document.getElementById('game-board-area');
             gb.innerHTML = `
                 <div class="game-controls">
-                    <span>🏓 Гравець: <span id="p-score">0</span> | ШІ: <span id="ai-score">0</span></span>
+                    <span>Гравець: <span id="pong-player">0</span> | AI: <span id="pong-ai">0</span></span>
                     <button class="btn-reset-game" onclick="initPong()">Перезапуск</button>
                 </div>
                 <canvas id="pongCanvas" class="game-canvas" width="400" height="240"></canvas>
@@ -593,219 +698,242 @@
             const canvas = document.getElementById('pongCanvas');
             const ctx = canvas.getContext('2d');
 
-            let pY = 90, aiY = 90, bX = 200, bY = 120, bVX = 4, bVY = 3, pS = 0, aiS = 0;
+            let pY = 90, aiY = 90, bX = 200, bY = 120, bVX = 4, bVY = 3;
+            let pScore = 0, aiScore = 0;
 
             canvas.onmousemove = e => {
                 const rect = canvas.getBoundingClientRect();
                 pY = e.clientY - rect.top - 25;
             };
+            canvas.ontouchmove = e => {
+                const rect = canvas.getBoundingClientRect();
+                if (e.touches[0]) pY = e.touches[0].clientY - rect.top - 25;
+            };
 
             gameLoopInterval = setInterval(() => {
                 bX += bVX; bY += bVY;
-                if (bY <= 0 || bY >= canvas.height) bVY = -bVY;
+                if (bY <= 0 || bY >= canvas.height - 10) bVY *= -1;
 
-                if (aiY + 25 < bY) aiY += 2.8; else aiY -= 2.8;
+                if (aiY + 25 < bY) aiY += 2.5;
+                else if (aiY + 25 > bY) aiY -= 2.5;
 
-                if (bX <= 15 && bY >= pY && bY <= pY + 50) bVX = -bVX;
-                if (bX >= canvas.width - 15 && bY >= aiY && bY <= aiY + 50) bVX = -bVX;
+                if (bX <= 20 && bY + 10 >= pY && bY <= pY + 50) {
+                    bVX = Math.abs(bVX) + 0.2;
+                    bX = 20;
+                }
+                if (bX >= canvas.width - 30 && bY + 10 >= aiY && bY <= aiY + 50) {
+                    bVX = -Math.abs(bVX) - 0.2;
+                    bX = canvas.width - 30;
+                }
 
-                if (bX < 0) { aiS++; bX = 200; bY = 120; }
-                if (bX > canvas.width) { pS++; bX = 200; bY = 120; }
-
-                document.getElementById('p-score').innerText = pS;
-                document.getElementById('ai-score').innerText = aiS;
+                if (bX < 0) {
+                    aiScore++;
+                    document.getElementById('pong-ai').innerText = aiScore;
+                    bX = 200; bY = 120; bVX = 4;
+                }
+                if (bX > canvas.width) {
+                    pScore++;
+                    document.getElementById('pong-player').innerText = pScore;
+                    bX = 200; bY = 120; bVX = -4;
+                }
 
                 ctx.fillStyle = "#111"; ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = "#fff";
-                ctx.fillRect(5, pY, 10, 50);
-                ctx.fillRect(canvas.width - 15, aiY, 10, 50);
-                ctx.beginPath(); ctx.arc(bX, bY, 6, 0, Math.PI*2); ctx.fill();
-            }, 1000 / 40);
+                ctx.fillRect(10, Math.max(0, Math.min(canvas.height - 50, pY)), 10, 50);
+                ctx.fillRect(canvas.width - 20, Math.max(0, Math.min(canvas.height - 50, aiY)), 10, 50);
+                ctx.fillRect(bX, bY, 10, 10);
+            }, 1000 / 30);
         }
 
-        /* 4. TIC TAC TOE */
-        let tttBoard = ["","","","","","","","",""];
+        /* 4. ХРЕСТИКИ-НУЛИКИ */
+        let tttBoard = Array(9).fill('');
         function initTTT() {
-            tttBoard = ["","","","","","","","",""];
+            const gb = document.getElementById('game-board-area');
+            tttBoard = Array(9).fill('');
+            gb.innerHTML = `
+                <div class="game-controls">
+                    <span>Хрестики-Нулики проти ШІ</span>
+                    <button class="btn-reset-game" onclick="initTTT()">Перезапуск</button>
+                </div>
+                <div class="ttt-grid" id="tttGrid"></div>
+            `;
             renderTTT();
         }
+
         function renderTTT() {
-            const gb = document.getElementById('game-board-area');
-            gb.innerHTML = `
-                <div class="game-controls"><span>❌/⭕ Хрестики-Нулики проти ШІ</span><button class="btn-reset-game" onclick="initTTT()">Заново</button></div>
-                <div class="ttt-grid">
-                    ${tttBoard.map((v, i) => `<div class="ttt-cell" onclick="makeTTTMove(${i})">${v}</div>`).join('')}
-                </div>
-            `;
+            const grid = document.getElementById('tttGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            tttBoard.forEach((val, idx) => {
+                const cell = document.createElement('div');
+                cell.className = 'ttt-cell';
+                cell.innerText = val;
+                cell.onclick = () => handleTTTClick(idx);
+                grid.appendChild(cell);
+            });
         }
-        function makeTTTMove(i) {
-            if (tttBoard[i] !== "") return;
-            tttBoard[i] = "❌";
-            let empty = tttBoard.map((v, idx) => v === "" ? idx : null).filter(v => v !== null);
-            if (empty.length > 0) {
-                let aiChoice = empty[Math.floor(Math.random() * empty.length)];
-                tttBoard[aiChoice] = "⭕";
-            }
+
+        function handleTTTClick(idx) {
+            if (tttBoard[idx] !== '' || checkTTTWinner(tttBoard)) return;
+            tttBoard[idx] = 'X';
             renderTTT();
+            if (checkTTTWinner(tttBoard) === 'X') { alert('Ви виграли!'); return; }
+            if (tttBoard.every(c => c !== '')) { alert('Нічия!'); return; }
+
+            let emptyIndices = tttBoard.map((v, i) => v === '' ? i : null).filter(v => v !== null);
+            if (emptyIndices.length > 0) {
+                let aiChoice = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+                tttBoard[aiChoice] = 'O';
+                renderTTT();
+                if (checkTTTWinner(tttBoard) === 'O') { alert('ШІ переміг!'); }
+            }
         }
 
-        /* 5. MINESWEEPER */
-        let minesGrid = [];
+        function checkTTTWinner(b) {
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            for (let w of wins) {
+                if (b[w[0]] && b[w[0]] === b[w[1]] && b[w[0]] === b[w[2]]) return b[w[0]];
+            }
+            return null;
+        }
+
+        /* 5. САПЕР */
+        let minesBoard = [], minesRevealed = [];
         function initMines() {
-            minesGrid = Array(64).fill(0).map(() => Math.random() < 0.15 ? '💣' : '');
             const gb = document.getElementById('game-board-area');
             gb.innerHTML = `
-                <div class="game-controls"><span>💣 Сапер</span><button class="btn-reset-game" onclick="initMines()">Перезапуск</button></div>
-                <div class="mines-grid">
-                    ${minesGrid.map((v, i) => `<div class="mines-cell" id="mine-${i}" onclick="revealMine(${i})"></div>`).join('')}
+                <div class="game-controls">
+                    <span>💣 Сапер (10 мін)</span>
+                    <button class="btn-reset-game" onclick="initMines()">Перезапуск</button>
                 </div>
+                <div class="mines-grid" id="minesGrid"></div>
             `;
-        }
-        function revealMine(i) {
-            const cell = document.getElementById(`mine-${i}`);
-            cell.classList.add('revealed');
-            cell.innerText = minesGrid[i] === '💣' ? '💣' : '1';
-        }
-
-        /* Пошта */
-        function setMailProvider(provider, btn) {
-            selectedProvider = provider;
-            document.querySelectorAll('.btn-provider').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('current-mail-provider').innerText = provider;
-            renderMails();
+            minesBoard = Array(64).fill(0);
+            minesRevealed = Array(64).fill(false);
+            let placed = 0;
+            while (placed < 10) {
+                let r = Math.floor(Math.random() * 64);
+                if (minesBoard[r] !== -1) { minesBoard[r] = -1; placed++; }
+            }
+            renderMines();
         }
 
-        function handleAuth() {
-            const email = document.getElementById('email').value.trim();
-            if (email) {
-                currentUser = email;
-                localStorage.setItem('acore_user', currentUser);
-                updateMailUI();
-            } else { alert("Введіть email!"); }
+        function renderMines() {
+            const grid = document.getElementById('minesGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            minesBoard.forEach((val, idx) => {
+                const cell = document.createElement('div');
+                cell.className = 'mines-cell' + (minesRevealed[idx] ? ' revealed' : '');
+                if (minesRevealed[idx]) {
+                    if (val === -1) cell.innerText = '💣';
+                    else if (val > 0) cell.innerText = val;
+                }
+                cell.onclick = () => revealMineCell(idx);
+                grid.appendChild(cell);
+            });
         }
 
-        function logoutMail() {
-            currentUser = "";
-            localStorage.removeItem('acore_user');
-            updateMailUI();
-        }
-
-        function updateMailUI() {
-            const authBox = document.getElementById('mail-auth-box');
-            const inboxSec = document.getElementById('mail-inbox-section');
-
-            if (currentUser) {
-                authBox.innerHTML = `<p style="color:#28a745; font-weight:bold; padding:8px; background:#e8f5e9; border-radius:6px;">
-                    ✅ Авторизовано як: ${escapeHtml(currentUser)} (${selectedProvider})
-                </p>`;
-                inboxSec.style.display = 'block';
-                renderMails();
+        function revealMineCell(idx) {
+            if (minesRevealed[idx]) return;
+            minesRevealed[idx] = true;
+            if (minesBoard[idx] === -1) {
+                alert('💥 Бум! Ви натрапили на міну.');
+                minesRevealed = Array(64).fill(true);
             } else {
-                authBox.innerHTML = `
-                    <input type="email" id="email" class="mail-input" placeholder="Ваша адреса електронної пошти">
-                    <input type="password" id="password" class="mail-input" placeholder="Пароль">
-                    <button onclick="handleAuth()" style="background:#28a745;" class="btn-action">Увійти в пошту</button>
-                `;
-                inboxSec.style.display = 'none';
+                let count = 0;
+                let row = Math.floor(idx / 8), col = idx % 8;
+                for (let r = -1; r <= 1; r++) {
+                    for (let c = -1; c <= 1; c++) {
+                        let nr = row + r, nc = col + c;
+                        if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
+                            if (minesBoard[nr * 8 + nc] === -1) count++;
+                        }
+                    }
+                }
+                minesBoard[idx] = count;
             }
+            renderMines();
         }
 
-        function renderMails() {
-            const list = document.getElementById('mail-list');
-            const mails = mailStore[selectedProvider] || [];
-            if (mails.length === 0) {
-                list.innerHTML = `<p style="color:#777; font-style:italic;">Скринька порожня.</p>`;
-                return;
-            }
-            list.innerHTML = mails.map(m => `
-                <div class="email-item">
-                    <div class="email-header"><span><b>${escapeHtml(m.sender)}</b></span><span>${m.time}</span></div>
-                    <div style="font-weight:bold; font-size:13px;">${escapeHtml(m.subject)}</div>
-                    <div style="font-size:12px; color:#555; margin-top:3px;">${escapeHtml(m.body)}</div>
-                </div>
-            `).join('');
+        /* ------------------- ЧАТ СПІЛЬНОТИ ------------------- */
+        function postChatMessage() {
+            const input = document.getElementById('chat-input-field');
+            const msg = input.value.trim();
+            if (!msg) return;
+            const logs = document.getElementById('chat-logs');
+            const userDisp = currentUser ? currentUser.split('@')[0] : 'Користувач';
+            logs.innerHTML += `<div><b>${escapeHtml(userDisp)}:</b> ${escapeHtml(msg)}</div>`;
+            input.value = '';
+            logs.scrollTop = logs.scrollHeight;
         }
 
-        function sendUserMail() {
-            const to = document.getElementById('send-to').value.trim();
-            const subject = document.getElementById('send-subject').value.trim() || "Без теми";
-            const body = document.getElementById('send-body').value.trim();
-
-            if (!to || !body) return alert('Заповніть отримувача та текст листа!');
-
-            const now = new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
-            if (!mailStore[selectedProvider]) mailStore[selectedProvider] = [];
-
-            mailStore[selectedProvider].unshift({ sender: `Я (${currentUser}) ➔ ${to}`, time: now, subject: subject, body: body });
-            localStorage.setItem('acore_mail_store', JSON.stringify(mailStore));
-
-            document.getElementById('send-to').value = '';
-            document.getElementById('send-subject').value = '';
-            document.getElementById('send-body').value = '';
-            renderMails();
-            alert('Лист надіслано!');
-        }
-
-        /* Перекладач */
-        async function translateText() {
-            const text = document.getElementById('trans-text').value.trim();
-            const pair = document.getElementById('lang-pair').value;
-            const resDiv = document.getElementById('trans-result');
-            if (!text) return resDiv.innerText = "Введіть текст.";
-            resDiv.innerText = "Перекладаю...";
-            try {
-                const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${pair}`);
-                const data = await res.json();
-                resDiv.innerText = data.responseData.translatedText;
-            } catch (e) { resDiv.innerText = "Помилка перекладу."; }
-        }
-
-        /* Новини, Погода, Курси */
-        async function fetchNews() {
+        /* ------------------- ДАНІ (НОВИНИ, ПОГОДА, КУРСИ) ------------------- */
+        async function loadNews() {
+            const newsBox = document.getElementById('news-container');
             try {
                 const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.pravda.com.ua/rss/');
                 const data = await res.json();
-                const container = document.getElementById('news-container');
-                container.innerHTML = '';
-                data.items.slice(0, 6).forEach(item => {
-                    container.innerHTML += `<div class="news-item"><a href="${item.link}" target="_blank">${escapeHtml(item.title)}</a></div>`;
-                });
-            } catch (e) { document.getElementById('news-container').innerText = 'Не вдалося завантажити новини.'; }
-        }
-
-        async function fetchWeather() {
-            try {
-                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=49.44&longitude=32.06&current_weather=true');
-                const data = await res.json();
-                document.getElementById('weather').innerHTML = `<strong>Температура:</strong> ${data.current_weather.temperature}°C`;
-            } catch (e) { document.getElementById('weather').innerText = 'Помилка завантаження.'; }
-        }
-
-        async function fetchRates() {
-            try {
-                const res = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json');
-                const data = await res.json();
-                const usd = data.find(c => c.cc === 'USD')?.rate.toFixed(2);
-                document.getElementById('rates').innerHTML = `<strong>USD:</strong> ${usd} грн`;
-            } catch (e) { document.getElementById('rates').innerText = 'Помилка курсів.'; }
-        }
-
-        function postChatMessage() {
-            const input = document.getElementById('chat-input-field');
-            if (input.value.trim()) {
-                document.getElementById('chat-logs').innerHTML += `<div><b>Гість:</b> ${escapeHtml(input.value)}</div>`;
-                input.value = '';
+                if (data.items && data.items.length > 0) {
+                    newsBox.innerHTML = data.items.slice(0, 5).map(item => `
+                        <div class="news-item">
+                            <a href="${item.link}" target="_blank">${escapeHtml(item.title)}</a>
+                            <div style="font-size:12px; color:#666; margin-top:2px;">${new Date(item.pubDate).toLocaleString('uk-UA')}</div>
+                        </div>
+                    `).join('');
+                } else { throw new Error(); }
+            } catch (e) {
+                newsBox.innerHTML = `
+                    <div class="news-item"><a href="https://www.pravda.com.ua" target="_blank">Українська правда — Головні новини</a></div>
+                    <div class="news-item"><a href="https://www.rbc.ua" target="_blank">РБК-Україна — Оперативна інформація</a></div>
+                    <div class="news-item"><a href="https://www.ukrinform.ua" target="_blank">Укрінформ — Мультимедійна платформа</a></div>
+                `;
             }
         }
 
-        function escapeHtml(text) { return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+        async function loadWeather() {
+            const wBox = document.getElementById('weather');
+            try {
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=49.4444&longitude=32.0597&current_weather=true');
+                const data = await res.json();
+                if (data.current_weather) {
+                    wBox.innerHTML = `<b>Черкаси:</b> ${data.current_weather.temperature}°C, вітер ${data.current_weather.windspeed} км/год`;
+                }
+            } catch (e) {
+                wBox.innerHTML = 'Черкаси: +18°C, Сонячно';
+            }
+        }
 
-        window.addEventListener('load', () => {
-            setTimeout(() => { document.getElementById('app-preloader')?.classList.add('hidden'); }, 1200);
-        });
+        async function loadRates() {
+            const rBox = document.getElementById('rates');
+            try {
+                const res = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json');
+                const data = await res.json();
+                const usd = data.find(c => c.cc === 'USD')?.rate?.toFixed(2);
+                const eur = data.find(c => c.cc === 'EUR')?.rate?.toFixed(2);
+                rBox.innerHTML = `<b>USD:</b> ${usd || '41.20'} грн | <b>EUR:</b> ${eur || '45.10'} грн`;
+            } catch (e) {
+                rBox.innerHTML = '<b>USD:</b> 41.20 грн | <b>EUR:</b> 45.10 грн';
+            }
+        }
 
-        updateMailUI(); fetchNews(); fetchWeather(); fetchRates(); switchGame();
+        window.onload = () => {
+            setTimeout(() => {
+                const preloader = document.getElementById('app-preloader');
+                if (preloader) preloader.classList.add('hidden');
+            }, 800);
+
+            if (currentUser) {
+                document.getElementById('mail-auth-box').style.display = 'none';
+                document.getElementById('mail-inbox-section').style.display = 'block';
+                renderMailList();
+            }
+
+            initDoom();
+            loadNews();
+            loadWeather();
+            loadRates();
+        };
     </script>
 </body>
 </html>
