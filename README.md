@@ -50,3 +50,4 @@
 - [ ] Перетворення на PWA (Progressive Web App).
 - [ ] Збірка повноцінного `.apk` додатка для Android.
 - [ ] Інтеграція рекламних блоків (Google AdSense / монобанери).
+- [ ] Додавання Acore Workspace, Acore Video, Acore Pro (підписка), Acore disk та інше
