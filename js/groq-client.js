@@ -1,4 +1,4 @@
-// ===== GROQ CHAT (ПРЯМО БЕЗ АПІКИ) =====
+// ===== GROQ CHAT CLIENT =====
 const GroqChat = (() => {
     let conversationHistory = [];
     const MAX_HISTORY = 10;
@@ -10,8 +10,15 @@ const GroqChat = (() => {
                 return { error: 'Groq API ключ не знайдений' };
             }
 
+            if (!message || message.trim() === '') {
+                return { error: 'Повідомлення порусте' };
+            }
+
             try {
-                conversationHistory.push({ role: 'user', content: message });
+                conversationHistory.push({ 
+                    role: 'user', 
+                    content: message 
+                });
 
                 const response = await fetch(GROQ_URL, {
                     method: 'POST',
@@ -28,18 +35,29 @@ const GroqChat = (() => {
                 });
 
                 if (!response.ok) {
+                    const errorText = await response.text();
                     return { 
-                        error: `HTTP ${response.status}`,
-                        details: await response.text()
+                        error: `Помилка ${response.status}: ${errorText}`
                     };
                 }
 
                 const data = await response.json();
+                
+                if (!data.choices || !data.choices[0]) {
+                    return { error: 'Невірна відповідь від API' };
+                }
+
                 const reply = data.choices[0].message.content;
 
-                conversationHistory.push({ role: 'assistant', content: reply });
+                conversationHistory.push({ 
+                    role: 'assistant', 
+                    content: reply 
+                });
 
-                return { reply, history: conversationHistory };
+                return { 
+                    reply, 
+                    history: conversationHistory 
+                };
             } catch (err) {
                 return { error: err.message };
             }
@@ -51,6 +69,10 @@ const GroqChat = (() => {
 
         getHistory() {
             return conversationHistory;
+        },
+
+        setHistory(history) {
+            conversationHistory = history;
         }
     };
 })();
