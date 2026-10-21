@@ -41,6 +41,8 @@
         .file-actions { display: flex; gap: 8px; }
         .btn-download { padding: 6px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
         .btn-delete { padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-download:hover { background: #218838; }
+        .btn-delete:hover { background: #c82333; }
 
         .storage-info { background: #eef2f5; padding: 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; }
         .storage-bar { height: 8px; background: #ddd; border-radius: 4px; margin: 8px 0; overflow: hidden; }
@@ -49,6 +51,10 @@
         .empty-state { text-align: center; padding: 40px; color: #999; }
 
         footer { text-align: center; padding: 15px; color: #999; font-size: 12px; margin-top: 20px; }
+
+        .loading { display: inline-block; color: #666; }
+        .loading::after { content: '...'; animation: dots 1.5s steps(3, end) infinite; }
+        @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60%, 100% { content: '...'; } }
     </style>
 </head>
 <body>
@@ -67,6 +73,7 @@
             <input type="email" id="emailInput" class="auth-input" placeholder="ваша@email.com">
             <input type="password" id="passwordInput" class="auth-input" placeholder="Пароль">
             <button class="auth-btn" onclick="loginToCloud()">Увійти</button>
+            <p style="font-size: 12px; color: #999; margin-top: 10px;">Нові акаунти створюються автоматично</p>
         </div>
 
         <!-- Основна панель -->
@@ -120,14 +127,14 @@
             const password = document.getElementById('passwordInput').value.trim();
 
             if (!email || !password) {
-                alert('Заповніть всі поля');
+                alert('⚠️ Заповніть всі поля');
                 return;
             }
 
             const result = await supabaseLogin(email, password);
             
             if (result.error) {
-                alert('❌ ' + result.error.message);
+                alert('❌ Помилка: ' + result.error.message);
                 return;
             }
 
@@ -137,16 +144,18 @@
             document.getElementById('userName').innerText = email;
             
             await loadCloudFiles();
+            alert('✅ Ви увійшли!');
         }
 
         async function logoutFromCloud() {
-            if (!confirm('Вийти?')) return;
+            if (!confirm('Вийти з облака?')) return;
             await supabaseLogout();
             currentUser = null;
             document.getElementById('authSection').style.display = 'block';
             document.getElementById('mainPanel').style.display = 'none';
             document.getElementById('emailInput').value = '';
             document.getElementById('passwordInput').value = '';
+            alert('✅ Вихід успішний');
         }
 
         function handleDragOver(e) {
@@ -168,20 +177,21 @@
         function handleFileSelect(e) {
             const files = Array.from(e.target.files);
             files.forEach(f => uploadCloudFile(f));
+            e.target.value = '';
         }
 
         async function uploadCloudFile(file) {
             if (!currentUser) {
-                alert('Спочатку увійдіть');
+                alert('❌ Спочатку увійдіть');
                 return;
             }
 
             const result = await uploadToSupabase(file, currentUser.id);
             
             if (result.error) {
-                alert('❌ ' + result.error);
+                alert('❌ Помилка: ' + result.error);
             } else {
-                alert('✅ Завантажено!');
+                alert('✅ "' + file.name + '" завантажено!');
                 await loadCloudFiles();
             }
         }
@@ -208,8 +218,8 @@
                                 <div class="file-size">${file.size_mb} MB • ${date}</div>
                             </div>
                             <div class="file-actions">
-                                <button class="btn-download" onclick="downloadCloudFile('${file.file_path}', '${file.name}')">📥</button>
-                                <button class="btn-delete" onclick="deleteCloudFile('${file.id}', '${file.file_path}')">🗑️</button>
+                                <button class="btn-download" onclick="downloadCloudFile('${file.file_path}', '${file.name}')">📥 Скачати</button>
+                                <button class="btn-delete" onclick="deleteCloudFile('${file.id}', '${file.file_path}')">🗑️ Видалити</button>
                             </div>
                         </div>
                     `;
@@ -227,12 +237,12 @@
         }
 
         async function deleteCloudFile(fileId, filePath) {
-            if (!confirm('Видалити?')) return;
+            if (!confirm('Видалити файл?')) return;
             const result = await deleteFromSupabase(fileId, filePath);
             if (result.error) {
-                alert('❌ ' + result.error);
+                alert('❌ Помилка: ' + result.error);
             } else {
-                alert('✅ Видалено');
+                alert('✅ Файл видалено');
                 await loadCloudFiles();
             }
         }
