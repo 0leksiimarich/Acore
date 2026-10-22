@@ -10,35 +10,40 @@
         html, body { width: 100%; height: 100%; overflow: hidden; }
         body { background-color: #f4f5f7; color: #333; }
 
-        header { background: #1a4a84; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-        .logo { font-size: 18px; font-weight: bold; }
-        .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
-        .tab-btn { padding: 8px 12px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; transition: background 0.2s; text-decoration: none; display: inline-block; }
+        header { background: #1a4a84; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); overflow-x: auto; }
+        .logo { font-size: 18px; font-weight: bold; white-space: nowrap; }
+        .nav-links { display: flex; gap: 6px; flex-wrap: nowrap; }
+        .tab-btn { padding: 8px 12px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; transition: background 0.2s; text-decoration: none; display: inline-block; white-space: nowrap; }
         .tab-btn:hover, .tab-btn.active { background: rgba(255,255,255,0.4); }
 
         .container { display: flex; height: calc(100vh - 50px); overflow: hidden; }
 
-        .sidebar { width: 200px; background: white; border-right: 1px solid #ddd; overflow-y: auto; }
-        .sidebar-item { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 13px; transition: background 0.2s; }
+        .sidebar { width: 160px; background: white; border-right: 1px solid #ddd; overflow-y: auto; }
+        .sidebar-item { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 12px; transition: background 0.2s; }
         .sidebar-item:hover { background: #f8f9fa; }
-        .sidebar-item.active { background: #e8f0ff; color: #1a4a84; font-weight: bold; }
+        .sidebar-item.active { background: #e8f0ff; color: #1a4a84; font-weight: bold; border-left: 3px solid #1a4a84; }
 
         .content { flex: 1; overflow-y: auto; padding: 15px; }
 
         .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
         .card h3 { margin-bottom: 12px; color: #1a4a84; font-size: 16px; }
 
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
         .chat-box { height: 300px; border: 1px solid #ccc; border-radius: 6px; padding: 10px; overflow-y: auto; background: #f8f9fa; margin-bottom: 10px; font-size: 12px; }
-        .chat-line { margin: 6px 0; padding: 6px; background: white; border-radius: 4px; }
+        .chat-line { margin: 6px 0; padding: 6px; background: white; border-radius: 4px; border-left: 3px solid #ddd; }
 
         .input-group { display: flex; gap: 8px; margin-bottom: 10px; }
-        input[type="text"], input[type="password"], input[type="email"] { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
-        button { padding: 8px 16px; background: #1a4a84; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        input[type="text"], input[type="password"], input[type="email"], textarea, select { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; font-family: inherit; }
+        textarea { resize: vertical; height: 80px; }
+        button { padding: 8px 16px; background: #1a4a84; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; white-space: nowrap; }
         button:hover { background: #0056b3; }
 
-        .hidden { display: none; }
+        #news-list, #mail-list { font-size: 12px; }
+        #games-list, #game-container { min-height: 300px; }
 
-        footer { text-align: center; padding: 8px; font-size: 11px; color: #999; border-top: 1px solid #ddd; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -55,62 +60,123 @@
         <div class="sidebar" id="sidebar">
             <div class="sidebar-item active" onclick="switchTab('news')">📰 Новини</div>
             <div class="sidebar-item" onclick="switchTab('chat')">🤖 Чат AI</div>
+            <div class="sidebar-item" onclick="switchTab('mail')">📧 Пошта</div>
+            <div class="sidebar-item" onclick="switchTab('games')">🎮 Ігри</div>
             <div class="sidebar-item" onclick="switchTab('tools')">⚙️ Інструменти</div>
         </div>
 
         <div class="content">
             <!-- НОВИНИ -->
-            <div id="tab-news" class="tab-content">
+            <div id="tab-news" class="tab-content active">
                 <div class="card">
-                    <h3>📰 Головні новини</h3>
-                    <div id="news-list">Завантаження новин...</div>
+                    <h3>📰 Головні новини BBC</h3>
+                    <div id="news-list">⏳ Завантаження новин...</div>
                 </div>
             </div>
 
             <!-- ЧАТ -->
-            <div id="tab-chat" class="tab-content hidden">
+            <div id="tab-chat" class="tab-content">
                 <div class="card">
                     <h3>🤖 Чат з Groq AI</h3>
                     
-                    <div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+                    <div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #ffc107;">
                         <input type="password" id="groqKeyInput" placeholder="Введіть Groq ключ (gsk_...)" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 8px;">
                         <button onclick="saveGroqKey()" style="width: 100%;">💾 Зберегти ключ</button>
+                        <p style="font-size: 11px; color: #666; margin-top: 8px;">Отримай: <a href="https://console.groq.com" target="_blank" style="color: #1a4a84;">console.groq.com</a></p>
                     </div>
 
                     <div id="chatBox" class="chat-box"></div>
 
                     <div class="input-group">
                         <input type="text" id="chatInput" placeholder="Твоє питання..." onkeypress="if(event.key==='Enter') sendChatMessage()">
-                        <button onclick="sendChatMessage()">Надіслати</button>
-                        <button onclick="clearChat()" style="background: #6c757d;">Очистити</button>
+                        <button onclick="sendChatMessage()">📤</button>
+                        <button onclick="clearChat()" style="background: #6c757d;">🗑️</button>
                     </div>
                 </div>
             </div>
 
-            <!-- ІНСТРУМЕНТИ -->
-            <div id="tab-tools" class="tab-content hidden">
+            <!-- ПОШТА -->
+            <div id="tab-mail" class="tab-content">
                 <div class="card">
-                    <h3>⚙️ Інструменти</h3>
-                    <p>🔧 Погода, валюти, ігри (coming soon)</p>
+                    <h3>📧 Пошта</h3>
+                    <div id="mail-list">📭 Немає писем</div>
+                </div>
+
+                <div class="card">
+                    <h3>✏️ Написати лист</h3>
+                    <div class="input-group" style="flex-direction: column; gap: 8px;">
+                        <input type="email" id="email-to" placeholder="Кому:" style="flex: none;">
+                        <input type="text" id="email-subject" placeholder="Тема:" style="flex: none;">
+                        <textarea id="email-body" placeholder="Текст листа..."></textarea>
+                        <button onclick="sendEmail()" style="flex: none;">📤 Надіслати</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ІГРИ -->
+            <div id="tab-games" class="tab-content">
+                <div class="card">
+                    <h3>🎮 Ігри</h3>
+                    <div id="games-list">⏳ Завантаження...</div>
+                    <div id="game-container" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- ІНСТРУМЕНТИ -->
+            <div id="tab-tools" class="tab-content">
+                <!-- Перекладач -->
+                <div class="card">
+                    <h3>🌐 Перекладач</h3>
+                    <div class="input-group" style="flex-direction: column; gap: 8px;">
+                        <textarea id="translate-input" placeholder="Введіть текст українською..."></textarea>
+                        <select id="target-lang" style="flex: none;">
+                            <option value="en">English</option>
+                            <option value="de">Deutsch</option>
+                            <option value="fr">Français</option>
+                            <option value="pl">Polski</option>
+                        </select>
+                        <button onclick="translate()" style="flex: none;">🔄 Перекласти</button>
+                        <textarea id="translate-output" placeholder="Результат..." readonly style="flex: none;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Погода -->
+                <div class="card">
+                    <h3>🌤️ Погода</h3>
+                    <div id="weather-info">⏳ Завантаження...</div>
+                    <button onclick="getWeather()" style="margin-top: 10px;">🔄 Оновити</button>
+                </div>
+
+                <!-- Валюти -->
+                <div class="card">
+                    <h3>💱 Курси валют</h3>
+                    <div id="rates-info">⏳ Завантаження...</div>
+                    <button onclick="getExchangeRates()" style="margin-top: 10px;">🔄 Оновити</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer>Acore Corp ©2026 • Українська веб-платформа</footer>
-
     <script src="js/config.js"></script>
+    <script src="js/news.js"></script>
+    <script src="js/mail.js"></script>
     <script src="js/groq-client.js"></script>
+    <script src="js/games/manager.js"></script>
+    <script src="js/tools.js"></script>
 
     <script>
         let groqApiKey = localStorage.getItem('groq_api_key') || '';
 
         function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
             
             document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
             event.target.classList.add('active');
+
+            if (tab === 'games') {
+                GameManager.init();
+            }
         }
 
         function saveGroqKey() {
@@ -135,15 +201,15 @@
             if (!message) return;
 
             const chatBox = document.getElementById('chatBox');
-            chatBox.innerHTML += `<div class="chat-line"><strong>Ти:</strong> ${message}</div>`;
+            chatBox.innerHTML += `<div class="chat-line" style="border-left-color: #1a4a84;"><strong>Ти:</strong> ${message}</div>`;
             document.getElementById('chatInput').value = '';
 
             const result = await GroqChat.ask(message, groqApiKey);
             
             if (result.error) {
-                chatBox.innerHTML += `<div class="chat-line" style="background: #f8d7da;">❌ ${result.error}</div>`;
+                chatBox.innerHTML += `<div class="chat-line" style="background: #f8d7da; border-left-color: #dc3545;">❌ ${result.error}</div>`;
             } else {
-                chatBox.innerHTML += `<div class="chat-line" style="background: #d1ecf1;"><strong>AI:</strong> ${result.reply}</div>`;
+                chatBox.innerHTML += `<div class="chat-line" style="background: #d1ecf1; border-left-color: #0c5460;"><strong>AI:</strong> ${result.reply}</div>`;
             }
 
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -154,23 +220,14 @@
             GroqChat.clear();
         }
 
+        function sendEmail() {
+            sendEmail(); // Оголошено у mail.js
+        }
+
         window.addEventListener('load', () => {
             if (groqApiKey) {
                 document.getElementById('groqKeyInput').value = '***';
             }
-
-            // Завантажити новини (демо)
-            const newsList = document.getElementById('news-list');
-            newsList.innerHTML = `
-                <div style="background: #f0f0f0; padding: 10px; border-radius: 4px; margin-bottom: 8px;">
-                    <strong>📰 Новина 1</strong><br>
-                    <small>Цікава новина про eventos...</small>
-                </div>
-                <div style="background: #f0f0f0; padding: 10px; border-radius: 4px;">
-                    <strong>📰 Новина 2</strong><br>
-                    <small>Ще одна importante noticia...</small>
-                </div>
-            `;
         });
     </script>
 </body>
