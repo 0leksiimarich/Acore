@@ -37,7 +37,7 @@ const GroqChat = (() => {
                 if (!response.ok) {
                     const errorText = await response.text();
                     return { 
-                        error: `Помилка ${response.status}: ${errorText}`
+                        error: `Помилка ${response.status}`
                     };
                 }
 
@@ -69,10 +69,6 @@ const GroqChat = (() => {
 
         getHistory() {
             return conversationHistory;
-        },
-
-        setHistory(history) {
-            conversationHistory = history;
         }
     };
 })();
