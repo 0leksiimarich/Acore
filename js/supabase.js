@@ -1,4 +1,4 @@
-// ===== SUPABASE ИНТЕГРАЦИЯ =====
+// ===== SUPABASE ІНТЕГРАЦІЯ =====
 let supabaseClient = null;
 
 function initSupabase() {
@@ -17,10 +17,8 @@ async function supabaseLogin(email, password) {
     if (!client) return { error: { message: 'Supabase не ініціалізовано' } };
 
     try {
-        // Спробуй увійти
         let result = await client.auth.signInWithPassword({ email, password });
         
-        // Якщо немає юзера - створи його
         if (result.error && result.error.message.includes('Invalid login credentials')) {
             result = await client.auth.signUp({ 
                 email, 
@@ -51,14 +49,12 @@ async function uploadToSupabase(file, userId) {
     try {
         const fileName = `${userId}/${Date.now()}-${file.name}`;
         
-        // Завантаж файл в Storage
         const { error: uploadError } = await client.storage
             .from(ACORE_CONFIG.SUPABASE_BUCKET)
             .upload(fileName, file);
 
         if (uploadError) throw uploadError;
 
-        // Збережи метадані в БД
         const { error: dbError } = await client
             .from('files')
             .insert({
@@ -126,14 +122,12 @@ async function deleteFromSupabase(fileId, filePath) {
     if (!client) return { error: 'Supabase не ініціалізовано' };
 
     try {
-        // Видали з Storage
         const { error: deleteStorageError } = await client.storage
             .from(ACORE_CONFIG.SUPABASE_BUCKET)
             .remove([filePath]);
 
         if (deleteStorageError) throw deleteStorageError;
 
-        // Видали з БД
         const { error: deleteDbError } = await client
             .from('files')
             .delete()
