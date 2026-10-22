@@ -4,115 +4,174 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1a4a84">
-    <title>Acore Пошук</title>
+    <title>Acore - Веб-платформа</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #f4f5f7; color: #333; overflow-x: hidden; }
+        html, body { width: 100%; height: 100%; overflow: hidden; }
+        body { background-color: #f4f5f7; color: #333; }
 
-        header { background: #1a4a84; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-        .logo { font-size: 20px; font-weight: bold; letter-spacing: 0.5px; }
-        .nav-links { display: flex; gap: 15px; }
-        .nav-links a { color: white; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 4px; transition: background 0.2s; }
-        .nav-links a:hover { background: rgba(255,255,255,0.2); }
+        header { background: #1a4a84; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .logo { font-size: 18px; font-weight: bold; }
+        .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
+        .tab-btn { padding: 8px 12px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; transition: background 0.2s; text-decoration: none; display: inline-block; }
+        .tab-btn:hover, .tab-btn.active { background: rgba(255,255,255,0.4); }
 
-        .container { max-width: 800px; margin: 30px auto; padding: 0 15px; }
-        
-        .search-header { text-align: center; margin-bottom: 30px; }
-        .search-title { font-size: 32px; font-weight: bold; color: #1a4a84; margin-bottom: 20px; }
+        .container { display: flex; height: calc(100vh - 50px); overflow: hidden; }
 
-        .search-box { display: flex; gap: 8px; }
-        .search-box input { flex: 1; padding: 12px 16px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; outline: none; transition: border 0.2s; }
-        .search-box input:focus { border-color: #1a4a84; box-shadow: 0 0 0 3px rgba(26,74,132,0.1); }
-        .search-box button { padding: 12px 28px; background: #1a4a84; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-        .search-box button:hover { background: #0056b3; }
+        .sidebar { width: 200px; background: white; border-right: 1px solid #ddd; overflow-y: auto; }
+        .sidebar-item { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 13px; transition: background 0.2s; }
+        .sidebar-item:hover { background: #f8f9fa; }
+        .sidebar-item.active { background: #e8f0ff; color: #1a4a84; font-weight: bold; }
 
-        .results { margin-top: 25px; }
-        .result-item { background: white; padding: 16px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-        .result-title { color: #1a4a84; font-size: 16px; font-weight: bold; text-decoration: none; display: block; margin-bottom: 6px; }
-        .result-title:hover { text-decoration: underline; }
-        .result-url { color: #008000; font-size: 12px; margin-bottom: 4px; }
-        .result-snippet { color: #666; font-size: 13px; line-height: 1.5; }
+        .content { flex: 1; overflow-y: auto; padding: 15px; }
 
-        .loading { text-align: center; padding: 20px; color: #666; }
-        .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid #eee; border-top: 3px solid #1a4a84; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+        .card h3 { margin-bottom: 12px; color: #1a4a84; font-size: 16px; }
 
-        .no-results { text-align: center; color: #999; padding: 30px; font-size: 14px; }
+        .chat-box { height: 300px; border: 1px solid #ccc; border-radius: 6px; padding: 10px; overflow-y: auto; background: #f8f9fa; margin-bottom: 10px; font-size: 12px; }
+        .chat-line { margin: 6px 0; padding: 6px; background: white; border-radius: 4px; }
 
-        footer { text-align: center; padding: 20px; color: #999; font-size: 12px; margin-top: 40px; }
+        .input-group { display: flex; gap: 8px; margin-bottom: 10px; }
+        input[type="text"], input[type="password"], input[type="email"] { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
+        button { padding: 8px 16px; background: #1a4a84; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        button:hover { background: #0056b3; }
+
+        .hidden { display: none; }
+
+        footer { text-align: center; padding: 8px; font-size: 11px; color: #999; border-top: 1px solid #ddd; }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">🔍 Acore Пошук</div>
+        <div class="logo">🚀 Acore 2.0</div>
         <div class="nav-links">
-            <a href="index.html">← На головну</a>
+            <a href="search.html" class="tab-btn">🔍 Пошук</a>
+            <a href="maps.html" class="tab-btn">🗺️ Карти</a>
+            <a href="cloud.html" class="tab-btn">☁️ Облако</a>
         </div>
     </header>
 
     <div class="container">
-        <div class="search-header">
-            <h1 class="search-title">Пошук в Інтернеті</h1>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Введіть пошуковий запит..." onkeypress="if(event.key==='Enter') search()">
-                <button onclick="search()">Пошук</button>
-            </div>
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-item active" onclick="switchTab('news')">📰 Новини</div>
+            <div class="sidebar-item" onclick="switchTab('chat')">🤖 Чат AI</div>
+            <div class="sidebar-item" onclick="switchTab('tools')">⚙️ Інструменти</div>
         </div>
 
-        <div class="results" id="resultsContainer"></div>
+        <div class="content">
+            <!-- НОВИНИ -->
+            <div id="tab-news" class="tab-content">
+                <div class="card">
+                    <h3>📰 Головні новини</h3>
+                    <div id="news-list">Завантаження новин...</div>
+                </div>
+            </div>
+
+            <!-- ЧАТ -->
+            <div id="tab-chat" class="tab-content hidden">
+                <div class="card">
+                    <h3>🤖 Чат з Groq AI</h3>
+                    
+                    <div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+                        <input type="password" id="groqKeyInput" placeholder="Введіть Groq ключ (gsk_...)" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 8px;">
+                        <button onclick="saveGroqKey()" style="width: 100%;">💾 Зберегти ключ</button>
+                    </div>
+
+                    <div id="chatBox" class="chat-box"></div>
+
+                    <div class="input-group">
+                        <input type="text" id="chatInput" placeholder="Твоє питання..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+                        <button onclick="sendChatMessage()">Надіслати</button>
+                        <button onclick="clearChat()" style="background: #6c757d;">Очистити</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ІНСТРУМЕНТИ -->
+            <div id="tab-tools" class="tab-content hidden">
+                <div class="card">
+                    <h3>⚙️ Інструменти</h3>
+                    <p>🔧 Погода, валюти, ігри (coming soon)</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <footer>
-        Пошук через DuckDuckGo API • Acore Corp ©2026
-    </footer>
+    <footer>Acore Corp ©2026 • Українська веб-платформа</footer>
+
+    <script src="js/config.js"></script>
+    <script src="js/groq-client.js"></script>
 
     <script>
-        const API_URL = 'https://api.duckduckgo.com/';
+        let groqApiKey = localStorage.getItem('groq_api_key') || '';
 
-        function search() {
-            const query = document.getElementById('searchInput').value.trim();
-            if (!query) return;
-
-            const resultsContainer = document.getElementById('resultsContainer');
-            resultsContainer.innerHTML = '<div class="loading"><div class="spinner"></div><p>Пошук...</p></div>';
-
-            fetch(`${API_URL}?q=${encodeURIComponent(query)}&format=json&no_html=1&no_redirect=1`)
-                .then(res => res.json())
-                .then(data => {
-                    let html = '';
-
-                    if (data.AbstractText) {
-                        html += `<div class="result-item">
-                            <div class="result-title">${data.Heading || query}</div>
-                            <div class="result-snippet">${data.AbstractText}</div>
-                        </div>`;
-                    }
-
-                    if (data.RelatedTopics && data.RelatedTopics.length > 0) {
-                        data.RelatedTopics.forEach(item => {
-                            if (item.FirstURL && item.Text) {
-                                html += `<div class="result-item">
-                                    <a href="${item.FirstURL}" target="_blank" class="result-title">${item.Text.split('—')[0]}</a>
-                                    <div class="result-url">${new URL(item.FirstURL).hostname}</div>
-                                    <div class="result-snippet">${item.Text.substring(0, 150)}...</div>
-                                </div>`;
-                            }
-                        });
-                    }
-
-                    if (!html) {
-                        html = '<div class="no-results">❌ Результатів не знайдено</div>';
-                    }
-
-                    resultsContainer.innerHTML = html;
-                })
-                .catch(err => {
-                    resultsContainer.innerHTML = '<div class="no-results">⚠️ Помилка при пошуку. Спробуйте ще раз.</div>';
-                    console.error('Search error:', err);
-                });
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
         }
 
-        document.getElementById('searchInput').focus();
+        function saveGroqKey() {
+            const key = document.getElementById('groqKeyInput').value.trim();
+            if (!key.startsWith('gsk_')) {
+                alert('❌ Ключ повинен починатися з gsk_');
+                return;
+            }
+            localStorage.setItem('groq_api_key', key);
+            groqApiKey = key;
+            document.getElementById('groqKeyInput').value = '***';
+            alert('✅ Збережено!');
+        }
+
+        async function sendChatMessage() {
+            if (!groqApiKey) {
+                alert('❌ Введіть Groq ключ');
+                return;
+            }
+
+            const message = document.getElementById('chatInput').value.trim();
+            if (!message) return;
+
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML += `<div class="chat-line"><strong>Ти:</strong> ${message}</div>`;
+            document.getElementById('chatInput').value = '';
+
+            const result = await GroqChat.ask(message, groqApiKey);
+            
+            if (result.error) {
+                chatBox.innerHTML += `<div class="chat-line" style="background: #f8d7da;">❌ ${result.error}</div>`;
+            } else {
+                chatBox.innerHTML += `<div class="chat-line" style="background: #d1ecf1;"><strong>AI:</strong> ${result.reply}</div>`;
+            }
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function clearChat() {
+            document.getElementById('chatBox').innerHTML = '';
+            GroqChat.clear();
+        }
+
+        window.addEventListener('load', () => {
+            if (groqApiKey) {
+                document.getElementById('groqKeyInput').value = '***';
+            }
+
+            // Завантажити новини (демо)
+            const newsList = document.getElementById('news-list');
+            newsList.innerHTML = `
+                <div style="background: #f0f0f0; padding: 10px; border-radius: 4px; margin-bottom: 8px;">
+                    <strong>📰 Новина 1</strong><br>
+                    <small>Цікава новина про eventos...</small>
+                </div>
+                <div style="background: #f0f0f0; padding: 10px; border-radius: 4px;">
+                    <strong>📰 Новина 2</strong><br>
+                    <small>Ще одна importante noticia...</small>
+                </div>
+            `;
+        });
     </script>
 </body>
 </html>
