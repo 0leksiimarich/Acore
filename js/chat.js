@@ -1,60 +1,42 @@
-/* Панель «Обговорення». Поки що повідомлення зберігаються лише на цьому пристрої. */
+/* Панель «Обговорення». Повідомлення зберігаються лише на цьому пристрої. */
 (function () {
     'use strict';
     const A = window.Acore;
-    const { h, $ } = A;
-
-    let drawer, toggle, log, input;
-    let messages = [];
-
-    const who = () => {
-        const d = A.store.get('mail2', null);
-        return (d && d.user) || 'Гість';
-    };
+    const $ = id => document.getElementById(id);
+    const KEY = 'drawer';
 
     function paint() {
+        const log = $('chat-logs');
+        if (!log) return;
         log.textContent = '';
-        if (!messages.length) {
-            log.appendChild(h('p', { class: 'empty', text: 'Тут поки тихо. Напишіть перше повідомлення.' }));
+        const list = A.store.get(KEY, []);
+        if (!list.length) {
+            log.appendChild(A.h('div', { text: 'Тут поки тихо. Напишіть перше повідомлення.' }));
             return;
         }
-        messages.forEach(m => log.appendChild(h('div', { class: 'dmsg' },
-            h('strong', { text: m.name }),
-            h('span', { text: m.text }))));
+        list.forEach(m => log.appendChild(A.h('div', null,
+            A.h('b', { text: m.name + ': ' }),
+            A.h('span', { text: m.text }))));
         log.scrollTop = log.scrollHeight;
     }
 
-    function open(on) {
-        drawer.hidden = !on;
-        toggle.setAttribute('aria-expanded', String(on));
-        if (on) { paint(); input.focus(); }
-    }
+    window.toggleChatDrawer = function () {
+        const d = $('chatDrawer');
+        if (!d) return;
+        d.classList.toggle('open');
+        if (d.classList.contains('open')) $('chat-input-field').focus();
+    };
 
-    function init() {
-        drawer = $('#drawer');
-        toggle = $('#drawer-toggle');
-        log = $('#drawer-log');
-        input = $('#drawer-input');
-        if (!drawer) return;
+    window.postChatMessage = function () {
+        const input = $('chat-input-field');
+        const text = input.value.trim().slice(0, 300);
+        if (!text) return;
+        const list = A.store.get(KEY, []);
+        list.push({ name: 'Гість', text, at: Date.now() });
+        A.store.set(KEY, list.slice(-60));
+        input.value = '';
+        paint();
+    };
 
-        const saved = A.store.get('drawer', []);
-        messages = Array.isArray(saved) ? saved.slice(-60) : [];
-
-        toggle.addEventListener('click', () => open(drawer.hidden));
-        $('#drawer-close').addEventListener('click', () => open(false));
-        document.addEventListener('keydown', e => { if (e.key === 'Escape' && !drawer.hidden) open(false); });
-
-        $('#drawer-form').addEventListener('submit', e => {
-            e.preventDefault();
-            const text = input.value.trim();
-            if (!text) return;
-            messages.push({ name: who(), text: text.slice(0, 300), at: Date.now() });
-            messages = messages.slice(-60);
-            A.store.set('drawer', messages);
-            input.value = '';
-            paint();
-        });
-    }
-
-    A.drawer = { init };
+    window.ChatModule = { init: paint };
 })();
