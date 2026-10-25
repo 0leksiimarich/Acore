@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a4a84">
+<title>Acore Docs — Документи</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: #f4f5f7; color: #333; height: 100vh; display: flex; flex-direction: column; }
+    header { background: #1a4a84; color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+    header .logo { font-size: 18px; font-weight: bold; }
+    header a { color: #fff; text-decoration: none; font-size: 13px; padding: 6px 10px; border-radius: 4px; background: rgba(255,255,255,.15); }
+    header a:hover { background: rgba(255,255,255,.25); }
+    .layout { flex: 1; display: flex; min-height: 0; }
+
+    /* Список документів */
+    aside { width: 270px; background: #fff; border-right: 1px solid #ddd; display: flex; flex-direction: column; min-height: 0; }
+    .aside-top { padding: 10px; display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid #eee; }
+    .btn { padding: 8px 12px; border: none; border-radius: 6px; background: #1a4a84; color: #fff; font-weight: bold; font-size: 13px; cursor: pointer; }
+    .btn:hover { background: #0056b3; }
+    .btn.danger { background: #dc3545; }
+    .btn.light { background: #eef2f7; color: #1a4a84; }
+    input[type=search] { padding: 7px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; width: 100%; }
+    #doc-list { list-style: none; overflow-y: auto; flex: 1; }
+    #doc-list li { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+    #doc-list li:hover { background: #f5f8fc; }
+    #doc-list li.active { background: #e8f0f8; border-left: 3px solid #1a4a84; }
+    .doc-name { font-weight: bold; font-size: 14px; color: #1a4a84; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .doc-date { font-size: 11px; color: #888; margin-top: 2px; }
+    .empty { padding: 20px; color: #888; font-size: 13px; text-align: center; }
+
+    /* Редактор */
+    main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+    .toolbar { background: #fff; border-bottom: 1px solid #ddd; padding: 8px 12px; display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+    .toolbar button { min-width: 34px; padding: 6px 8px; border: 1px solid #ddd; background: #fafafa; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    .toolbar button:hover { background: #eef2f7; }
+    .toolbar .sep { width: 1px; height: 22px; background: #ddd; margin: 0 4px; }
+    .title-row { background: #fff; padding: 12px 16px 0; }
+    #doc-title { width: 100%; font-size: 22px; font-weight: bold; border: none; outline: none; color: #1a4a84; padding: 6px 0; }
+    .meta-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #888; padding: 4px 0 8px; border-bottom: 1px solid #eee; background: #fff; padding-left: 16px; padding-right: 16px; flex-wrap: wrap; gap: 6px; }
+    .export-box { display: flex; gap: 6px; }
+    .export-box button { padding: 4px 10px; font-size: 12px; border: 1px solid #ccc; background: #fff; border-radius: 4px; cursor: pointer; }
+    .paper-wrap { flex: 1; overflow-y: auto; padding: 20px; min-height: 0; }
+    #editor { background: #fff; max-width: 800px; margin: 0 auto; min-height: 100%; padding: 36px 44px; border: 1px solid #e3e6ea; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,.06); font-size: 16px; line-height: 1.6; outline: none; }
+    #editor:empty::before { content: 'Почніть писати...'; color: #aaa; }
+    #editor h1 { font-size: 26px; margin: 12px 0 8px; color: #1a4a84; }
+    #editor h2 { font-size: 20px; margin: 10px 0 6px; color: #1a4a84; }
+    #editor ul, #editor ol { padding-left: 26px; }
+    .status-bar { font-size: 12px; color: #888; padding: 6px 16px; background: #fff; border-top: 1px solid #eee; display: flex; justify-content: space-between; }
+
+    /* Мобільна версія */
+    @media (max-width: 720px) {
+        body { height: auto; min-height: 100vh; }
+        .layout { flex-direction: column; }
+        aside { width: 100%; max-height: 240px; border-right: none; border-bottom: 1px solid #ddd; }
+        #editor { padding: 20px 16px; }
+        .paper-wrap { padding: 10px; }
+    }
+</style>
+</head>
+<body>
+<header>
+    <div class="logo">Acore Docs</div>
+    <a href="index.html">← Назад на Acore</a>
+</header>
+
+<div class="layout">
+    <aside>
+        <div class="aside-top">
+            <button class="btn" id="new-doc" type="button">+ Новий документ</button>
+            <input type="search" id="search" placeholder="Пошук документів...">
+        </div>
+        <ul id="doc-list"></ul>
+    </aside>
+
+    <main>
+        <div class="title-row">
+            <input type="text" id="doc-title" placeholder="Назва документа" maxlength="120">
+        </div>
+        <div class="toolbar">
+            <button type="button" data-cmd="bold" title="Жирний"><b>B</b></button>
+            <button type="button" data-cmd="italic" title="Курсив"><i>I</i></button>
+            <button type="button" data-cmd="underline" title="Підкреслення"><u>U</u></button>
+            <button type="button" data-cmd="strikeThrough" title="Закреслення"><s>S</s></button>
+            <span class="sep"></span>
+            <button type="button" data-block="H1" title="Заголовок 1">H1</button>
+            <button type="button" data-block="H2" title="Заголовок 2">H2</button>
+            <button type="button" data-block="P" title="Звичайний текст">¶</button>
+            <span class="sep"></span>
+            <button type="button" data-cmd="insertUnorderedList" title="Маркований список">• ―</button>
+            <button type="button" data-cmd="insertOrderedList" title="Нумерований список">1.</button>
+            <span class="sep"></span>
+            <button type="button" data-cmd="justifyLeft" title="Вліво">⫷</button>
+            <button type="button" data-cmd="justifyCenter" title="По центру">≡</button>
+            <button type="button" data-cmd="removeFormat" title="Очистити форматування">✕</button>
+        </div>
+        <div class="paper-wrap">
+            <div id="editor" contenteditable="true" spellcheck="true"></div>
+        </div>
+        <div class="status-bar">
+            <span id="word-count">0 слів</span>
+            <span id="save-status">Готово</span>
+        </div>
+        <div class="meta-row" style="display:none;"></div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/access.js"></script>
+<script>
+(function () {
+    'use strict';
+    const KEY = 'acore-docs';
+
+    // ----- хмара (Supabase): працює, коли користувач увійшов в облако -----
+    const CFG = window.ACORE_CONFIG || {};
+    const sb = (window.supabase && CFG.SUPABASE_URL)
+        ? window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY)
+        : null;
+    let user = null;
+    const $ = s => document.querySelector(s);
+    const editor = $('#editor');
+    const titleEl = $('#doc-title');
+    const listEl = $('#doc-list');
+    const searchEl = $('#search');
+    const statusEl = $('#save-status');
+    const countEl = $('#word-count');
+
+    let docs = load();
+    let currentId = null;
+    let saveTimer = null;
+
+    function load() {
+        try {
+            const d = JSON.parse(localStorage.getItem(KEY) || '[]');
+            return Array.isArray(d) ? d : [];
+        } catch (e) { return []; }
+    }
+    function persist() {
+        try {
+            localStorage.setItem(KEY, JSON.stringify(docs));
+            return true;
+        } catch (e) {
+            statusEl.textContent = 'Помилка збереження (мало місця)';
+            return false;
+        }
+    }
+    function uid() { return 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+    function fmtDate(ts) {
+        return new Date(ts).toLocaleString('uk-UA', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    }
+    function clockNow() { return new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }); }
+    function current() { return docs.find(d => d.id === currentId); }
+
+    function renderList() {
+        const q = searchEl.value.trim().toLowerCase();
+        const items = docs
+            .filter(d => !q || (d.title || '').toLowerCase().includes(q) || (d.text || '').toLowerCase().includes(q))
+            .sort((a, b) => b.updated - a.updated);
+        listEl.textContent = '';
+        if (!items.length) {
+            const li = document.createElement('li');
+            li.className = 'empty';
+            li.textContent = q ? 'Нічого не знайдено' : 'Документів ще немає. Створіть перший.';
+            listEl.appendChild(li);
+            return;
+        }
+        items.forEach(d => {
+            const li = document.createElement('li');
+            if (d.id === currentId) li.className = 'active';
+            const name = document.createElement('div');
+            name.className = 'doc-name';
+            name.textContent = d.title || 'Без назви';
+            const date = document.createElement('div');
+            date.className = 'doc-date';
+            date.textContent = 'Змінено: ' + fmtDate(d.updated);
+            li.append(name, date);
+            li.addEventListener('click', () => open(d.id));
+            listEl.appendChild(li);
+        });
+    }
+
+    function updateCount() {
+        const text = (editor.innerText || '').trim();
+        const words = text ? text.split(/\s+/).length : 0;
+        countEl.textContent = words + ' ' + plural(words, 'слово', 'слова', 'слів');
+    }
+    function plural(n, one, few, many) {
+        const m10 = n % 10, m100 = n % 100;
+        if (m10 === 1 && m100 !== 11) return one;
+        if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+        return many;
+    }
+
+    function open(id) {
+        if (currentId) flushSave();
+        const d = docs.find(x => x.id === id);
+        if (!d) return;
+        currentId = id;
+        titleEl.value = d.title || '';
+        editor.innerHTML = d.html || '';
+        statusEl.textContent = 'Відкрито';
+        updateCount();
+        renderList();
+    }
+
+    async function pushCloud(d) {
+        if (!user || !sb) return;
+        const { error } = await sb.from('documents').upsert({
+            id: d.id, user_id: user.id, title: d.title, html: d.html, text: d.text,
+            updated_at: new Date(d.updated).toISOString()
+        });
+        if (error) statusEl.textContent = 'Помилка хмари: ' + error.message;
+        else statusEl.textContent = 'Збережено о ' + clockNow() + ' · у хмарі';
+    }
+    async function removeCloud(id) {
+        if (!user || !sb) return;
+        const { error } = await sb.from('documents').delete().eq('id', id);
+        if (error) statusEl.textContent = 'Помилка хмари: ' + error.message;
+    }
+    // Підтягує документи з хмари, зливає з локальними (новіший перемагає)
+    async function pullCloud() {
+        if (!sb) return;
+        const { data: sess } = await sb.auth.getSession();
+        user = sess && sess.session ? sess.session.user : null;
+        if (!user) {
+            statusEl.textContent = 'Документи зберігаються в браузері. Увійдіть в облако, щоб синхронізувати.';
+            return;
+        }
+        if (!window.AcoreAccess.limits(user.email).docsSync) {
+            statusEl.textContent = 'Синхронізація доступна лише для пошти Acore. Документи зберігаються в браузері.';
+            user = null;
+            return;
+        }
+        const { data, error } = await sb.from('documents').select('*').eq('user_id', user.id);
+        if (error) { statusEl.textContent = 'Помилка хмари: ' + error.message; return; }
+
+        let changed = false;
+        (data || []).forEach(r => {
+            const rt = Date.parse(r.updated_at) || 0;
+            const loc = docs.find(x => x.id === r.id);
+            if (!loc) {
+                docs.push({ id: r.id, title: r.title || '', html: r.html || '', text: r.text || '', updated: rt });
+                changed = true;
+            } else if (rt > loc.updated) {
+                Object.assign(loc, { title: r.title || '', html: r.html || '', text: r.text || '', updated: rt });
+                changed = true;
+            }
+        });
+        if (changed) persist();
+
+        // Локальні документи, яких ще немає в хмарі, — завантажити
+        docs.forEach(d => { if (!(data || []).some(r => r.id === d.id)) pushCloud(d); });
+
+        renderList();
+        if (changed && currentId) open(currentId);
+        else if (!currentId && docs.length) open(docs.slice().sort((a, b) => b.updated - a.updated)[0].id);
+        statusEl.textContent = 'Синхронізовано з хмарою';
+    }
+
+    function createDoc() {
+        flushSave();
+        const d = { id: uid(), title: '', html: '', text: '', updated: Date.now() };
+        docs.push(d);
+        persist();
+        open(d.id);
+        titleEl.focus();
+    }
+
+    function flushSave() {
+        clearTimeout(saveTimer);
+        const d = current();
+        if (!d) return;
+        d.title = titleEl.value.trim();
+        d.html = editor.innerHTML;
+        d.text = editor.innerText || '';
+        d.updated = Date.now();
+        if (persist()) {
+            statusEl.textContent = 'Збережено о ' + clockNow();
+            pushCloud(d);
+        }
+        renderList();
+    }
+    function scheduleSave() {
+        statusEl.textContent = 'Збереження...';
+        updateCount();
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(flushSave, 500);
+    }
+
+    function deleteDoc() {
+        const d = current();
+        if (!d) return;
+        if (!confirm('Видалити документ «' + (d.title || 'Без назви') + '»?')) return;
+        docs = docs.filter(x => x.id !== d.id);
+        persist();
+        removeCloud(d.id);
+        currentId = null;
+        clearTimeout(saveTimer);
+        titleEl.value = '';
+        editor.innerHTML = '';
+        statusEl.textContent = 'Документ видалено';
+        renderList();
+        updateCount();
+        if (docs.length) open(docs[0].id);
+    }
+
+    function download(name, content, type) {
+        const blob = new Blob([content], { type });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    }
+    function exportDoc(kind) {
+        flushSave();
+        const d = current();
+        if (!d) return;
+        const base = (d.title || 'document').replace(/[\\/:*?"<>|]+/g, '_');
+        if (kind === 'txt') download(base + '.txt', (d.text || ''), 'text/plain;charset=utf-8');
+        if (kind === 'html') {
+            const page = '<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><title>' +
+                (d.title || 'Документ').replace(/</g, '&lt;') + '</title></head><body>' + d.html + '</body></html>';
+            download(base + '.html', page, 'text/html;charset=utf-8');
+        }
+    }
+
+    // ----- панель форматування -----
+    document.querySelectorAll('[data-cmd]').forEach(btn => {
+        btn.addEventListener('mousedown', e => e.preventDefault());
+        btn.addEventListener('click', () => {
+            if (!current()) return;
+            editor.focus();
+            document.execCommand(btn.dataset.cmd, false, null);
+            scheduleSave();
+        });
+    });
+    document.querySelectorAll('[data-block]').forEach(btn => {
+        btn.addEventListener('mousedown', e => e.preventDefault());
+        btn.addEventListener('click', () => {
+            if (!current()) return;
+            editor.focus();
+            document.execCommand('formatBlock', false, btn.dataset.block);
+            scheduleSave();
+        });
+    });
+
+    // ----- події -----
+    $('#new-doc').addEventListener('click', createDoc);
+    searchEl.addEventListener('input', renderList);
+    editor.addEventListener('input', scheduleSave);
+    titleEl.addEventListener('input', scheduleSave);
+    window.addEventListener('beforeunload', flushSave);
+
+    // Окремий кнопочний блок експорту/видалення в шапці редактора
+    const meta = document.querySelector('.meta-row');
+    meta.style.display = 'flex';
+    meta.textContent = '';
+    const bar = document.createElement('div');
+    bar.className = 'export-box';
+    [['Експорт .txt', () => exportDoc('txt')], ['Експорт .html', () => exportDoc('html')], ['Видалити', deleteDoc]]
+        .forEach(([label, fn]) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.textContent = label;
+            b.addEventListener('click', fn);
+            bar.appendChild(b);
+        });
+    meta.appendChild(bar);
+
+    // Старт: відкрити останній документ або показати порожній стан
+    if (docs.length) open(docs.slice().sort((a, b) => b.updated - a.updated)[0].id);
+    renderList();
+    updateCount();
+    pullCloud();
+})();
+</script>
+</body>
+</html>
