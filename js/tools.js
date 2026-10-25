@@ -1,65 +1,66 @@
-// ===== ІНСТРУМЕНТИ (Перекладач, Погода, Валюти) =====
-(function() {
-    // Перекладач
-    window.translate = async function() {
-        const text = document.getElementById('translate-input').value;
-        const targetLang = document.getElementById('target-lang').value;
+/* Інструменти: перекладач, погода, курси НБУ. */
+(function () {
+    'use strict';
+    const A = window.Acore;
+    const $ = id => document.getElementById(id);
 
-        if (!text) return;
-
+    async function getJSON(url) {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 12000);
         try {
-            const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=uk|${targetLang}`);
-            const data = await response.json();
-            document.getElementById('translate-output').value = data.responseData.translatedText;
-        } catch (err) {
-            alert('❌ Помилка перекладу');
+            const res = await fetch(url, { signal: ctrl.signal });
+            if (!res.ok) throw new Error('http ' + res.status);
+            return await res.json();
+        } finally {
+            clearTimeout(timer);
         }
-    };
+    }
 
-    // Погода
-    window.getWeather = async function() {
-        const lat = ACORE_CONFIG.CITY_DEFAULT.lat;
-        const lon = ACORE_CONFIG.CITY_DEFAULT.lon;
-
+    window.translateText = async function () {
+        const text = $('trans-text').value.trim();
+        const out = $('trans-result');
+        if (!text) { out.textContent = 'Введіть текст для перекладу.'; return; }
+        out.textContent = 'Перекладаю…';
         try {
-            const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`);
-            const data = await response.json();
-            const temp = data.current.temperature_2m;
-            const code = data.current.weather_code;
-
-            let weather = '🌤️ Ясно';
-            if (code > 50) weather = '🌧️ Дощ';
-            if (code > 80) weather = '⛈️ Гроза';
-
-            document.getElementById('weather-info').innerHTML = `${ACORE_CONFIG.CITY_DEFAULT.name}: ${temp}°C ${weather}`;
-        } catch (err) {
-            document.getElementById('weather-info').innerHTML = '⚠️ Не вдалося отримати погоду';
+            const url = 'https://api.mymemory.translated.net/get?q=' +
+                encodeURIComponent(text.slice(0, 500)) + '&langpair=' + encodeURIComponent($('lang-pair').value);
+            const d = await getJSON(url);
+            out.textContent = (d.responseData && d.responseData.translatedText) || 'Порожній результат.';
+        } catch (e) {
+            out.textContent = 'Не вдалося перекласти. Спробуйте пізніше.';
         }
     };
 
-    // Валюти
-    window.getExchangeRates = function() {
-        const rates = {
-            'USD': 40.50,
-            'EUR': 44.20,
-            'GBP': 51.00,
-            'PLN': 10.50,
-            'RUB': 0.35
-        };
-
-        let html = '<table style="width: 100%; font-size: 12px;"><tr><th>Валюта</th><th>Курс (UAH)</th></tr>';
-        
-        for (let curr in rates) {
-            html += `<tr><td>${curr}</td><td>${rates[curr]} ₴</td></tr>`;
+    async function loadWeather() {
+        const box = $('weather');
+        if (!box) return;
+        const c = A.cfg.CITY_DEFAULT;
+        try {
+            const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + c.lat + '&longitude=' + c.lon +
+                '&current=temperature_2m,wind_speed_10m&timezone=auto';
+            const cur = (await getJSON(url)).current;
+            box.textContent = c.name + ': ' + Math.round(cur.temperature_2m) + ' °C, вітер ' +
+                Math.round(cur.wind_speed_10m) + ' км/год';
+        } catch (e) {
+            box.textContent = 'Погода тимчасово недоступна.';
         }
+    }
 
-        html += '</table>';
-        document.getElementById('rates-info').innerHTML = html;
+    async function loadRates() {
+        const box = $('rates');
+        if (!box) return;
+        try {
+            const list = await getJSON('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json');
+            const want = ['USD', 'EUR', 'GBP', 'PLN'];
+            const rows = list.filter(x => want.includes(x.cc))
+                .map(x => x.cc + ': ' + Number(x.rate).toFixed(2) + ' ₴');
+            box.textContent = rows.length ? rows.join('  |  ') : 'Немає даних.';
+        } catch (e) {
+            box.textContent = 'Курси тимчасово недоступні.';
+        }
+    }
+
+    window.ToolsModule = {
+        init() { loadWeather(); loadRates(); }
     };
-
-    // Завантажити при старті
-    window.addEventListener('load', () => {
-        getWeather();
-        getExchangeRates();
-    });
 })();
