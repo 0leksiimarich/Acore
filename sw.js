@@ -1,7 +1,7 @@
 // ACORE SERVICE WORKER
 // Кешування файлів, офлайн режим, синхронізація
 
-const CACHE_NAME = 'acore';
+const CACHE_NAME = 'Acore';
 const urlsToCache = [
     '/',
     '/index.html',
