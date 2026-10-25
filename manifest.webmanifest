@@ -1,0 +1,34 @@
+{
+  "name": "Acore — Все для вас",
+  "short_name": "Acore",
+  "description": "Українська альтернатива сервісів. Чат з ШІ, новини, пошта, ігри, погода, валюти",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a4a84",
+  "theme_color": "#1a4a84",
+  "orientation": "portrait-primary",
+  "categories": [
+    "productivity",
+    "news"
+  ],
+  "shortcuts": [
+    {
+      "name": "Чат з ШІ",
+      "short_name": "Чат",
+      "description": "Розпочати розмову з Акориком",
+      "url": "/?tab=ai"
+    },
+    {
+      "name": "Новини",
+      "short_name": "Новини",
+      "description": "Читати новини України",
+      "url": "/?tab=news"
+    },
+    {
+      "name": "Ігри",
+      "short_name": "Ігри",
+      "description": "Грати у вбудовані ігри",
+      "url": "/?tab=extra"
+    }
+  ]
+}
