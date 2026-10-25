@@ -18,7 +18,7 @@
         .nav-links a:hover { background: rgba(255,255,255,0.2); }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
-        
+
         .controls { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
         .search-box { display: flex; gap: 8px; }
         .search-box input { flex: 1; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; outline: none; }
@@ -34,6 +34,8 @@
         #map { height: 500px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
 
         footer { text-align: center; padding: 15px; color: #999; font-size: 12px; margin-top: 20px; }
+
+        .leaflet-popup-content { font-size: 13px; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -47,19 +49,22 @@
     <div class="container">
         <div class="controls">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Шукати місцевість...">
+                <input type="text" id="searchInput" placeholder="Шукати місцевість (назва)...">
                 <button onclick="searchLocation()">Шукати</button>
             </div>
 
             <div class="cities">
                 <div class="cities-title">🇺🇦 Популярні міста України:</div>
-                <button class="city-btn" onclick="goToCity(49.0, 32.0, 'Черкаси')">Черкаси</button>
+                <button class="city-btn" onclick="goToCity(49.4444, 32.0598, 'Черкаси')">Черкаси</button>
                 <button class="city-btn" onclick="goToCity(50.4501, 30.5234, 'Київ')">Київ</button>
                 <button class="city-btn" onclick="goToCity(49.5832, 34.8008, 'Полтава')">Полтава</button>
                 <button class="city-btn" onclick="goToCity(48.0, 37.8, 'Донецьк')">Донецьк</button>
                 <button class="city-btn" onclick="goToCity(49.6, 36.6, 'Харків')">Харків</button>
                 <button class="city-btn" onclick="goToCity(46.4775, 30.7326, 'Одеса')">Одеса</button>
                 <button class="city-btn" onclick="goToCity(49.8, 24.0, 'Львів')">Львів</button>
+                <button class="city-btn" onclick="goToCity(48.5, 25.3, 'Івано-Франківськ')">Івано-Франківськ</button>
+                <button class="city-btn" onclick="goToCity(50.63, 26.25, 'Рівне')">Рівне</button>
+                <button class="city-btn" onclick="goToCity(51.5, 31.3, 'Чернігів')">Чернігів</button>
             </div>
         </div>
 
@@ -71,27 +76,33 @@
     </footer>
 
     <script>
-        const map = L.map('map').setView([49.0, 32.0], 12);
+        // Ініціалізація карти (Черкаси, обласний центр)
+        const map = L.map('map').setView([49.4444, 32.0598], 12);
 
+        // OpenStreetMap слой
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap',
             maxZoom: 19
         }).addTo(map);
 
-        const marker = L.marker([49.0, 32.0]).addTo(map)
-            .bindPopup('<b>Черкаси</b><br>Помірний клімат 🌳');
+        // Маркер для Черкас
+        const marker = L.marker([49.4444, 32.0598]).addTo(map)
+            .bindPopup('<b>Черкаси</b><br>Помірний клімат, красива природа 🌳');
 
+        // Геолокація користувача (якщо дозволено)
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 pos => {
                     const { latitude, longitude } = pos.coords;
-                    L.marker([latitude, longitude]).addTo(map)
+                    const userMarker = L.marker([latitude, longitude]).addTo(map)
                         .bindPopup('<b>Ваша позиція 📍</b>');
                     map.setView([latitude, longitude], 12);
-                }
+                },
+                err => console.log('Геолокація не доступна')
             );
         }
 
+        // Функції
         function goToCity(lat, lng, name) {
             map.setView([lat, lng], 12);
             L.marker([lat, lng]).addTo(map).bindPopup(`<b>${name}</b>`).openPopup();
@@ -101,23 +112,32 @@
             const query = document.getElementById('searchInput').value.trim();
             if (!query) return;
 
-            fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`)
+            // Запит "Черкаси" = обласний центр (без плутанини з селами)
+            const city = (window.ACORE_CONFIG && window.ACORE_CONFIG.CITY_DEFAULT) || { name: 'Черкаси', lat: 49.4444, lon: 32.0598 };
+            if (query.toLowerCase() === city.name.toLowerCase()) {
+                showPlace(city.lat, city.lon, city.name + ', Черкаська область');
+                return;
+            }
+
+            // Пошук тільки в Україні; спершу міста, потім інші результати
+            const url = 'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(query) +
+                '&format=json&limit=5&countrycodes=ua&accept-language=uk';
+            fetch(url)
                 .then(res => res.json())
                 .then(data => {
-                    if (data.length === 0) {
-                        alert('Місцевість не знайдена');
-                        return;
-                    }
-                    const { lat, lon, name } = data[0];
-                    map.setView([parseFloat(lat), parseFloat(lon)], 12);
-                    L.marker([parseFloat(lat), parseFloat(lon)])
-                        .addTo(map)
-                        .bindPopup(`<b>${name}</b>`)
-                        .openPopup();
+                    if (!data.length) { alert('Місцевість не знайдена'); return; }
+                    const best = data.find(d => ['city', 'town'].includes(d.type)) || data[0];
+                    showPlace(parseFloat(best.lat), parseFloat(best.lon), best.display_name);
                 })
-                .catch(err => alert('Помилка при пошуку'));
+                .catch(() => alert('Помилка при пошуку'));
         }
 
+        function showPlace(lat, lon, name) {
+            map.setView([lat, lon], 12);
+            L.marker([lat, lon]).addTo(map).bindPopup('<b>' + name + '</b>').openPopup();
+        }
+
+        // Enter для пошуку
         document.getElementById('searchInput').addEventListener('keypress', e => {
             if (e.key === 'Enter') searchLocation();
         });
