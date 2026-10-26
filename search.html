@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a4a84">
+    <title>Acore Пошук</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f4f5f7; color: #333; overflow-x: hidden; }
+
+        header { background: #1a4a84; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .logo { font-size: 20px; font-weight: bold; letter-spacing: 0.5px; }
+        .nav-links { display: flex; gap: 15px; }
+        .nav-links a { color: white; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 4px; transition: background 0.2s; }
+        .nav-links a:hover { background: rgba(255,255,255,0.2); }
+
+        .container { max-width: 800px; margin: 30px auto; padding: 0 15px; }
+        .search-header { text-align: center; margin-bottom: 30px; }
+        .search-title { font-size: 32px; font-weight: bold; color: #1a4a84; margin-bottom: 20px; }
+
+        .search-box { display: flex; gap: 8px; }
+        .search-box input { flex: 1; padding: 12px 16px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; outline: none; transition: border 0.2s; }
+        .search-box input:focus { border-color: #1a4a84; box-shadow: 0 0 0 3px rgba(26,74,132,0.1); }
+        .search-box button { padding: 12px 28px; background: #1a4a84; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .search-box button:hover { background: #0056b3; }
+
+        .results { margin-top: 25px; }
+        .provider { font-size: 12px; color: #888; margin-bottom: 12px; text-align: right; }
+        .result-item { background: white; padding: 16px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+        .result-title { color: #1a4a84; font-size: 16px; font-weight: bold; text-decoration: none; display: block; margin-bottom: 6px; }
+        .result-title:hover { text-decoration: underline; }
+        .result-url { color: #008000; font-size: 12px; margin-bottom: 4px; word-break: break-all; }
+        .result-snippet { color: #666; font-size: 13px; line-height: 1.5; }
+
+        .loading { text-align: center; padding: 20px; color: #666; }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid #eee; border-top: 3px solid #1a4a84; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .no-results { text-align: center; color: #999; padding: 30px; font-size: 14px; }
+        footer { text-align: center; padding: 20px; color: #999; font-size: 12px; margin-top: 40px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">🔍 Acore Пошук</div>
+        <div class="nav-links">
+            <a href="index.html">← На головну</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="search-header">
+            <h1 class="search-title">Пошук в Інтернеті</h1>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Введіть пошуковий запит..." autocomplete="off">
+                <button id="searchBtn" type="button">Пошук</button>
+            </div>
+        </div>
+
+        <div class="results" id="resultsContainer"></div>
+    </div>
+
+    <footer>
+        Пошук: Brave Search, резервний — Tavily • Acore Corp ©2026
+    </footer>
+
+    <script src="js/config.js"></script>
+    <script>
+        const WORKER = ((window.ACORE_CONFIG && window.ACORE_CONFIG.AI_PROXY_URL) || '').replace(/\/+$/, '');
+        const box = document.getElementById('resultsContainer');
+        const input = document.getElementById('searchInput');
+
+        const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const safeUrl = u => (/^https?:\/\//i.test(String(u || '')) ? u : '#');
+        const host = u => { try { return new URL(u).hostname; } catch (e) { return ''; } };
+
+        function message(text) {
+            box.innerHTML = '<div class="no-results">' + esc(text) + '</div>';
+        }
+
+        function render(data) {
+            const items = data.results || [];
+            if (!items.length) { message('❌ Результатів не знайдено'); return; }
+            const who = data.provider === 'tavily' ? 'Tavily' : 'Brave Search';
+            box.innerHTML = '<div class="provider">Результати: ' + esc(who) + '</div>' +
+                items.map(r => '<div class="result-item">' +
+                    '<a class="result-title" href="' + esc(safeUrl(r.url)) + '" target="_blank" rel="noopener noreferrer">' + esc(r.title) + '</a>' +
+                    '<div class="result-url">' + esc(host(r.url)) + '</div>' +
+                    '<div class="result-snippet">' + esc(r.snippet) + '</div>' +
+                    '</div>').join('');
+        }
+
+        async function search() {
+            const q = input.value.trim();
+            if (!q) return;
+            if (!WORKER) { message('Пошук ще не підключено. Власнику сайту: вкажіть AI_PROXY_URL у js/config.js.'); return; }
+            box.innerHTML = '<div class="loading"><div class="spinner"></div><p>Пошук...</p></div>';
+            try {
+                const res = await fetch(WORKER + '/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ q })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    if (data.error === 'limit') message('Забагато запитів сьогодні. Спробуйте завтра.');
+                    else message('⚠️ Пошук тимчасово недоступний. Спробуйте пізніше.');
+                    return;
+                }
+                render(data);
+            } catch (e) {
+                message('⚠️ Немає зв’язку з сервером. Перевірте інтернет.');
+            }
+        }
+
+        document.getElementById('searchBtn').addEventListener('click', search);
+        input.addEventListener('keypress', e => { if (e.key === 'Enter') search(); });
+        input.focus();
+    </script>
+</body>
+</html>
