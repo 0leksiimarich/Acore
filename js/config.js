@@ -4,7 +4,9 @@
  * Усе, що лежить у цьому файлі, бачить кожен відвідувач сайту.
  */
 window.ACORE_CONFIG = {
-    // Адреса вашого Cloudflare Worker. Ключі Groq і OpenRouter зберігаються в Worker, сюди не потрапляють.
+    // Адреса вашого Cloudflare Worker (див. README, крок 3). Приклад:
+    // "https://acore-ai.ваш-нік.workers.dev"
+    // Поки порожньо, Акорик працює лише з ключем із Сервіси → Налаштування (для тестів).
     AI_PROXY_URL: "https://rough-recipe-2992.oleksijmaric20.workers.dev",
 
     // Модель чату на Groq
@@ -34,8 +36,8 @@ window.ACORE_CONFIG = {
     // Поки домену немає, залиште порожнім: обмежень не буде, повний доступ у всіх.
     // Коли домен буде, вкажіть його тут, наприклад "acore.pp.ua".
     ACORE_EMAIL_DOMAIN: "",
-    FULL_QUOTA_MB: 100,
-    FULL_FILE_MB: 50,
-    LIMITED_QUOTA_MB: 50,
-    LIMITED_FILE_MB: 10
+    FULL_QUOTA_MB: 70,
+    FULL_FILE_MB: 10,
+    LIMITED_QUOTA_MB: 30,
+    LIMITED_FILE_MB: 5
 };
