@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a4a84">
+<title>Acore Музика</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    [hidden] { display: none !important; }
+    body { background: #f4f5f7; color: #222; min-height: 100vh; }
+    header { background: #1a4a84; color: #fff; padding: 12px 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; }
+    header .logo { font-size: 20px; font-weight: bold; }
+    header a { color: #fff; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,.15); }
+    header .who { margin-left: auto; font-size: 12px; opacity: .85; }
+    .wrap { max-width: 640px; margin: 16px auto; padding: 0 12px 40px; }
+    .card { background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.06); margin-bottom: 12px; }
+    h3 { font-size: 16px; color: #1a4a84; margin-bottom: 10px; }
+    form { display: flex; flex-direction: column; gap: 10px; }
+    label { font-size: 13px; font-weight: 600; color: #444; display: flex; flex-direction: column; gap: 4px; }
+    input[type=text], select { padding: 10px; border: 1px solid #d6dde6; border-radius: 9px; font-size: 15px; outline: none; font-weight: 400; }
+    input[type=file] { font-size: 14px; }
+    .check { flex-direction: row; align-items: flex-start; gap: 8px; font-weight: 400; font-size: 13px; color: #555; }
+    .btn { padding: 11px 16px; background: #1a4a84; color: #fff; border: none; border-radius: 9px; font-weight: 700; font-size: 14px; cursor: pointer; }
+    .btn:disabled { opacity: .55; cursor: default; }
+    .btn.small { padding: 6px 10px; font-size: 12px; }
+    .btn.ok { background: #198754; }
+    .btn.no { background: #dc3545; }
+    .msg { font-size: 13px; min-height: 16px; color: #c00; }
+    .msg.ok { color: #198754; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .tab { flex: 1; padding: 9px; border: 1px solid #1a4a84; background: #fff; color: #1a4a84; border-radius: 9px; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .tab.on { background: #1a4a84; color: #fff; }
+    .track { padding: 12px 0; border-bottom: 1px solid #eef2f5; }
+    .track:last-child { border-bottom: none; }
+    .tt { font-weight: 700; font-size: 15px; }
+    .ta { font-size: 13px; color: #555; margin-bottom: 6px; }
+    .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #eef2f7; color: #1a4a84; margin-left: 6px; }
+    .badge.pending { background: #fff3cd; color: #7a5b00; }
+    .badge.rejected { background: #f8d7da; color: #842029; }
+    audio { width: 100%; margin-top: 6px; }
+    .acts { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+    .empty { text-align: center; color: #888; padding: 20px; font-size: 14px; }
+    .note { font-size: 12px; color: #777; line-height: 1.5; }
+</style>
+</head>
+<body>
+<header>
+    <div class="logo">🎵 Acore Музика</div>
+    <a href="index.html">← На головну</a>
+    <div class="who" id="who"></div>
+</header>
+
+<main class="wrap">
+    <section class="card" id="uploadCard" hidden>
+        <h3>⬆️ Завантажити трек</h3>
+        <form id="uploadForm" novalidate>
+            <label>Аудіофайл (MP3, до 10 MB)
+                <input type="file" id="file" accept="audio/mpeg,audio/mp3,.mp3">
+            </label>
+            <label>Назва треку
+                <input type="text" id="title" maxlength="120" placeholder="Назва">
+            </label>
+            <label>Виконавець
+                <input type="text" id="artist" maxlength="120" placeholder="Ім'я виконавця або гурту">
+            </label>
+            <label>Ліцензія
+                <select id="license">
+                    <option value="own">Це моя музика, я маю на неї всі права</option>
+                    <option value="cc-by">Creative Commons (CC BY) — з вказанням автора</option>
+                    <option value="public-domain">Суспільне надбання (public domain)</option>
+                </select>
+            </label>
+            <label class="check">
+                <input type="checkbox" id="rights">
+                <span>Я підтверджую, що маю право на цей файл, і погоджуюсь, що його можна зняти з сайту за запитом правовласника.</span>
+            </label>
+            <div class="msg" id="uploadMsg"></div>
+            <button class="btn" id="btnUpload" type="submit">Надіслати на перевірку</button>
+            <p class="note">Трек з'явиться на сайті після перевірки адміністратором. Не завантажуйте чужу музику без дозволу автора.</p>
+        </form>
+    </section>
+
+    <div class="tabs">
+        <button class="tab on" data-tab="all" type="button">Усі треки</button>
+        <button class="tab" data-tab="mine" type="button">Мої</button>
+        <button class="tab" data-tab="review" type="button" id="tabReview" hidden>На перевірці</button>
+    </div>
+
+    <section class="card" id="list"></section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/access.js"></script>
+<script>
+(function () {
+    'use strict';
+    const CFG = window.ACORE_CONFIG || {};
+    const ADMIN_EMAIL = 'ADMIN_EMAIL';         // та сама пошта, що в supabase_music.sql
+    const MAX_MB = CFG.MUSIC_MAX_MB || 5;
+    const LICENSE_TEXT = { 'own': 'Власна музика', 'cc-by': 'CC BY', 'public-domain': 'Public domain' };
+    const sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY);
+    const $ = id => document.getElementById(id);
+    let user = null;
+    let isAdmin = false;
+    let tab = 'all';
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function fileUrl(path) {
+        const w = (CFG.MUSIC_WORKER_URL || '').replace(/\/+$/, '');
+        return w + '/music/file?key=' + encodeURIComponent(path);
+    }
+    function uploadMsg(text, ok) {
+        $('uploadMsg').textContent = text;
+        $('uploadMsg').className = 'msg' + (ok ? ' ok' : '');
+    }
+
+    /* ---------- Завантаження ---------- */
+    $('uploadForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        if (!user) { uploadMsg('Увійдіть в акаунт на головній сторінці.'); return; }
+        const file = $('file').files[0];
+        const title = $('title').value.trim();
+        const artist = $('artist').value.trim();
+        const license = $('license').value;
+        if (!file) { uploadMsg('Оберіть аудіофайл.'); return; }
+        if (!/\.mp3$/i.test(file.name) && file.type !== 'audio/mpeg') { uploadMsg('Потрібен файл MP3.'); return; }
+        const mb = file.size / 1048576;
+        if (mb > MAX_MB) { uploadMsg('Файл завеликий. Максимум ' + MAX_MB + ' MB.'); return; }
+        if (!title || !artist) { uploadMsg('Вкажіть назву і виконавця.'); return; }
+        if (!$('rights').checked) { uploadMsg('Потрібно підтвердити право на файл.'); return; }
+
+        const worker = (CFG.MUSIC_WORKER_URL || '').replace(/\/+$/, '');
+        if (!worker) { uploadMsg('Сервіс музики ще не підключено.'); return; }
+
+        const { data: mine } = await sb.from('tracks').select('size_mb').eq('user_id', user.id);
+        const used = (mine || []).reduce((sum, t) => sum + parseFloat(t.size_mb || 0), 0);
+        const quota = CFG.MUSIC_QUOTA_MB || 20;
+        if (used + mb > quota) { uploadMsg('Немає місця для музики (ліміт ' + quota + ' MB). Видаліть старі треки.'); return; }
+
+        $('btnUpload').disabled = true;
+        uploadMsg('Завантажуємо…', true);
+        try {
+            const { data: sess } = await sb.auth.getSession();
+            const token = sess && sess.session ? sess.session.access_token : '';
+            const res = await fetch(worker + '/music/upload', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'audio/mpeg',
+                    'X-Title': encodeURIComponent(title),
+                    'X-Artist': encodeURIComponent(artist),
+                    'X-License': license
+                },
+                body: file
+            });
+            const out = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(out.error || ('код ' + res.status));
+            $('file').value = ''; $('title').value = ''; $('artist').value = ''; $('rights').checked = false;
+            uploadMsg('Надіслано на перевірку ✅', true);
+            tab = 'mine';
+            setTabs();
+            load();
+        } finally {
+            $('btnUpload').disabled = false;
+        }
+    });
+
+    /* ---------- Список ---------- */
+    function trackCard(t) {
+        const art = document.createElement('div');
+        art.className = 'track';
+        const badge = t.status === 'approved' ? '' : '<span class="badge ' + t.status + '">' +
+            (t.status === 'pending' ? 'на перевірці' : 'відхилено') + '</span>';
+        const own = user && t.user_id === user.id;
+        const acts = [];
+        if (isAdmin && t.status !== 'approved') acts.push('<button class="btn small ok" data-act="approve" type="button">Схвалити</button>');
+        if (isAdmin && t.status !== 'rejected') acts.push('<button class="btn small no" data-act="reject" type="button">Відхилити</button>');
+        if (own || isAdmin) acts.push('<button class="btn small no" data-act="delete" type="button">Видалити</button>');
+        art.dataset.id = t.id;
+        art.dataset.path = t.file_path;
+        art.innerHTML =
+            '<div class="tt">' + esc(t.title) + badge + '</div>' +
+            '<div class="ta">' + esc(t.artist) + ' · ' + esc(LICENSE_TEXT[t.license] || t.license) + ' · ' + esc(t.size_mb) + ' MB</div>' +
+            (t.status === 'approved' ? '<audio controls preload="none" src="' + esc(fileUrl(t.file_path)) + '"></audio>' : '') +
+            (acts.length ? '<div class="acts">' + acts.join('') + '</div>' : '');
+        return art;
+    }
+
+    async function load() {
+        const box = $('list');
+        if (!user) { box.innerHTML = '<div class="empty">Щоб слухати і завантажувати музику, увійдіть в акаунт на головній сторінці.</div>'; $('uploadCard').hidden = true; return; }
+        $('uploadCard').hidden = false;
+        box.innerHTML = '<div class="empty">Завантаження…</div>';
+
+        let q = sb.from('tracks').select('*').order('created_at', { ascending: false }).limit(100);
+        if (tab === 'mine') q = q.eq('user_id', user.id);
+        else if (tab === 'review') q = q.eq('status', 'pending');
+        else q = q.eq('status', 'approved');
+
+        const { data, error } = await q;
+        if (error) { box.innerHTML = '<div class="empty">Помилка: ' + esc(error.message) + '</div>'; return; }
+        box.innerHTML = '';
+        if (!data || !data.length) {
+            box.innerHTML = '<div class="empty">' + (tab === 'mine' ? 'Ви ще нічого не завантажили.' : tab === 'review' ? 'Немає треків на перевірці.' : 'Поки немає схвалених треків.') + '</div>';
+            return;
+        }
+        data.forEach(t => box.appendChild(trackCard(t)));
+    }
+
+    function setTabs() {
+        document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+    }
+
+    document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
+        tab = b.dataset.tab; setTabs(); load();
+    }));
+
+    /* ---------- Дії адміна і власника ---------- */
+    $('list').addEventListener('click', async e => {
+        const btn = e.target.closest('button[data-act]');
+        if (!btn) return;
+        const art = btn.closest('.track');
+        const id = art.dataset.id;
+        const act = btn.dataset.act;
+        try {
+            if (act === 'approve' || act === 'reject') {
+                const status = act === 'approve' ? 'approved' : 'rejected';
+                const { error } = await sb.from('tracks').update({ status }).eq('id', id);
+                if (error) throw error;
+            } else if (act === 'delete') {
+                if (!confirm('Видалити трек із сайту?')) return;
+                const worker = (CFG.MUSIC_WORKER_URL || '').replace(/\/+$/, '');
+                const { data: sess } = await sb.auth.getSession();
+                const token = sess && sess.session ? sess.session.access_token : '';
+                const res = await fetch(worker + '/music/delete', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                const out = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(out.error || ('код ' + res.status));
+            }
+            load();
+        } catch (err) {
+            alert('Помилка: ' + err.message);
+        }
+    });
+
+    async function init() {
+        const { data } = await sb.auth.getSession();
+        user = data && data.session ? data.session.user : null;
+        isAdmin = !!(user && user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+        $('who').textContent = user ? (user.email || '') : 'Не ввійшли';
+        $('tabReview').hidden = !isAdmin;
+        load();
+    }
+    init();
+})();
+</script>
+</body>
+</html>
