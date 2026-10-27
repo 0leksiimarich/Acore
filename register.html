@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a4a84">
+<title>Реєстрація — Acore</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    [hidden] { display: none !important; }
+    body { background: #f4f5f7; color: #333; min-height: 100vh; }
+
+    header { background: #1a4a84; color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+    header .logo { font-size: 20px; font-weight: bold; }
+    header a { color: #fff; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,.15); }
+
+    .wrap { max-width: 520px; margin: 24px auto; padding: 0 14px; }
+    .card { background: #fff; border-radius: 14px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+    h1 { font-size: 22px; color: #1a4a84; margin-bottom: 6px; }
+    .sub { font-size: 14px; color: #666; margin-bottom: 18px; line-height: 1.5; }
+
+    form { display: flex; flex-direction: column; gap: 12px; }
+    label { display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 600; color: #444; }
+    label .opt { font-weight: 400; color: #888; }
+    input[type=text], input[type=email], input[type=password], input[type=tel], input[type=date] {
+        padding: 11px 12px; border: 1px solid #cfd6df; border-radius: 9px; font-size: 15px; outline: none; background: #fff; font-weight: 400;
+    }
+    input:focus { border-color: #1a4a84; box-shadow: 0 0 0 3px rgba(26,74,132,.12); }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .check { flex-direction: row; align-items: flex-start; gap: 8px; font-weight: 400; font-size: 13px; color: #555; }
+    .check input { margin-top: 3px; }
+
+    .btn { padding: 12px; background: #1a4a84; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none; display: block; }
+    .btn:hover { background: #0056b3; }
+    .btn:disabled { opacity: .6; cursor: default; }
+
+    .msg { font-size: 13px; min-height: 18px; color: #c00; }
+    .msg.ok { color: #198754; }
+
+    .foot { margin-top: 16px; font-size: 13px; color: #666; text-align: center; }
+    .foot a { color: #1a4a84; font-weight: 600; }
+
+    .links { display: flex; justify-content: space-between; margin-top: 14px; flex-wrap: wrap; gap: 8px; }
+    .link { background: none; border: none; color: #1a4a84; font-size: 13px; cursor: pointer; text-decoration: underline; padding: 0; }
+
+    .mailbox { text-align: center; padding: 30px 24px; }
+    .mailbox .big { font-size: 52px; margin-bottom: 10px; }
+    .mailbox p { font-size: 15px; color: #444; margin: 10px 0 18px; line-height: 1.5; }
+
+    .welcome { text-align: center; padding: 36px 24px; }
+    .welcome .big { font-size: 56px; margin-bottom: 10px; }
+    .welcome p { font-size: 17px; color: #333; margin: 10px 0 22px; line-height: 1.5; }
+    .welcome .btn { display: inline-block; width: auto; padding: 12px 28px; }
+
+    @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+    <div class="logo">Acore</div>
+    <a href="cloud.html">← Вхід</a>
+</header>
+
+<main class="wrap">
+
+    <!-- Крок 1: дані -->
+    <section class="card" id="stepForm">
+        <h1>Створити акаунт</h1>
+        <p class="sub">Заповніть дані. Після реєстрації ми надішлемо лист із посиланням для підтвердження пошти.</p>
+        <form id="regForm" novalidate>
+            <div class="row2">
+                <label>Ім'я
+                    <input type="text" id="firstName" autocomplete="given-name" placeholder="Олексій">
+                </label>
+                <label>Прізвище
+                    <input type="text" id="lastName" autocomplete="family-name" placeholder="Іваненко">
+                </label>
+            </div>
+            <label>Дата народження
+                <input type="date" id="birth">
+            </label>
+            <label>Номер телефону <span class="opt">(для контакту, не перевіряється)</span>
+                <input type="tel" id="phone" autocomplete="tel" placeholder="+380 67 123 45 67">
+            </label>
+            <label>Електронна пошта (для входу)
+                <input type="email" id="email" autocomplete="email" placeholder="ваша@пошта.com">
+            </label>
+            <label>Резервна пошта <span class="opt">(необов'язково)</span>
+                <input type="email" id="backup" autocomplete="off" placeholder="запасна@пошта.com">
+            </label>
+            <label>Пароль (мінімум 8 символів)
+                <input type="password" id="password" autocomplete="new-password">
+            </label>
+            <label>Повторіть пароль
+                <input type="password" id="password2" autocomplete="new-password">
+            </label>
+            <label class="check">
+                <input type="checkbox" id="terms">
+                <span>Я погоджуюсь з правилами користування Acore</span>
+            </label>
+            <div id="formMsg" class="msg"></div>
+            <button class="btn" id="btnCreate" type="submit">Створити акаунт</button>
+        </form>
+        <p class="foot">Вже маєте акаунт? <a href="cloud.html">Увійти</a></p>
+    </section>
+
+    <!-- Крок 2: перевірте пошту -->
+    <section class="card mailbox" id="stepMail" hidden>
+        <div class="big">✉️</div>
+        <h1>Перевірте пошту</h1>
+        <p>Ми надіслали лист на <b id="sentTo"></b>.<br>Натисніть кнопку «Підтвердити» у листі. Перевірте також папку «Спам».</p>
+        <div id="mailMsg" class="msg ok"></div>
+        <div class="links" style="justify-content:center; margin-top:18px;">
+            <button class="link" id="resend" type="button">Надіслати лист ще раз</button>
+            <button class="link" id="changeEmail" type="button">Змінити пошту</button>
+        </div>
+    </section>
+
+    <!-- Крок 3: привітання -->
+    <section class="card welcome" id="stepDone" hidden>
+        <div class="big">🎉</div>
+        <h1>Вітаємо!</h1>
+        <p>Вітаємо, ви стали частиною великої сім'ї Acore!</p>
+        <a class="btn" href="cloud.html">Перейти до облака</a>
+    </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script>
+(function () {
+    'use strict';
+    const CFG = window.ACORE_CONFIG || {};
+    const sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY);
+    const $ = id => document.getElementById(id);
+    let pendingEmail = null;
+
+    const NAME_RE = /^[A-Za-zА-Яа-яІіЇїЄєҐґ'’\- ]{2,40}$/;
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    const PHONE_RE = /^\+?\d{9,15}$/;
+
+    function msg(el, text, ok) {
+        el.textContent = text;
+        el.className = el.id === 'mailMsg' ? 'msg ok' : 'msg' + (ok ? ' ok' : '');
+    }
+
+    function tr(m) {
+        m = String(m || '');
+        if (/already registered|already been registered|User already/i.test(m)) return 'Акаунт з такою поштою вже є. Увійдіть через cloud.html.';
+        if (/rate limit|too many|security purposes|over_email/i.test(m)) return 'Забагато спроб. Зачекайте кілька хвилин і спробуйте знову.';
+        if (/Password should be|weak/i.test(m)) return 'Пароль занадто простий. Використайте літери і цифри.';
+        if (/invalid.*email|email.*invalid/i.test(m)) return 'Некоректна електронна пошта.';
+        return 'Помилка: ' + m;
+    }
+
+    function normPhone(p) { return p.replace(/[\s()-]/g, ''); }
+
+    function validate(v) {
+        if (!NAME_RE.test(v.first)) return 'Введіть ім\'я (мінімум 2 літери).';
+        if (!NAME_RE.test(v.last)) return 'Введіть прізвище (мінімум 2 літери).';
+        if (!v.birth) return 'Вкажіть дату народження.';
+        const b = new Date(v.birth), today = new Date();
+        if (isNaN(b) || b > today || today.getFullYear() - b.getFullYear() > 120) return 'Дата народження вказана неправильно.';
+        if (v.phone && !PHONE_RE.test(v.phone)) return 'Номер телефону має бути у форматі +380671234567 або порожнім.';
+        if (!EMAIL_RE.test(v.email)) return 'Введіть коректну електронну пошту.';
+        if (v.backup && !EMAIL_RE.test(v.backup)) return 'Резервна пошта має бути коректною.';
+        if (v.backup && v.backup === v.email) return 'Резервна пошта має відрізнятися від основної.';
+        if (v.password.length < 8) return 'Пароль має бути мінімум 8 символів.';
+        if (v.password !== v.password2) return 'Паролі не збігаються.';
+        if (!$('terms').checked) return 'Потрібно погодитися з правилами.';
+        return '';
+    }
+
+    function showStep(name) {
+        $('stepForm').hidden = name !== 'form';
+        $('stepMail').hidden = name !== 'mail';
+        $('stepDone').hidden = name !== 'done';
+        window.scrollTo(0, 0);
+    }
+
+    // Лист із посиланням: сторінка відкривається знову з ?confirmed=1 і з токеном у адресі
+    async function checkConfirmedReturn() {
+        const back = /confirmed=1/.test(location.search) || /access_token|type=signup/.test(location.hash);
+        if (!back) return;
+        const { data } = await sb.auth.getSession();
+        if (data && data.session) showStep('done');
+    }
+
+    $('regForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const v = {
+            first: $('firstName').value.trim(),
+            last: $('lastName').value.trim(),
+            birth: $('birth').value,
+            phone: normPhone($('phone').value.trim()),
+            email: $('email').value.trim().toLowerCase(),
+            backup: $('backup').value.trim().toLowerCase(),
+            password: $('password').value,
+            password2: $('password2').value
+        };
+        const err = validate(v);
+        if (err) { msg($('formMsg'), err); return; }
+
+        const btn = $('btnCreate');
+        btn.disabled = true;
+        msg($('formMsg'), 'Створюємо акаунт…', true);
+        const redirect = location.origin + location.pathname + '?confirmed=1';
+        const { data, error } = await sb.auth.signUp({
+            email: v.email,
+            password: v.password,
+            options: {
+                emailRedirectTo: redirect,
+                data: {
+                    first_name: v.first,
+                    last_name: v.last,
+                    birth_date: v.birth,
+                    phone: v.phone || null,
+                    backup_email: v.backup || null
+                }
+            }
+        });
+        btn.disabled = false;
+        if (error) { msg($('formMsg'), tr(error.message)); return; }
+
+        pendingEmail = v.email;
+        if (data && data.session) { showStep('done'); return; } // підтвердження вимкнено
+        $('sentTo').textContent = v.email;
+        msg($('mailMsg'), '');
+        showStep('mail');
+    });
+
+    $('resend').addEventListener('click', async () => {
+        if (!pendingEmail) { showStep('form'); return; }
+        const { error } = await sb.auth.resend({
+            type: 'signup',
+            email: pendingEmail,
+            options: { emailRedirectTo: location.origin + location.pathname + '?confirmed=1' }
+        });
+        msg($('mailMsg'), error ? tr(error.message) : 'Лист надіслано ще раз.', !error);
+    });
+
+    $('changeEmail').addEventListener('click', () => {
+        pendingEmail = null;
+        $('email').value = '';
+        msg($('formMsg'), 'Введіть іншу електронну пошту і створіть акаунт знову.', true);
+        showStep('form');
+    });
+
+    checkConfirmedReturn();
+    showStep('form');
+})();
+</script>
+</body>
+</html>
