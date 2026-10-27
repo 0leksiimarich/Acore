@@ -188,6 +188,7 @@
 
     /* ---------- Перетягування ---------- */
     stage.addEventListener('pointerdown', e => {
+        if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
         const el = e.target.closest('.item');
         if (!el) { sel = null; render(); return; }
         sel = el.dataset.id;
@@ -218,11 +219,16 @@
     });
 
     /* ---------- Редагування тексту ---------- */
-    stage.addEventListener('dblclick', e => {
-        const el = e.target.closest('.txt');
-        if (!el) return;
+    function startEdit(el) {
+        if (!el || el.isContentEditable) return;
         el.contentEditable = 'true';
         el.focus();
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        const sel2 = window.getSelection();
+        sel2.removeAllRanges();
+        sel2.addRange(range);
         const done = () => {
             el.contentEditable = 'false';
             const it = slide().items.find(i => i.id === el.dataset.id);
@@ -230,7 +236,27 @@
             el.removeEventListener('blur', done);
         };
         el.addEventListener('blur', done);
+    }
+
+    // Подвійний клік (ПК) — відкриває редагування; на телефоні — подвійний тап
+    stage.addEventListener('dblclick', e => {
+        const el = document.elementFromPoint(e.clientX, e.clientY);
+        const t = el && el.closest ? el.closest('.txt') : null;
+        if (t) startEdit(t);
     });
+    let lastTap = { id: null, t: 0 };
+    stage.addEventListener('touchend', e => {
+        const t = e.target.closest ? e.target.closest('.txt') : null;
+        if (!t) return;
+        const now = Date.now();
+        if (lastTap.id === t.dataset.id && now - lastTap.t < 350) {
+            e.preventDefault();
+            lastTap = { id: null, t: 0 };
+            startEdit(t);
+        } else {
+            lastTap = { id: t.dataset.id, t: now };
+        }
+    }, { passive: false });
 
     /* ---------- Кнопки ---------- */
     $('#title').addEventListener('input', e => { deck.title = e.target.value.trim() || 'Презентація'; save(); });
