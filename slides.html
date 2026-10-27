@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a4a84">
+<title>A-Slides (тест)</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #e9edf2; color: #333; min-height: 100vh; }
+    header { background: #1a4a84; color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+    header .logo { font-size: 18px; font-weight: bold; }
+    header a { color: #fff; text-decoration: none; font-size: 13px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.15); }
+    header .st { margin-left: auto; font-size: 12px; opacity: .85; }
+
+    .app { display: flex; min-height: calc(100vh - 52px); }
+    aside { width: 170px; background: #f7f9fc; border-right: 1px solid #d6dde6; padding: 10px; overflow-y: auto; }
+    .thumb { background: #fff; border: 2px solid #d6dde6; border-radius: 6px; height: 64px; margin-bottom: 8px; padding: 6px; font-size: 11px; color: #555; overflow: hidden; cursor: pointer; }
+    .thumb.on { border-color: #1a4a84; }
+
+    main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .bar { background: #fff; border-bottom: 1px solid #d6dde6; padding: 8px 12px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .bar input[type=text] { flex: 1; min-width: 160px; height: 32px; border: 1px solid #d6dde6; border-radius: 6px; padding: 0 8px; font-size: 14px; }
+    .bar button, .bar label.btn { height: 32px; padding: 0 10px; border: 1px solid #d6dde6; background: #fafafa; border-radius: 6px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; }
+    .bar button:hover, .bar label.btn:hover { background: #eef2f7; }
+    .bar button.primary { background: #1a4a84; color: #fff; border-color: #1a4a84; }
+    .bar input[type=color] { width: 36px; height: 32px; border: 1px solid #d6dde6; border-radius: 6px; padding: 2px; background: #fff; }
+    .bar select { height: 32px; border: 1px solid #d6dde6; border-radius: 6px; padding: 0 6px; background: #fff; }
+
+    .canvas-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; overflow: auto; }
+    #stage { width: min(960px, 100%); aspect-ratio: 16 / 9; position: relative; background: #fff; box-shadow: 0 4px 18px rgba(0,0,0,.12); container-type: size; overflow: hidden; touch-action: none; }
+    .item { position: absolute; box-sizing: border-box; cursor: move; border: 1px dashed transparent; overflow: hidden; }
+    .item.sel { border-color: #1a4a84; }
+    .txt { white-space: pre-wrap; word-break: break-word; line-height: 1.25; padding: 2px 4px; color: #222; font-family: Arial, sans-serif; }
+    .pic { width: 100%; height: 100%; object-fit: contain; pointer-events: none; display: block; }
+    .hint { font-size: 12px; color: #777; text-align: center; padding-bottom: 10px; }
+
+    @media (max-width: 720px) {
+        .app { flex-direction: column; }
+        aside { width: 100%; display: flex; gap: 8px; border-right: none; border-bottom: 1px solid #d6dde6; }
+        .thumb { min-width: 110px; margin-bottom: 0; }
+        .canvas-wrap { padding: 8px; }
+    }
+</style>
+</head>
+<body>
+<header>
+    <div class="logo">📊 A-Slides (тест)</div>
+    <a href="index.html">← На головну</a>
+    <div class="st" id="status"></div>
+</header>
+
+<div class="app">
+    <aside id="thumbs"></aside>
+    <main>
+        <div class="bar">
+            <input type="text" id="title" placeholder="Назва презентації" maxlength="80">
+            <button type="button" id="addSlide">+ Слайд</button>
+            <button type="button" id="delSlide">− Слайд</button>
+            <button type="button" id="addText">+ Текст</button>
+            <label class="btn">+ Фото<input type="file" id="photo" accept="image/*" hidden></label>
+            <label>Фон <input type="color" id="bg"></label>
+            <select id="size" title="Розмір тексту">
+                <option value="20">20</option><option value="28">28</option><option value="36">36</option>
+                <option value="48" selected>48</option><option value="64">64</option><option value="80">80</option>
+            </select>
+            <select id="theme" title="Тема">
+                <option value="light">Світла</option><option value="dark">Темна</option>
+                <option value="acore">Acore</option><option value="calm">Спокійна</option><option value="bright">Яскрава</option>
+            </select>
+            <select id="layout" title="Новий слайд з макетом">
+                <option value="">+ Слайд з макетом…</option>
+                <option value="title">Титул</option><option value="titleContent">Заголовок і текст</option><option value="twoCol">Два стовпці</option>
+            </select>
+            <select id="font" title="Шрифт">
+                <option>Arial</option><option>Georgia</option><option>Verdana</option><option>Trebuchet MS</option><option>Times New Roman</option>
+            </select>
+            <button type="button" id="al-l" title="Вирівняти ліворуч">⫷</button>
+            <button type="button" id="al-c" title="По центру">≡</button>
+            <button type="button" id="al-r" title="Вирівняти праворуч">⫸</button>
+            <button type="button" id="bold" title="Жирний"><b>B</b></button>
+            <input type="color" id="color" title="Колір тексту" value="#222222">
+            <button type="button" id="delItem">Видалити елемент</button>
+            <button type="button" class="primary" id="export">Експорт .pptx</button>
+        </div>
+        <div class="canvas-wrap"><div id="stage"></div></div>
+        <p class="hint">Перетягуйте елементи мишкою. Подвійний клік по тексту — редагувати. Delete — видалити елемент.</p>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script>
+(function () {
+    'use strict';
+    const KEY = 'acore-slides-test';
+    const $ = s => document.querySelector(s);
+    const stage = $('#stage');
+    let deck = load();
+    let cur = 0;
+    let sel = null;
+    let drag = null;
+
+    function uid() { return 'i' + Math.random().toString(36).slice(2, 9); }
+    function freshDeck() {
+        return { title: 'Презентація', slides: [{ bg: '#ffffff', items: [
+            { id: uid(), type: 'text', x: 8, y: 36, w: 84, h: 18, text: 'Заголовок презентації', size: 56, color: '#1a4a84', bold: true }
+        ] }] };
+    }
+    function load() {
+        try {
+            const d = JSON.parse(localStorage.getItem(KEY) || 'null');
+            if (d && Array.isArray(d.slides) && d.slides.length) { if (!d.theme) d.theme = 'acore'; return d; }
+        } catch (e) { /* пошкоджені дані — почнемо з нуля */ }
+        return freshDeck();
+    }
+    function save() {
+        try {
+            localStorage.setItem(KEY, JSON.stringify(deck));
+            $('#status').textContent = 'Збережено ' + new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+            $('#status').textContent = 'Мало місця в браузері. Зменшіть кількість фото або експортуйте .pptx';
+        }
+    }
+    const slide = () => deck.slides[cur];
+    const item = () => slide().items.find(i => i.id === sel);
+    const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+    function firstText(s) {
+        const t = s.items.find(i => i.type === 'text');
+        return t ? t.text.slice(0, 40) : 'Слайд';
+    }
+
+    function renderThumbs() {
+        const box = $('#thumbs');
+        box.textContent = '';
+        deck.slides.forEach((s, i) => {
+            const d = document.createElement('div');
+            d.className = 'thumb' + (i === cur ? ' on' : '');
+            d.style.background = s.bg;
+            d.textContent = (i + 1) + '. ' + firstText(s);
+            d.addEventListener('click', () => { cur = i; sel = null; render(); });
+            box.appendChild(d);
+        });
+    }
+
+    function render() {
+        renderThumbs();
+        const s = slide();
+        stage.style.background = s.bg;
+        stage.textContent = '';
+        s.items.forEach(it => {
+            const el = document.createElement('div');
+            el.className = 'item' + (sel === it.id ? ' sel' : '');
+            el.dataset.id = it.id;
+            el.style.left = it.x + '%';
+            el.style.top = it.y + '%';
+            el.style.width = it.w + '%';
+            el.style.height = it.h + '%';
+            if (it.type === 'text') {
+                el.classList.add('txt');
+                el.style.fontSize = (it.size / 540 * 100) + 'cqh';
+                el.style.color = it.color;
+                el.style.fontWeight = it.bold ? 'bold' : 'normal';
+                el.style.fontFamily = it.font || th().font;
+                el.style.textAlign = it.align || 'left';
+                el.textContent = it.text;
+            } else {
+                const img = document.createElement('img');
+                img.className = 'pic';
+                img.src = it.src;
+                img.alt = '';
+                el.appendChild(img);
+            }
+            stage.appendChild(el);
+        });
+        syncPanel();
+        $('#title').value = deck.title;
+    }
+
+    function syncPanel() {
+        const it = item();
+        $('#bg').value = slide().bg;
+        if (it && it.type === 'text') {
+            $('#size').value = String(it.size);
+            $('#color').value = it.color;
+        }
+    }
+
+    /* ---------- Перетягування ---------- */
+    stage.addEventListener('pointerdown', e => {
+        const el = e.target.closest('.item');
+        if (!el) { sel = null; render(); return; }
+        sel = el.dataset.id;
+        const it = item();
+        drag = { id: sel, sx: e.clientX, sy: e.clientY, ox: it.x, oy: it.y, moved: false };
+        stage.setPointerCapture(e.pointerId);
+        document.querySelectorAll('.item').forEach(x => x.classList.toggle('sel', x.dataset.id === sel));
+        syncPanel();
+    });
+
+    stage.addEventListener('pointermove', e => {
+        if (!drag) return;
+        const r = stage.getBoundingClientRect();
+        const it = item();
+        if (!it) return;
+        it.x = clamp(drag.ox + (e.clientX - drag.sx) / r.width * 100, 0, 100 - it.w);
+        it.y = clamp(drag.oy + (e.clientY - drag.sy) / r.height * 100, 0, 100 - it.h);
+        drag.moved = true;
+        const el = stage.querySelector('[data-id="' + drag.id + '"]');
+        if (el) { el.style.left = it.x + '%'; el.style.top = it.y + '%'; }
+    });
+
+    stage.addEventListener('pointerup', () => {
+        if (!drag) return;
+        const moved = drag.moved;
+        drag = null;
+        if (moved) { save(); }
+    });
+
+    /* ---------- Редагування тексту ---------- */
+    stage.addEventListener('dblclick', e => {
+        const el = e.target.closest('.txt');
+        if (!el) return;
+        el.contentEditable = 'true';
+        el.focus();
+        const done = () => {
+            el.contentEditable = 'false';
+            const it = slide().items.find(i => i.id === el.dataset.id);
+            if (it) { it.text = el.innerText; save(); renderThumbs(); }
+            el.removeEventListener('blur', done);
+        };
+        el.addEventListener('blur', done);
+    });
+
+    /* ---------- Кнопки ---------- */
+    $('#title').addEventListener('input', e => { deck.title = e.target.value.trim() || 'Презентація'; save(); });
+
+    $('#addSlide').addEventListener('click', () => {
+        deck.slides.splice(cur + 1, 0, { bg: slide().bg, items: [] });
+        cur++; sel = null; save(); render();
+    });
+
+    $('#delSlide').addEventListener('click', () => {
+        if (deck.slides.length <= 1) { alert('Має лишитися хоча б один слайд'); return; }
+        if (!confirm('Видалити слайд?')) return;
+        deck.slides.splice(cur, 1);
+        cur = Math.max(0, cur - 1); sel = null; save(); render();
+    });
+
+    $('#addText').addEventListener('click', () => {
+        const it = { id: uid(), type: 'text', x: 20, y: 40, w: 60, h: 14, text: 'Новий текст', size: Number($('#size').value), color: $('#color').value, bold: false };
+        slide().items.push(it);
+        sel = it.id; save(); render();
+    });
+
+    $('#photo').addEventListener('change', async e => {
+        const file = e.target.files && e.target.files[0];
+        e.target.value = '';
+        if (!file) return;
+        try {
+            const src = await compressToJpeg(file);
+            const img = await loadImg(src);
+            const w = 40;
+            const h = w * (img.height / img.width) * (16 / 9);
+            const it = { id: uid(), type: 'image', x: 30, y: 25, w, h: Math.min(h, 60), src };
+            slide().items.push(it);
+            sel = it.id; save(); render();
+        } catch (err) {
+            alert('Не вдалося додати фото: ' + err.message);
+        }
+    });
+
+    function loadImg(src) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error('не відкрилось'));
+            img.src = src;
+        });
+    }
+
+    function compressToJpeg(file) {
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                const MAX = 1280;
+                const k = Math.min(1, MAX / Math.max(img.width, img.height));
+                const c = document.createElement('canvas');
+                c.width = Math.round(img.width * k);
+                c.height = Math.round(img.height * k);
+                const g = c.getContext('2d');
+                g.fillStyle = '#fff';
+                g.fillRect(0, 0, c.width, c.height);
+                g.drawImage(img, 0, 0, c.width, c.height);
+                resolve(c.toDataURL('image/jpeg', 0.7));
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('це не зображення')); };
+            img.src = url;
+        });
+    }
+
+    $('#bg').addEventListener('input', e => { slide().bg = e.target.value; save(); render(); });
+
+    $('#size').addEventListener('change', e => {
+        const it = item();
+        if (it && it.type === 'text') { it.size = Number(e.target.value); save(); render(); }
+    });
+    $('#color').addEventListener('input', e => {
+        const it = item();
+        if (it && it.type === 'text') { it.color = e.target.value; save(); render(); }
+    });
+    $('#bold').addEventListener('click', () => {
+        const it = item();
+        if (it && it.type === 'text') { it.bold = !it.bold; save(); render(); }
+    });
+    $('#delItem').addEventListener('click', () => {
+        if (!sel) return;
+        slide().items = slide().items.filter(i => i.id !== sel);
+        sel = null; save(); render();
+    });
+
+    document.addEventListener('keydown', e => {
+        if (e.key !== 'Delete' && e.key !== 'Backspace') return;
+        if (document.activeElement && document.activeElement.isContentEditable) return;
+        if (e.target.tagName === 'INPUT') return;
+        if (!sel) return;
+        e.preventDefault();
+        slide().items = slide().items.filter(i => i.id !== sel);
+        sel = null; save(); render();
+    });
+
+    /* ---------- Експорт у PowerPoint ---------- */
+    $('#export').addEventListener('click', () => {
+        if (typeof PptxGenJS === 'undefined') { alert('Бібліотека презентацій не завантажилась. Оновіть сторінку.'); return; }
+        try {
+            const p = new PptxGenJS();
+            p.layout = 'LAYOUT_WIDE';            // 13.33 × 7.5 дюймів
+            const W = 13.333, H = 7.5;
+            deck.slides.forEach(s => {
+                const sl = p.addSlide();
+                sl.background = { color: s.bg.replace('#', '') };
+                s.items.forEach(it => {
+                    const x = it.x / 100 * W, y = it.y / 100 * H, w = it.w / 100 * W, h = it.h / 100 * H;
+                    if (it.type === 'text') {
+                        sl.addText(it.text, {
+                            x, y, w, h, fontSize: it.size, color: it.color.replace('#', ''),
+                            bold: !!it.bold, fontFace: it.font || th().font, align: it.align || 'left', valign: 'top', margin: 0
+                        });
+                    } else if (it.type === 'image') {
+                        sl.addImage({ data: it.src, x, y, w, h });
+                    }
+                });
+            });
+            const name = (deck.title || 'presentation').replace(/[\\/:*?"<>|]+/g, '_') + '.pptx';
+            p.writeFile({ fileName: name });
+        } catch (e) {
+            alert('Не вдалося створити презентацію: ' + e.message);
+        }
+    });
+
+    /* ---------- Теми і макети ---------- */
+    const THEMES = {
+        light:  { bg: '#ffffff', accent: '#1a4a84', text: '#222222', font: 'Arial' },
+        dark:   { bg: '#1b1f2a', accent: '#60a5fa', text: '#e5e7eb', font: 'Arial' },
+        acore:  { bg: '#f4f5f7', accent: '#1a4a84', text: '#333333', font: 'Trebuchet MS' },
+        calm:   { bg: '#f7f3ea', accent: '#7c5a2b', text: '#3d3a33', font: 'Georgia' },
+        bright: { bg: '#fff7ed', accent: '#ea580c', text: '#1f2937', font: 'Verdana' }
+    };
+    const th = () => THEMES[deck.theme] || THEMES.acore;
+
+    function txt(x, y, w, h, text, size, bold, align) {
+        const t = th();
+        return { id: uid(), type: 'text', x, y, w, h, text, size, bold: !!bold,
+            color: size >= 40 ? t.accent : t.text, font: t.font, align: align || 'left' };
+    }
+
+    function applyTheme(name) {
+        deck.theme = name;
+        const t = th();
+        deck.slides.forEach(s => {
+            s.bg = t.bg;
+            s.items.forEach(it => {
+                if (it.type === 'text') { it.color = it.size >= 40 ? t.accent : t.text; it.font = t.font; }
+            });
+        });
+        save(); render();
+    }
+
+    function addLayout(kind) {
+        if (!kind) return;
+        const s = { bg: th().bg, items: [] };
+        if (kind === 'title') {
+            s.items = [txt(8, 32, 84, 20, 'Назва презентації', 64, true, 'center'),
+                       txt(8, 56, 84, 12, 'Підзаголовок', 28, false, 'center')];
+        } else if (kind === 'titleContent') {
+            s.items = [txt(6, 6, 88, 14, 'Заголовок', 44, true, 'left'),
+                       txt(6, 26, 88, 64, 'Текст слайда', 28, false, 'left')];
+        } else if (kind === 'twoCol') {
+            s.items = [txt(6, 6, 88, 14, 'Заголовок', 44, true, 'left'),
+                       txt(6, 26, 42, 64, 'Ліва колонка', 26, false, 'left'),
+                       txt(52, 26, 42, 64, 'Права колонка', 26, false, 'left')];
+        }
+        deck.slides.splice(cur + 1, 0, s);
+        cur++; sel = null; save(); render();
+    }
+
+    $('#theme').value = deck.theme || 'acore';
+    $('#theme').addEventListener('change', e => applyTheme(e.target.value));
+    $('#layout').addEventListener('change', e => { addLayout(e.target.value); e.target.value = ''; });
+    $('#font').addEventListener('change', e => {
+        const it = item();
+        if (it && it.type === 'text') it.font = e.target.value;
+        else slide().items.forEach(i => { if (i.type === 'text') i.font = e.target.value; });
+        save(); render();
+    });
+    [['#al-l', 'left'], ['#al-c', 'center'], ['#al-r', 'right']].forEach(([id, a]) => {
+        $(id).addEventListener('click', () => {
+            const it = item();
+            if (it && it.type === 'text') { it.align = a; save(); render(); }
+        });
+    });
+
+    render();
+    save();
+})();
+</script>
+</body>
+</html>
