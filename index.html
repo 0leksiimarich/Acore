@@ -68,7 +68,7 @@
         .chat-msg { padding: 10px 14px; border-radius: 8px; max-width: 85%; font-size: 14px; line-height: 1.4; animation: popIn 0.2s ease-out; word-break: break-word; position: relative; }
         .chat-msg.user { background: #1a4a84; color: white; align-self: flex-end; }
         .chat-msg.ai { background: #eef2f5; color: #1c1e21; align-self: flex-start; }
-
+        
         .tts-btn { display: inline-block; margin-top: 6px; padding: 3px 10px; font-size: 11px; background: #1a4a84; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .tts-btn:hover { background: #0056b3; }
 
@@ -143,10 +143,11 @@
         <button class="tab-btn" onclick="switchTopTab('ai', this)">🤖 Чат з AI</button>
         <button class="tab-btn" onclick="switchTopTab('mail', this)">📧 Пошта Acore</button>
         <button class="tab-btn" onclick="switchTopTab('extra', this)">⚙️ Додатково</button>
-        <a href="docs.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">📝 Документи</a>
-        <a href="cloud.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">☁️ Облако</a>
-        <a href="search.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">🔍 Пошук</a>
-        <a href="maps.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">🗺️ Карти</a>
+        <a href="docs.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">📝 A-Docs</a>
+        <a href="cloud.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">☁️ A-Cloud</a>
+        <a href="search.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">🔍 A-Search</a>
+        <a href="maps.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">🗺️ A-Maps</a>
+        <a href="forum.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">💬 A-Write</a>
     </div>
 
     <div class="container">
@@ -192,7 +193,7 @@
         <div class="tab-content" id="content-ai">
             <div class="card">
                 <h3>🤖 Чат із ШІ (Акорик)</h3>
-
+                
                 <!-- Блок Маскота -->
                 <div class="ai-header-box">
                     <img id="mascot-img" class="ai-mascot-img" src="mascot.png" alt="Acore Mascot">
