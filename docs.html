@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1a4a84">
-<title>Acore Docs — Документи</title>
+<title>ADocs — Документи</title>
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
     body { background: #f4f5f7; color: #333; height: 100vh; display: flex; flex-direction: column; }
@@ -578,7 +578,7 @@ import TableCell from 'https://esm.sh/@tiptap/extension-table-cell@2';
         try {
             const blob = await window.docx.Packer.toBlob(htmlToDocx(d.html, d.title));
             const name = baseName(d) + '.docx';
-            const path = u.id + '/' + Date.now() + '-' + name;
+            const path = u.id + '/' + Date.now() + '-' + name.replace(/[^A-Za-z0-9._-]/g, '_');
 
             const { error: upErr } = await sb.storage.from(CFG.SUPABASE_BUCKET).upload(path, blob, {
                 contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
