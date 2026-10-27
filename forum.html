@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a4a84">
+<title>Acore Форум</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    [hidden] { display: none !important; }
+    body { background: #f4f5f7; color: #222; min-height: 100vh; }
+
+    header { background: #1a4a84; color: #fff; padding: 12px 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; box-shadow: 0 2px 8px rgba(0,0,0,.15); position: sticky; top: 0; z-index: 10; }
+    header .logo { font-size: 20px; font-weight: bold; }
+    header a { color: #fff; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,.15); }
+    header .who { margin-left: auto; font-size: 12px; opacity: .85; }
+
+    .wrap { max-width: 620px; margin: 16px auto; padding: 0 12px 40px; }
+    .card { background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.06); margin-bottom: 12px; }
+
+    /* Створення повідомлення */
+    textarea { width: 100%; min-height: 80px; border: 1px solid #d6dde6; border-radius: 10px; padding: 10px; font-size: 15px; resize: vertical; outline: none; }
+    textarea:focus { border-color: #1a4a84; }
+    .row { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+    .row.end { justify-content: flex-end; }
+    .count { margin-left: auto; font-size: 12px; color: #888; }
+    .filebtn { padding: 7px 12px; border: 1px solid #d6dde6; border-radius: 8px; cursor: pointer; font-size: 13px; background: #fff; color: #1a4a84; }
+    .filebtn:hover { background: #eef2f7; }
+    #preview img { max-width: 100%; max-height: 240px; border-radius: 10px; margin-top: 8px; display: block; }
+    .btn { padding: 9px 18px; background: #1a4a84; color: #fff; border: none; border-radius: 9px; font-weight: 700; font-size: 14px; cursor: pointer; }
+    .btn:hover { background: #0056b3; }
+    .btn:disabled { opacity: .55; cursor: default; }
+    .btn.small { padding: 6px 12px; font-size: 13px; }
+    .btn.alt { background: #eef2f7; color: #1a4a84; }
+    .btn.alt:hover { background: #dce4ec; }
+    .msg { font-size: 13px; min-height: 16px; color: #c00; margin-top: 6px; }
+    .msg.ok { color: #198754; }
+
+    /* Вкладки */
+    .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .tab { flex: 1; padding: 9px; border: 1px solid #1a4a84; background: #fff; color: #1a4a84; border-radius: 9px; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .tab.on { background: #1a4a84; color: #fff; }
+
+    /* Повідомлення */
+    .post .ph { display: flex; align-items: center; gap: 10px; }
+    .av { width: 36px; height: 36px; border-radius: 50%; background: #1a4a84; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+    .au { font-weight: 700; font-size: 14px; }
+    .dt { font-size: 12px; color: #888; }
+    .del { margin-left: auto; background: none; border: none; cursor: pointer; font-size: 16px; opacity: .6; }
+    .del:hover { opacity: 1; }
+    .txt { margin: 10px 0; font-size: 15px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+    .pimg { width: 100%; border-radius: 10px; display: block; margin-bottom: 8px; background: #eef2f5; }
+    .act { display: flex; gap: 4px; flex-wrap: wrap; border-top: 1px solid #eef2f5; padding-top: 8px; }
+    .act button { background: none; border: none; padding: 6px 9px; border-radius: 8px; cursor: pointer; font-size: 13px; color: #555; }
+    .act button:hover { background: #f1f4f8; }
+    .act button.on { color: #1a4a84; font-weight: 700; }
+    .thread { margin-top: 10px; border-left: 3px solid #d6dde6; padding-left: 10px; }
+    .reply { padding: 8px 0; border-bottom: 1px solid #f0f3f7; }
+    .reply .au { font-size: 13px; }
+    .reply .txt { font-size: 14px; margin: 4px 0 0; }
+    .rform { display: flex; gap: 6px; margin-top: 8px; }
+    .rform textarea { min-height: 40px; font-size: 14px; }
+    .empty { text-align: center; color: #888; padding: 24px 10px; font-size: 14px; }
+    .skel { height: 90px; border-radius: 12px; background: linear-gradient(90deg,#eee,#f7f7f7,#eee); margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<header>
+    <div class="logo">💬 Acore Форум</div>
+    <a href="index.html">← На головну</a>
+    <div class="who" id="who"></div>
+</header>
+
+<main class="wrap">
+    <section class="card" id="compose" hidden>
+        <textarea id="postText" maxlength="500" placeholder="Що нового? (до 500 символів)"></textarea>
+        <div id="preview"></div>
+        <div class="row">
+            <label class="filebtn">📷 Фото
+                <input type="file" id="photo" accept="image/*" hidden>
+            </label>
+            <span id="photoName" style="font-size:12px; color:#666;"></span>
+            <span class="count" id="count">0/500</span>
+        </div>
+        <div class="row end">
+            <button class="btn" id="publish" type="button">Опублікувати</button>
+        </div>
+        <div id="composeMsg" class="msg"></div>
+    </section>
+
+    <div class="tabs">
+        <button class="tab on" data-tab="all" type="button">Усі</button>
+        <button class="tab" data-tab="saved" type="button">Збережені</button>
+        <button class="tab" data-tab="mine" type="button">Мої</button>
+    </div>
+
+    <div id="feed"></div>
+    <div style="text-align:center;">
+        <button class="btn alt" id="more" type="button" hidden>Показати ще</button>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/access.js"></script>
+<script>
+(function () {
+    'use strict';
+    const CFG = window.ACORE_CONFIG || {};
+    const sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY);
+    const $ = id => document.getElementById(id);
+    const PAGE = 20;
+    const MAX_PHOTO_MB = 1;          // після стиснення фото обмежене цим розміром
+    let user = null;
+    let tab = 'all';
+    let page = 0;
+    let photoBlob = null;
+    let mine = { likes: new Set(), reposts: new Set(), saved: new Set() };
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function ago(ts) {
+        const m = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
+        if (m < 1) return 'щойно';
+        if (m < 60) return m + ' хв тому';
+        const h = Math.round(m / 60);
+        if (h < 24) return h + ' год тому';
+        return new Date(ts).toLocaleDateString('uk-UA');
+    }
+    function imgUrl(path) {
+        return sb.storage.from(CFG.SUPABASE_BUCKET).getPublicUrl(path).data.publicUrl;
+    }
+    function composeMsg(text, ok) {
+        $('composeMsg').textContent = text;
+        $('composeMsg').className = 'msg' + (ok ? ' ok' : '');
+    }
+
+    /* ---------- Стиснення фото в JPEG ---------- */
+    function loadImg(file) {
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Не вдалося відкрити фото')); };
+            img.src = url;
+        });
+    }
+
+    async function compressToJpeg(file) {
+        const img = await loadImg(file);
+        const MAX = 1024;                       // найбільша сторона, px
+        const k = Math.min(1, MAX / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * k);
+        c.height = Math.round(img.height * k);
+        const g = c.getContext('2d');
+        g.fillStyle = '#fff';
+        g.fillRect(0, 0, c.width, c.height);   // прозорий фон → білий
+        g.drawImage(img, 0, 0, c.width, c.height);
+        return await new Promise((resolve, reject) => {
+            c.toBlob(b => b ? resolve(b) : reject(new Error('Стиснення не вдалося')), 'image/jpeg', 0.6);
+        });
+    }
+
+    $('photo').addEventListener('change', async e => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        composeMsg('Стискаємо фото…', true);
+        try {
+            photoBlob = await compressToJpeg(file);
+            const kb = Math.round(photoBlob.size / 1024);
+            $('photoName').textContent = file.name + ' → ' + kb + ' KB (JPEG)';
+            const url = URL.createObjectURL(photoBlob);
+            $('preview').innerHTML = '<img src="' + url + '" alt="">';
+            composeMsg('');
+        } catch (err) {
+            photoBlob = null;
+            composeMsg('Не вдалося обробити фото: ' + err.message);
+        }
+    });
+
+    $('postText').addEventListener('input', () => {
+        $('count').textContent = $('postText').value.length + '/500';
+    });
+
+    /* ---------- Публікація ---------- */
+    async function usedMb() {
+        const { data } = await sb.from('files').select('size_mb').eq('user_id', user.id);
+        return (data || []).reduce((s, f) => s + parseFloat(f.size_mb || 0), 0);
+    }
+
+    async function insertPost(body, parentId, imagePath) {
+        const row = {
+            user_id: user.id,
+            author: (user.email || 'користувач').split('@')[0],
+            body: body,
+            parent_id: parentId || null,
+            image_path: imagePath || null
+        };
+        const { error } = await sb.from('posts').insert(row);
+        if (error) throw error;
+    }
+
+    $('publish').addEventListener('click', async () => {
+        const text = $('postText').value.trim();
+        if (!text && !photoBlob) { composeMsg('Напишіть текст або додайте фото.'); return; }
+        if (!user) { composeMsg('Увійдіть в акаунт на головній сторінці.'); return; }
+
+        $('publish').disabled = true;
+        composeMsg('Публікуємо…', true);
+        try {
+            let imagePath = null;
+            if (photoBlob) {
+                const mb = photoBlob.size / 1048576;
+                const lim = window.AcoreAccess.limits(user.email);
+                if (mb > MAX_PHOTO_MB) throw new Error('Фото завелике після стиснення');
+                const used = await usedMb();
+                if (used + mb > lim.quotaMb) throw new Error('Немає місця в облаку (' + lim.quotaMb + ' MB)');
+
+                imagePath = user.id + '/forum/' + Date.now() + '.jpg';
+                const { error: upErr } = await sb.storage.from(CFG.SUPABASE_BUCKET).upload(imagePath, photoBlob, { contentType: 'image/jpeg' });
+                if (upErr) throw upErr;
+                // Фото рахується в облаку, як і будь-який файл
+                await sb.from('files').insert({
+                    user_id: user.id,
+                    name: 'forum-' + Date.now() + '.jpg',
+                    size_mb: mb.toFixed(3),
+                    file_path: imagePath
+                });
+            }
+            await insertPost(text, null, imagePath);
+            $('postText').value = '';
+            $('count').textContent = '0/500';
+            $('preview').innerHTML = '';
+            $('photoName').textContent = '';
+            $('photo').value = '';
+            photoBlob = null;
+            composeMsg('Опубліковано ✅', true);
+            load(true);
+        } catch (err) {
+            composeMsg('Помилка: ' + err.message);
+        } finally {
+            $('publish').disabled = false;
+        }
+    });
+
+    /* ---------- Стрічка ---------- */
+    async function loadMine(ids) {
+        mine = { likes: new Set(), reposts: new Set(), saved: new Set() };
+        if (!ids.length || !user) return;
+        const [l, r, s] = await Promise.all([
+            sb.from('post_likes').select('post_id').eq('user_id', user.id).in('post_id', ids),
+            sb.from('post_reposts').select('post_id').eq('user_id', user.id).in('post_id', ids),
+            sb.from('post_saved').select('post_id').eq('user_id', user.id).in('post_id', ids)
+        ]);
+        (l.data || []).forEach(x => mine.likes.add(x.post_id));
+        (r.data || []).forEach(x => mine.reposts.add(x.post_id));
+        (s.data || []).forEach(x => mine.saved.add(x.post_id));
+    }
+
+    function postCard(p) {
+        const art = document.createElement('article');
+        art.className = 'card post';
+        art.dataset.id = p.id;
+        art.dataset.img = p.image_path || '';
+        const liked = mine.likes.has(p.id), rep = mine.reposts.has(p.id), sav = mine.saved.has(p.id);
+        const author = p.author || 'користувач';
+        const own = user && p.user_id === user.id;
+        art.innerHTML =
+            '<div class="ph">' +
+                '<div class="av">' + esc(author.charAt(0).toUpperCase()) + '</div>' +
+                '<div><div class="au">' + esc(author) + '</div><div class="dt">' + ago(p.created_at) + '</div></div>' +
+                (own ? '<button class="del" data-act="delete" title="Видалити" type="button">🗑</button>' : '') +
+            '</div>' +
+            '<div class="txt">' + esc(p.body) + '</div>' +
+            (p.image_path ? '<img class="pimg" loading="lazy" alt="" src="' + esc(imgUrl(p.image_path)) + '">' : '') +
+            '<div class="act">' +
+                '<button type="button" data-act="like" class="' + (liked ? 'on' : '') + '">❤️ <span>' + p.likes_count + '</span></button>' +
+                '<button type="button" data-act="repost" class="' + (rep ? 'on' : '') + '">🔁 <span>' + p.reposts_count + '</span></button>' +
+                '<button type="button" data-act="save" class="' + (sav ? 'on' : '') + '">🔖 ' + (sav ? 'Збережено' : 'Зберегти') + '</button>' +
+                '<button type="button" data-act="replies">💬 <span>' + p.replies_count + '</span></button>' +
+            '</div>' +
+            '<div class="thread" hidden></div>';
+        return art;
+    }
+
+    function setEmpty(text) {
+        $('feed').innerHTML = '<div class="card empty">' + esc(text) + '</div>';
+    }
+
+    async function load(reset) {
+        if (!user) { setEmpty('Щоб бачити форум, увійдіть в акаунт на головній сторінці.'); $('more').hidden = true; return; }
+        if (reset) { page = 0; $('feed').innerHTML = '<div class="skel"></div><div class="skel"></div>'; }
+
+        const from = page * PAGE, to = from + PAGE - 1;
+        let data = [], error = null;
+
+        if (tab === 'saved') {
+            const { data: sv } = await sb.from('post_saved').select('post_id').eq('user_id', user.id);
+            const ids = (sv || []).map(x => x.post_id);
+            if (!ids.length) { setEmpty('Збережених повідомлень ще немає.'); $('more').hidden = true; return; }
+            ({ data, error } = await sb.from('posts').select('*').in('id', ids).order('created_at', { ascending: false }).range(from, to));
+        } else {
+            let q = sb.from('posts').select('*').is('parent_id', null).order('created_at', { ascending: false }).range(from, to);
+            if (tab === 'mine') q = q.eq('user_id', user.id);
+            ({ data, error } = await q);
+        }
+        if (error) { setEmpty('Помилка завантаження: ' + error.message); return; }
+
+        await loadMine((data || []).map(p => p.id));
+
+        if (reset) $('feed').innerHTML = '';
+        if (!data || !data.length) {
+            if (reset) setEmpty(tab === 'mine' ? 'Ви ще нічого не опублікували.' : 'Поки що порожньо. Напишіть перший допис!');
+            $('more').hidden = true;
+            return;
+        }
+        data.forEach(p => $('feed').appendChild(postCard(p)));
+        $('more').hidden = data.length < PAGE;
+        page++;
+    }
+
+    /* ---------- Дії під повідомленням ---------- */
+    async function refreshCounts(art) {
+        const { data } = await sb.from('posts').select('likes_count,reposts_count,replies_count').eq('id', art.dataset.id).single();
+        if (!data) return;
+        art.querySelector('[data-act="like"] span').textContent = data.likes_count;
+        art.querySelector('[data-act="repost"] span').textContent = data.reposts_count;
+        art.querySelector('[data-act="replies"] span').textContent = data.replies_count;
+    }
+
+    async function toggleTable(table, id, has) {
+        if (has) return sb.from(table).delete().eq('user_id', user.id).eq('post_id', id);
+        return sb.from(table).insert({ user_id: user.id, post_id: id });
+    }
+
+    async function showReplies(art) {
+        const box = art.querySelector('.thread');
+        if (!box.hidden) { box.hidden = true; return; }
+        box.hidden = false;
+        box.innerHTML = '<div class="dt">Завантаження…</div>';
+        const { data, error } = await sb.from('posts').select('*').eq('parent_id', art.dataset.id).order('created_at', { ascending: true });
+        if (error) { box.innerHTML = '<div class="dt">Помилка: ' + esc(error.message) + '</div>'; return; }
+        box.innerHTML = '';
+        (data || []).forEach(r => {
+            const d = document.createElement('div');
+            d.className = 'reply';
+            d.innerHTML = '<div class="au">' + esc(r.author || 'користувач') + ' <span class="dt">· ' + ago(r.created_at) + '</span></div>' +
+                '<div class="txt">' + esc(r.body) + '</div>';
+            box.appendChild(d);
+        });
+        if (user) {
+            const f = document.createElement('div');
+            f.className = 'rform';
+            f.innerHTML = '<textarea maxlength="500" placeholder="Відповісти..."></textarea>' +
+                '<button class="btn small" type="button">Надіслати</button>';
+            f.querySelector('button').addEventListener('click', async () => {
+                const t = f.querySelector('textarea').value.trim();
+                if (!t) return;
+                try {
+                    await insertPost(t, art.dataset.id, null);
+                    showReplies(art); showReplies(art); // перемалювати список
+                    refreshCounts(art);
+                } catch (e) { alert('Помилка: ' + e.message); }
+            });
+            box.appendChild(f);
+        }
+    }
+
+    $('feed').addEventListener('click', async e => {
+        const btn = e.target.closest('button[data-act]');
+        if (!btn || !user) return;
+        const art = btn.closest('article.post');
+        const id = art.dataset.id;
+        const act = btn.dataset.act;
+        try {
+            if (act === 'like') {
+                const has = mine.likes.has(id);
+                const { error } = await toggleTable('post_likes', id, has);
+                if (error) throw error;
+                has ? mine.likes.delete(id) : mine.likes.add(id);
+                btn.classList.toggle('on', !has);
+                refreshCounts(art);
+            } else if (act === 'repost') {
+                const has = mine.reposts.has(id);
+                const { error } = await toggleTable('post_reposts', id, has);
+                if (error) throw error;
+                has ? mine.reposts.delete(id) : mine.reposts.add(id);
+                btn.classList.toggle('on', !has);
+                refreshCounts(art);
+            } else if (act === 'save') {
+                const has = mine.saved.has(id);
+                const { error } = await toggleTable('post_saved', id, has);
+                if (error) throw error;
+                has ? mine.saved.delete(id) : mine.saved.add(id);
+                btn.classList.toggle('on', !has);
+                btn.textContent = '🔖 ' + (has ? 'Зберегти' : 'Збережено');
+            } else if (act === 'replies') {
+                showReplies(art);
+            } else if (act === 'delete') {
+                if (!confirm('Видалити повідомлення?')) return;
+                const img = art.dataset.img;
+                const { error } = await sb.from('posts').delete().eq('id', id);
+                if (error) throw error;
+                if (img) {
+                    await sb.storage.from(CFG.SUPABASE_BUCKET).remove([img]);
+                    await sb.from('files').delete().eq('file_path', img);
+                }
+                art.remove();
+            }
+        } catch (err) {
+            alert('Помилка: ' + err.message);
+        }
+    });
+
+    /* ---------- Інтерфейс ---------- */
+    document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
+        tab = b.dataset.tab;
+        load(true);
+    }));
+    $('more').addEventListener('click', () => load(false));
+
+    async function init() {
+        const { data } = await sb.auth.getSession();
+        user = data && data.session ? data.session.user : null;
+        if (user) {
+            $('who').textContent = user.email || '';
+            $('compose').hidden = false;
+        } else {
+            $('who').textContent = 'Не ввійшли';
+        }
+        load(true);
+    }
+    init();
+})();
+</script>
+</body>
+</html>
