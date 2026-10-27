@@ -140,6 +140,7 @@
             <button type="button" class="primary" id="btn-docx">Скачати як Word (.docx)</button>
             <button type="button" id="btn-txt">Експорт .txt</button>
             <button type="button" id="btn-html">Експорт .html</button>
+            <button type="button" id="btn-cloud">Зберегти в облако (.docx)</button>
             <button type="button" class="danger" id="btn-delete">Видалити</button>
         </div>
     </main>
@@ -560,6 +561,48 @@ import TableCell from 'https://esm.sh/@tiptap/extension-table-cell@2';
         if (docs.length) open(docs[0].id);
     }
 
+    /* ---------- Збереження Word-файлу в облако ---------- */
+    async function saveToCloud() {
+        flushSave();
+        const d = current();
+        if (!d) return;
+        if (!window.docx) { alert('Бібліотека Word не завантажилась. Оновіть сторінку.'); return; }
+        if (!sb) { alert('Сервіс облака не підключено.'); return; }
+        const { data: sess } = await sb.auth.getSession();
+        const u = sess && sess.session ? sess.session.user : null;
+        if (!u) { alert('Спочатку увійдіть в акаунт на головній (вкладка «Пошта Acore») або в облаку.'); return; }
+
+        const btn = $('#btn-cloud');
+        btn.disabled = true;
+        statusEl.textContent = 'Зберігаємо в облако…';
+        try {
+            const blob = await window.docx.Packer.toBlob(htmlToDocx(d.html, d.title));
+            const name = baseName(d) + '.docx';
+            const path = u.id + '/' + Date.now() + '-' + name;
+
+            const { error: upErr } = await sb.storage.from(CFG.SUPABASE_BUCKET).upload(path, blob, {
+                contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            });
+            if (upErr) throw upErr;
+
+            const { error: dbErr } = await sb.from('files').insert({
+                user_id: u.id,
+                name: name,
+                size_mb: (blob.size / 1024 / 1024).toFixed(2),
+                file_path: path
+            });
+            if (dbErr) throw dbErr;
+
+            statusEl.textContent = 'Документ збережено в облако: ' + name;
+            alert('✅ Документ збережено в облако. Відкрийте «Облако», там його можна скачати.');
+        } catch (e) {
+            statusEl.textContent = 'Не вдалося зберегти в облако';
+            alert('❌ Помилка збереження в облако: ' + e.message);
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
     /* ---------- Події ---------- */
     $('#new-doc').addEventListener('click', createDoc);
     searchEl.addEventListener('input', renderList);
@@ -568,6 +611,7 @@ import TableCell from 'https://esm.sh/@tiptap/extension-table-cell@2';
     $('#btn-txt').addEventListener('click', exportTxt);
     $('#btn-html').addEventListener('click', exportHtml);
     $('#btn-delete').addEventListener('click', deleteDoc);
+    $('#btn-cloud').addEventListener('click', saveToCloud);
     window.addEventListener('beforeunload', flushSave);
 
     // Старт
