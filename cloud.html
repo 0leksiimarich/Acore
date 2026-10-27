@@ -18,7 +18,7 @@
         .container { max-width: 1000px; margin: 0 auto; padding: 15px; }
 
         .auth-section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); margin-bottom: 15px; text-align: center; }
-        .auth-input { padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin: 0 6px; font-size: 14px; width: 200px; }
+        .auth-input { padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin: 0 6px; font-size: 14px; }
         .auth-btn { padding: 10px 20px; background: #1a4a84; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .auth-btn:hover { background: #0056b3; }
         .logout-btn { padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
@@ -49,12 +49,12 @@
         .storage-used { height: 100%; background: #1a4a84; width: 0%; transition: width 0.3s; }
 
         .empty-state { text-align: center; padding: 40px; color: #999; }
+        .empty-icon { font-size: 48px; margin-bottom: 15px; }
+
+        .share-section { background: white; padding: 15px; border-radius: 6px; margin-top: 10px; }
+        .share-link { padding: 8px; background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; word-break: break-all; }
 
         footer { text-align: center; padding: 15px; color: #999; font-size: 12px; margin-top: 20px; }
-
-        .loading { display: inline-block; color: #666; }
-        .loading::after { content: '...'; animation: dots 1.5s steps(3, end) infinite; }
-        @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60%, 100% { content: '...'; } }
     </style>
 </head>
 <body>
@@ -68,12 +68,25 @@
     <div class="container">
         <!-- Авторизація -->
         <div class="auth-section" id="authSection">
-            <h2>Вхід в Acore Облако</h2>
-            <p style="font-size: 13px; color: #666; margin: 10px 0;">Введіть email та пароль</p>
-            <input type="email" id="emailInput" class="auth-input" placeholder="ваша@email.com">
-            <input type="password" id="passwordInput" class="auth-input" placeholder="Пароль">
-            <button class="auth-btn" onclick="loginToCloud()">Увійти</button>
-            <p style="font-size: 12px; color: #999; margin-top: 10px;">Нові акаунти створюються автоматично</p>
+            <style>
+                .auth-tabs { display: flex; gap: 6px; margin: 10px 0; }
+                .auth-tab { flex: 1; padding: 8px; border: 1px solid #1a4a84; background: #fff; color: #1a4a84; border-radius: 6px; cursor: pointer; font-weight: bold; }
+                .auth-tab.on { background: #1a4a84; color: #fff; }
+                .auth-link { background: none; border: none; color: #1a4a84; cursor: pointer; font-size: 13px; text-decoration: underline; margin-top: 6px; }
+                .auth-msg { font-size: 13px; margin-top: 10px; min-height: 18px; color: #c00; }
+                .auth-msg.ok { color: #198754; }
+            </style>
+            <h2>Acore Облако</h2>
+            <div class="auth-tabs">
+                <button type="button" id="tab-login" class="auth-tab on" onclick="setAuthMode('login')">Вхід</button>
+                <button type="button" id="tab-signup" class="auth-tab" onclick="location.href='register.html'">Реєстрація</button>
+            </div>
+            <input type="email" id="emailInput" class="auth-input" placeholder="ваша@email.com" autocomplete="email">
+            <div id="emailHint" style="font-size:12px; margin:-4px 0 8px; min-height:16px;"></div>
+            <input type="password" id="passwordInput" class="auth-input" placeholder="Пароль" autocomplete="current-password">
+            <button class="auth-btn" id="authSubmit" type="button" onclick="submitAuth()">Увійти</button>
+            <button class="auth-link" type="button" onclick="resetPassword()">Забули пароль?</button>
+            <div id="authMsg" class="auth-msg"></div>
         </div>
 
         <!-- Основна панель -->
@@ -82,9 +95,9 @@
             <div class="storage-info">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                     <span><strong id="userName">Користувач</strong></span>
-                    <button class="logout-btn" onclick="logoutFromCloud()">Вийти</button>
+                    <button class="logout-btn" onclick="logout()">Вийти</button>
                 </div>
-                <div>Використано: <strong id="usedStorage">0</strong> MB / <strong>5000</strong> MB</div>
+                <div>Використано простору: <strong id="usedStorage">0</strong> MB / <strong id="quotaLabel">100</strong> MB</div>
                 <div class="storage-bar">
                     <div class="storage-used" id="storageBar"></div>
                 </div>
@@ -92,12 +105,13 @@
 
             <!-- Завантаження файлів -->
             <div class="upload-section active">
-                <h3>📤 Завантажити файл</h3>
+                <h3>📤 Завантажити файли</h3>
                 <div class="upload-area" id="uploadArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('fileInput').click()">
-                    <p style="font-weight: bold; color: #1a4a84;">📁 Перетягніть файл сюди або клікніть</p>
-                    <p style="font-size: 12px; color: #999;">Макс 100 MB</p>
+                    <div class="empty-icon">📁</div>
+                    <p style="font-weight: bold; color: #1a4a84;">Перетягніть файли сюди або клікніть для вибору</p>
+                    <p style="font-size: 12px; color: #999;">Підтримуються всі типи файлів до 50 MB</p>
                 </div>
-                <input type="file" id="fileInput" class="file-input" onchange="handleFileSelect(event)">
+                <input type="file" id="fileInput" class="file-input" onchange="handleFileSelect(event)" multiple>
             </div>
 
             <!-- Список файлів -->
@@ -105,151 +119,327 @@
                 <h3>📂 Ваші файли (<span id="fileCount">0</span>)</h3>
                 <div id="filesContainer"></div>
                 <div id="emptyState" class="empty-state">
-                    <p>📭 Немає файлів</p>
+                    <div class="empty-icon">📭</div>
+                    <p>Немає файлів. Завантажте перший файл!</p>
                 </div>
             </div>
         </div>
     </div>
 
     <footer>
-        Acore Cloud Storage • Безпечне облако ☁️ • Acore Corp ©2026
+        Acore Cloud Storage • Безпечне облако для ваших файлів ☁️ • Acore Corp ©2026
     </footer>
 
-    <script src="js/config.js"></script>
-    <script src="js/supabase.js"></script>
+    <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/access.js"></script>
 
     <script>
+        // ===== SUPABASE ІНТЕГРАЦІЯ =====
+        let supabaseClient = null;
         let currentUser = null;
 
-        async function loginToCloud() {
-            const email = document.getElementById('emailInput').value.trim();
-            const password = document.getElementById('passwordInput').value.trim();
-
-            if (!email || !password) {
-                alert('⚠️ Заповніть всі поля');
+        // Ініціалізація Supabase після завантаження config.js
+        function initSupabase() {
+            if (supabaseClient) return;
+            if (typeof ACORE_CONFIG === 'undefined' || !window.supabase) {
+                console.error('❌ config.js або Supabase не завантажено!');
+                authMsg('Не вдалося завантажити сервіс входу. Оновіть сторінку.');
                 return;
             }
+            supabaseClient = window.supabase.createClient(
+                ACORE_CONFIG.SUPABASE_URL,
+                ACORE_CONFIG.SUPABASE_KEY
+            );
+        }
 
-            const result = await supabaseLogin(email, password);
-            
-            if (result.error) {
-                alert('❌ Помилка: ' + result.error.message);
-                return;
-            }
+        // ===== АВТОРИЗАЦІЯ =====
+        let authMode = 'login';
 
-            currentUser = result.data.user;
+        function authMsg(text, ok) {
+            const el = document.getElementById('authMsg');
+            el.textContent = text;
+            el.className = 'auth-msg' + (ok ? ' ok' : '');
+        }
+
+        function setAuthMode(mode) {
+            authMode = mode;
+            document.getElementById('tab-login').classList.toggle('on', mode === 'login');
+            authMsg('');
+        }
+
+        function translateAuthError(msg) {
+            const m = String(msg || '');
+            if (/Invalid login credentials/i.test(m)) return 'Невірна пошта або пароль.';
+            if (/Email not confirmed/i.test(m)) return 'Спочатку підтвердіть пошту: перейдіть за посиланням у листі.';
+            if (/invalid.*email/i.test(m)) return 'Некоректна адреса пошти.';
+            if (/rate limit|too many|security purposes/i.test(m)) return 'Забагато спроб. Зачекайте кілька хвилин.';
+            return 'Помилка: ' + m;
+        }
+
+        function redirectUrl() {
+            return window.location.origin + window.location.pathname;
+        }
+
+        function enterApp(user) {
+            currentUser = user;
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('mainPanel').style.display = 'block';
-            document.getElementById('userName').innerText = email;
-            
-            await loadCloudFiles();
-            alert('✅ Ви увійшли!');
+            const lim = AcoreAccess.limits(user.email);
+            document.getElementById('userName').innerText = (user.email || 'Користувач') + (lim.full ? '' : ' (обмежений доступ)');
+            authMsg('');
+            loadFiles();
         }
 
-        async function logoutFromCloud() {
+        async function submitAuth() {
+            const email = document.getElementById('emailInput').value.trim().toLowerCase();
+            const password = document.getElementById('passwordInput').value;
+
+            if (!email || !password) { authMsg('Заповніть пошту та пароль.'); return; }
+            initSupabase();
+            if (!supabaseClient) return;
+
+            const btn = document.getElementById('authSubmit');
+            btn.disabled = true;
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            btn.disabled = false;
+            if (error) { authMsg(translateAuthError(error.message)); return; }
+            enterApp(data.user);
+        }
+
+        async function resetPassword() {
+            const email = document.getElementById('emailInput').value.trim();
+            if (!email) { authMsg('Введіть пошту, на яку зареєстровано акаунт.'); return; }
+            initSupabase();
+            if (!supabaseClient) return;
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: redirectUrl() });
+            if (error) authMsg(translateAuthError(error.message));
+            else authMsg('Якщо акаунт існує, на пошту надіслано лист для скидання пароля.', true);
+        }
+
+        // Відновлення сесії після перезавантаження сторінки
+        async function restoreSession() {
+            initSupabase();
+            if (!supabaseClient) return;
+            supabaseClient.auth.onAuthStateChange(async (event) => {
+                if (event === 'PASSWORD_RECOVERY') {
+                    const np = prompt('Введіть новий пароль (мінімум 6 символів):');
+                    if (!np || np.length < 6) { authMsg('Пароль не змінено.'); return; }
+                    const { error } = await supabaseClient.auth.updateUser({ password: np });
+                    authMsg(error ? translateAuthError(error.message) : 'Пароль змінено. Ви увійшли в акаунт.', !error);
+                }
+            });
+            const { data } = await supabaseClient.auth.getSession();
+            if (data.session) enterApp(data.session.user);
+        }
+
+        async function logout() {
             if (!confirm('Вийти з облака?')) return;
-            await supabaseLogout();
-            currentUser = null;
-            document.getElementById('authSection').style.display = 'block';
-            document.getElementById('mainPanel').style.display = 'none';
-            document.getElementById('emailInput').value = '';
-            document.getElementById('passwordInput').value = '';
-            alert('✅ Вихід успішний');
+            initSupabase();
+            try {
+                await supabaseClient.auth.signOut();
+                currentUser = null;
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('mainPanel').style.display = 'none';
+                document.getElementById('emailInput').value = '';
+                document.getElementById('passwordInput').value = '';
+                authMsg('Ви вийшли з акаунта.', true);
+            } catch (err) {
+                alert('❌ Помилка: ' + err.message);
+            }
         }
 
-        function handleDragOver(e) {
-            e.preventDefault();
+        // Завантаження файлів
+        function handleFileSelect(event) {
+            Array.from(event.target.files).forEach(file => uploadFile(file));
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
             document.getElementById('uploadArea').classList.add('dragover');
         }
 
-        function handleDragLeave(e) {
+        function handleDragLeave() {
             document.getElementById('uploadArea').classList.remove('dragover');
         }
 
-        function handleDrop(e) {
-            e.preventDefault();
+        function handleDrop(event) {
+            event.preventDefault();
             document.getElementById('uploadArea').classList.remove('dragover');
-            const files = Array.from(e.dataTransfer.files);
-            files.forEach(f => uploadCloudFile(f));
+            Array.from(event.dataTransfer.files).forEach(file => uploadFile(file));
         }
 
-        function handleFileSelect(e) {
-            const files = Array.from(e.target.files);
-            files.forEach(f => uploadCloudFile(f));
-            e.target.value = '';
-        }
-
-        async function uploadCloudFile(file) {
+        async function uploadFile(file) {
             if (!currentUser) {
-                alert('❌ Спочатку увійдіть');
+                alert('❌ Спочатку увійдіть в акаунт');
+                return;
+            }
+            initSupabase();
+
+            const lim = AcoreAccess.limits(currentUser.email);
+            if (file.size > lim.fileMb * 1024 * 1024) {
+                alert(`Файл "${file.name}" завеликий. Ліміт для вашого доступу: ${lim.fileMb} MB`);
+                return;
+            }
+            const usedMb = parseFloat(document.getElementById('usedStorage').innerText) || 0;
+            if (usedMb + file.size / 1024 / 1024 > lim.quotaMb) {
+                alert(`Не вистачає місця. Ліміт для вашого доступу: ${lim.quotaMb} MB`);
                 return;
             }
 
-            const result = await uploadToSupabase(file, currentUser.id);
-            
-            if (result.error) {
-                alert('❌ Помилка: ' + result.error);
-            } else {
-                alert('✅ "' + file.name + '" завантажено!');
-                await loadCloudFiles();
+            try {
+                const fileName = `${currentUser.id}/${Date.now()}-${file.name}`;
+
+                const { error: uploadError } = await supabaseClient.storage
+                    .from(ACORE_CONFIG.SUPABASE_BUCKET)
+                    .upload(fileName, file);
+                if (uploadError) throw uploadError;
+
+                const { error: insertError } = await supabaseClient
+                    .from('files')
+                    .insert({
+                        user_id: currentUser.id,
+                        name: file.name,
+                        size_mb: (file.size / 1024 / 1024).toFixed(2),
+                        file_path: fileName
+                    });
+                if (insertError) throw insertError;
+
+                alert(`✅ Файл "${file.name}" завантажено!`);
+                await loadFiles();
+            } catch (err) {
+                alert('❌ Помилка завантаження: ' + err.message);
             }
         }
 
-        async function loadCloudFiles() {
-            if (!currentUser) return;
+        function escHtml(v) {
+            return String(v).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+        }
 
-            const files = await getFilesFromSupabase(currentUser.id);
-            let totalSize = 0;
-            let html = '';
+        async function loadFiles() {
+            if (!currentUser || !supabaseClient) return;
 
-            if (files.length === 0) {
-                document.getElementById('emptyState').style.display = 'block';
-                document.getElementById('filesContainer').innerHTML = '';
-            } else {
-                document.getElementById('emptyState').style.display = 'none';
-                files.forEach(file => {
-                    totalSize += parseFloat(file.size_mb);
-                    const date = new Date(file.uploaded_at).toLocaleDateString('uk-UA');
-                    html += `
-                        <div class="file-item">
-                            <div>
-                                <div class="file-name">📄 ${file.name}</div>
-                                <div class="file-size">${file.size_mb} MB • ${date}</div>
+            try {
+                const { data: files, error } = await supabaseClient
+                    .from('files')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('uploaded_at', { ascending: false });
+                if (error) throw error;
+
+                let totalSize = 0;
+                let html = '';
+
+                if (!files || files.length === 0) {
+                    document.getElementById('emptyState').style.display = 'block';
+                    document.getElementById('filesContainer').innerHTML = '';
+                } else {
+                    document.getElementById('emptyState').style.display = 'none';
+                    for (const file of files) {
+                        totalSize += parseFloat(file.size_mb);
+                        const uploadDate = new Date(file.uploaded_at).toLocaleDateString('uk-UA');
+                        html += `
+                            <div class="file-item">
+                                <div>
+                                    <div class="file-name">📄 ${escHtml(file.name)}</div>
+                                    <div class="file-size">${escHtml(String(file.size_mb))} MB • ${uploadDate}</div>
+                                </div>
+                                <div class="file-actions">
+                                    <button class="btn-download" onclick="downloadFile('${file.id}')">Скачати</button>
+                                    <button class="btn-delete" onclick="deleteFile('${file.id}')">Видалити</button>
+                                </div>
                             </div>
-                            <div class="file-actions">
-                                <button class="btn-download" onclick="downloadCloudFile('${file.file_path}', '${file.name}')">📥 Скачати</button>
-                                <button class="btn-delete" onclick="deleteCloudFile('${file.id}', '${file.file_path}')">🗑️ Видалити</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                document.getElementById('filesContainer').innerHTML = html;
+                        `;
+                    }
+                    document.getElementById('filesContainer').innerHTML = html;
+                }
+
+                document.getElementById('fileCount').innerText = files ? files.length : 0;
+                document.getElementById('usedStorage').innerText = totalSize.toFixed(2);
+                const quota = AcoreAccess.limits(currentUser.email).quotaMb;
+                document.getElementById('quotaLabel').innerText = quota;
+                document.getElementById('storageBar').style.width = Math.min(100, (totalSize / quota) * 100) + '%';
+            } catch (err) {
+                alert('❌ Помилка завантаження файлів: ' + err.message);
             }
-
-            document.getElementById('fileCount').innerText = files.length;
-            document.getElementById('usedStorage').innerText = totalSize.toFixed(2);
-            document.getElementById('storageBar').style.width = ((totalSize / 5000) * 100) + '%';
         }
 
-        async function downloadCloudFile(filePath, fileName) {
-            await downloadFromSupabase(filePath, fileName);
+        async function downloadFile(fileId) {
+            if (!currentUser || !supabaseClient) return;
+            try {
+                const { data: fileRecord, error: queryError } = await supabaseClient
+                    .from('files')
+                    .select('file_path, name')
+                    .eq('id', fileId)
+                    .single();
+                if (queryError) throw queryError;
+
+                const { data, error } = await supabaseClient.storage
+                    .from(ACORE_CONFIG.SUPABASE_BUCKET)
+                    .download(fileRecord.file_path);
+                if (error) throw error;
+
+                const url = URL.createObjectURL(data);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileRecord.name;
+                link.click();
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                alert('❌ Помилка скачування: ' + err.message);
+            }
         }
 
-        async function deleteCloudFile(fileId, filePath) {
+        async function deleteFile(fileId) {
             if (!confirm('Видалити файл?')) return;
-            const result = await deleteFromSupabase(fileId, filePath);
-            if (result.error) {
-                alert('❌ Помилка: ' + result.error);
-            } else {
+            if (!currentUser || !supabaseClient) return;
+
+            try {
+                const { data: fileRecord, error: queryError } = await supabaseClient
+                    .from('files')
+                    .select('file_path')
+                    .eq('id', fileId)
+                    .single();
+                if (queryError) throw queryError;
+
+                const { error: deleteStorageError } = await supabaseClient.storage
+                    .from(ACORE_CONFIG.SUPABASE_BUCKET)
+                    .remove([fileRecord.file_path]);
+                if (deleteStorageError) throw deleteStorageError;
+
+                const { error: deleteDbError } = await supabaseClient
+                    .from('files')
+                    .delete()
+                    .eq('id', fileId);
+                if (deleteDbError) throw deleteDbError;
+
                 alert('✅ Файл видалено');
-                await loadCloudFiles();
+                await loadFiles();
+            } catch (err) {
+                alert('❌ Помилка видалення: ' + err.message);
             }
         }
 
-        window.addEventListener('load', () => {
-            initSupabase();
+        // Підказка під полем пошти
+        document.getElementById('emailInput').addEventListener('input', e => {
+            const v = e.target.value.trim();
+            const hint = document.getElementById('emailHint');
+            if (!v) { hint.textContent = ''; return; }
+            if (!AcoreAccess.active) {
+                hint.style.color = '#198754';
+                hint.textContent = 'Повний доступ для всіх користувачів.';
+            } else if (AcoreAccess.isAcoreEmail(v)) {
+                hint.style.color = '#198754';
+                hint.textContent = '✅ Пошта Acore: повний доступ (' + AcoreAccess.limits(v).quotaMb + ' MB, синхронізація документів).';
+            } else {
+                hint.style.color = '#b26a00';
+                hint.textContent = '⚠️ Інша пошта: обмежений доступ (' + AcoreAccess.limits(v).quotaMb +
+                    ' MB, файли до ' + AcoreAccess.limits(v).fileMb + ' MB, без синхронізації документів).';
+            }
         });
+
+        restoreSession();
     </script>
 </body>
 </html>
