@@ -6,10 +6,11 @@
 <meta name="theme-color" content="#1a4a84">
 <title>Acore Docs — Документи</title>
 <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
     body { background: #f4f5f7; color: #333; height: 100vh; display: flex; flex-direction: column; }
     header { background: #1a4a84; color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
     header .logo { font-size: 18px; font-weight: bold; }
+    header .who { font-size: 12px; opacity: .85; margin-left: auto; }
     header a { color: #fff; text-decoration: none; font-size: 13px; padding: 6px 10px; border-radius: 4px; background: rgba(255,255,255,.15); }
     header a:hover { background: rgba(255,255,255,.25); }
     .layout { flex: 1; display: flex; min-height: 0; }
@@ -19,8 +20,7 @@
     .aside-top { padding: 10px; display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid #eee; }
     .btn { padding: 8px 12px; border: none; border-radius: 6px; background: #1a4a84; color: #fff; font-weight: bold; font-size: 13px; cursor: pointer; }
     .btn:hover { background: #0056b3; }
-    .btn.danger { background: #dc3545; }
-    .btn.light { background: #eef2f7; color: #1a4a84; }
+    .btn:disabled { opacity: .5; cursor: default; }
     input[type=search] { padding: 7px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; width: 100%; }
     #doc-list { list-style: none; overflow-y: auto; flex: 1; }
     #doc-list li { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
@@ -32,30 +32,47 @@
 
     /* Редактор */
     main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-    .toolbar { background: #fff; border-bottom: 1px solid #ddd; padding: 8px 12px; display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
-    .toolbar button { min-width: 34px; padding: 6px 8px; border: 1px solid #ddd; background: #fafafa; border-radius: 4px; cursor: pointer; font-size: 13px; }
-    .toolbar button:hover { background: #eef2f7; }
-    .toolbar .sep { width: 1px; height: 22px; background: #ddd; margin: 0 4px; }
     .title-row { background: #fff; padding: 12px 16px 0; }
     #doc-title { width: 100%; font-size: 22px; font-weight: bold; border: none; outline: none; color: #1a4a84; padding: 6px 0; }
-    .meta-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #888; padding: 4px 0 8px; border-bottom: 1px solid #eee; background: #fff; padding-left: 16px; padding-right: 16px; flex-wrap: wrap; gap: 6px; }
-    .export-box { display: flex; gap: 6px; }
-    .export-box button { padding: 4px 10px; font-size: 12px; border: 1px solid #ccc; background: #fff; border-radius: 4px; cursor: pointer; }
-    .paper-wrap { flex: 1; overflow-y: auto; padding: 20px; min-height: 0; }
-    #editor { background: #fff; max-width: 800px; margin: 0 auto; min-height: 100%; padding: 36px 44px; border: 1px solid #e3e6ea; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,.06); font-size: 16px; line-height: 1.6; outline: none; }
-    #editor:empty::before { content: 'Почніть писати...'; color: #aaa; }
-    #editor h1 { font-size: 26px; margin: 12px 0 8px; color: #1a4a84; }
-    #editor h2 { font-size: 20px; margin: 10px 0 6px; color: #1a4a84; }
-    #editor ul, #editor ol { padding-left: 26px; }
-    .status-bar { font-size: 12px; color: #888; padding: 6px 16px; background: #fff; border-top: 1px solid #eee; display: flex; justify-content: space-between; }
+    .toolbar { background: #fff; border-bottom: 1px solid #ddd; padding: 8px 12px; display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+    .toolbar button { min-width: 34px; height: 32px; padding: 0 8px; border: 1px solid #ddd; background: #fafafa; border-radius: 5px; cursor: pointer; font-size: 13px; color: #333; }
+    .toolbar button:hover { background: #eef2f7; }
+    .toolbar button.on { background: #1a4a84; color: #fff; border-color: #1a4a84; }
+    .toolbar button:disabled { opacity: .4; cursor: default; }
+    .toolbar select { height: 32px; border: 1px solid #ddd; border-radius: 5px; padding: 0 6px; background: #fff; font-size: 13px; }
+    .sep { width: 1px; height: 22px; background: #ddd; margin: 0 4px; }
 
-    /* Мобільна версія */
+    .paper-wrap { flex: 1; overflow-y: auto; padding: 20px; min-height: 0; background: #eef1f5; }
+    .paper { background: #fff; max-width: 820px; min-height: 100%; margin: 0 auto; padding: 48px 56px; border: 1px solid #e3e6ea; border-radius: 4px; box-shadow: 0 1px 6px rgba(0,0,0,.08); }
+
+    /* Стилі вмісту ProseMirror (TipTap) */
+    .ProseMirror { outline: none; font-size: 16px; line-height: 1.65; min-height: 60vh; }
+    .ProseMirror p { margin: 0 0 10px; }
+    .ProseMirror h1 { font-size: 28px; margin: 18px 0 10px; color: #1a4a84; }
+    .ProseMirror h2 { font-size: 22px; margin: 16px 0 8px; color: #1a4a84; }
+    .ProseMirror h3 { font-size: 18px; margin: 14px 0 6px; color: #1a4a84; }
+    .ProseMirror ul, .ProseMirror ol { padding-left: 26px; margin: 0 0 10px; }
+    .ProseMirror blockquote { border-left: 4px solid #1a4a84; padding: 4px 14px; color: #555; margin: 10px 0; background: #f7f9fc; }
+    .ProseMirror a { color: #1a4a84; text-decoration: underline; }
+    .ProseMirror table { border-collapse: collapse; width: 100%; margin: 12px 0; table-layout: fixed; }
+    .ProseMirror th, .ProseMirror td { border: 1px solid #b8c2cf; padding: 8px 10px; vertical-align: top; min-width: 60px; position: relative; }
+    .ProseMirror th { background: #eef2f7; font-weight: bold; text-align: left; }
+    .ProseMirror .selectedCell:after { content: ""; position: absolute; inset: 0; background: rgba(26,74,132,.12); pointer-events: none; }
+    .ProseMirror p.is-editor-empty:first-child::before { content: 'Почніть писати...'; color: #aaa; float: left; height: 0; pointer-events: none; }
+
+    .status-bar { font-size: 12px; color: #888; padding: 6px 16px; background: #fff; border-top: 1px solid #eee; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .meta-row { background: #fff; padding: 6px 12px; border-top: 1px solid #eee; display: flex; gap: 6px; flex-wrap: wrap; }
+    .meta-row button { padding: 5px 10px; font-size: 12px; border: 1px solid #ccc; background: #fff; border-radius: 4px; cursor: pointer; }
+    .meta-row button:hover { background: #eef2f7; }
+    .meta-row button.danger { color: #dc3545; border-color: #f3b3ba; }
+    .meta-row button.primary { background: #1a4a84; color: #fff; border-color: #1a4a84; }
+
     @media (max-width: 720px) {
         body { height: auto; min-height: 100vh; }
         .layout { flex-direction: column; }
         aside { width: 100%; max-height: 240px; border-right: none; border-bottom: 1px solid #ddd; }
-        #editor { padding: 20px 16px; }
-        .paper-wrap { padding: 10px; }
+        .paper { padding: 20px 16px; }
+        .paper-wrap { padding: 8px; }
     }
 </style>
 </head>
@@ -63,6 +80,7 @@
 <header>
     <div class="logo">Acore Docs</div>
     <a href="index.html">← Назад на Acore</a>
+    <div class="who" id="who"></div>
 </header>
 
 <div class="layout">
@@ -78,60 +96,169 @@
         <div class="title-row">
             <input type="text" id="doc-title" placeholder="Назва документа" maxlength="120">
         </div>
-        <div class="toolbar">
-            <button type="button" data-cmd="bold" title="Жирний"><b>B</b></button>
-            <button type="button" data-cmd="italic" title="Курсив"><i>I</i></button>
-            <button type="button" data-cmd="underline" title="Підкреслення"><u>U</u></button>
-            <button type="button" data-cmd="strikeThrough" title="Закреслення"><s>S</s></button>
+
+        <div class="toolbar" id="toolbar">
+            <button type="button" data-act="undo" title="Скасувати (Ctrl+Z)">↶</button>
+            <button type="button" data-act="redo" title="Повторити (Ctrl+Y)">↷</button>
             <span class="sep"></span>
-            <button type="button" data-block="H1" title="Заголовок 1">H1</button>
-            <button type="button" data-block="H2" title="Заголовок 2">H2</button>
-            <button type="button" data-block="P" title="Звичайний текст">¶</button>
+            <select id="block" title="Стиль абзацу">
+                <option value="p">Звичайний текст</option>
+                <option value="h1">Заголовок 1</option>
+                <option value="h2">Заголовок 2</option>
+                <option value="h3">Заголовок 3</option>
+            </select>
             <span class="sep"></span>
-            <button type="button" data-cmd="insertUnorderedList" title="Маркований список">• ―</button>
-            <button type="button" data-cmd="insertOrderedList" title="Нумерований список">1.</button>
+            <button type="button" data-act="bold" title="Жирний (Ctrl+B)"><b>B</b></button>
+            <button type="button" data-act="italic" title="Курсив (Ctrl+I)"><i>I</i></button>
+            <button type="button" data-act="underline" title="Підкреслення (Ctrl+U)"><u>U</u></button>
+            <button type="button" data-act="strike" title="Закреслення"><s>S</s></button>
             <span class="sep"></span>
-            <button type="button" data-cmd="justifyLeft" title="Вліво">⫷</button>
-            <button type="button" data-cmd="justifyCenter" title="По центру">≡</button>
-            <button type="button" data-cmd="removeFormat" title="Очистити форматування">✕</button>
+            <button type="button" data-act="bulletList" title="Маркований список">• ―</button>
+            <button type="button" data-act="orderedList" title="Нумерований список">1.</button>
+            <button type="button" data-act="blockquote" title="Цитата">❝</button>
+            <span class="sep"></span>
+            <button type="button" data-act="alignLeft" title="По лівому краю">⫷</button>
+            <button type="button" data-act="alignCenter" title="По центру">≡</button>
+            <button type="button" data-act="alignRight" title="По правому краю">⫸</button>
+            <span class="sep"></span>
+            <button type="button" data-act="link" title="Посилання">🔗</button>
+            <button type="button" data-act="table" title="Вставити таблицю 3×3">▦ Таблиця</button>
+            <button type="button" data-act="tableRow" title="Додати рядок таблиці">+ рядок</button>
+            <button type="button" data-act="tableCol" title="Додати стовпець таблиці">+ стовпець</button>
+            <button type="button" data-act="clear" title="Очистити форматування">✕</button>
         </div>
+
         <div class="paper-wrap">
-            <div id="editor" contenteditable="true" spellcheck="true"></div>
+            <div class="paper"><div id="editor"></div></div>
         </div>
+
         <div class="status-bar">
             <span id="word-count">0 слів</span>
             <span id="save-status">Готово</span>
         </div>
-        <div class="meta-row" style="display:none;"></div>
+        <div class="meta-row">
+            <button type="button" class="primary" id="btn-docx">Скачати як Word (.docx)</button>
+            <button type="button" id="btn-txt">Експорт .txt</button>
+            <button type="button" id="btn-html">Експорт .html</button>
+            <button type="button" class="danger" id="btn-delete">Видалити</button>
+        </div>
     </main>
 </div>
 
+<!-- Класичні скрипти -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
 <script src="js/access.js"></script>
-<script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+
+<script type="module">
+import { Editor } from 'https://esm.sh/@tiptap/core@2';
+import StarterKit from 'https://esm.sh/@tiptap/starter-kit@2';
+import Underline from 'https://esm.sh/@tiptap/extension-underline@2';
+import TextAlign from 'https://esm.sh/@tiptap/extension-text-align@2';
+import Link from 'https://esm.sh/@tiptap/extension-link@2';
+import Table from 'https://esm.sh/@tiptap/extension-table@2';
+import TableRow from 'https://esm.sh/@tiptap/extension-table-row@2';
+import TableHeader from 'https://esm.sh/@tiptap/extension-table-header@2';
+import TableCell from 'https://esm.sh/@tiptap/extension-table-cell@2';
+
 (function () {
     'use strict';
     const KEY = 'acore-docs';
-
-    // ----- хмара (Supabase): працює, коли користувач увійшов в облако -----
     const CFG = window.ACORE_CONFIG || {};
-    const sb = (window.supabase && CFG.SUPABASE_URL)
-        ? window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY)
-        : null;
-    let user = null;
     const $ = s => document.querySelector(s);
-    const editor = $('#editor');
     const titleEl = $('#doc-title');
     const listEl = $('#doc-list');
     const searchEl = $('#search');
     const statusEl = $('#save-status');
     const countEl = $('#word-count');
+    const whoEl = $('#who');
+
+    const sb = (window.supabase && CFG.SUPABASE_URL)
+        ? window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY)
+        : null;
+    let user = null;
 
     let docs = load();
     let currentId = null;
     let saveTimer = null;
 
+    /* ---------- Редактор ---------- */
+    const editor = new Editor({
+        element: document.getElementById('editor'),
+        extensions: [
+            StarterKit,
+            Underline,
+            TextAlign.configure({ types: ['heading', 'paragraph'] }),
+            Link.configure({ openOnClick: false, autolink: true }),
+            Table.configure({ resizable: true }),
+            TableRow,
+            TableHeader,
+            TableCell
+        ],
+        content: '',
+        onUpdate: () => scheduleSave(),
+        onSelectionUpdate: () => syncToolbar(),
+        onTransaction: () => syncToolbar()
+    });
+
+    const COMMANDS = {
+        undo: () => editor.chain().focus().undo().run(),
+        redo: () => editor.chain().focus().redo().run(),
+        bold: () => editor.chain().focus().toggleBold().run(),
+        italic: () => editor.chain().focus().toggleItalic().run(),
+        underline: () => editor.chain().focus().toggleUnderline().run(),
+        strike: () => editor.chain().focus().toggleStrike().run(),
+        bulletList: () => editor.chain().focus().toggleBulletList().run(),
+        orderedList: () => editor.chain().focus().toggleOrderedList().run(),
+        blockquote: () => editor.chain().focus().toggleBlockquote().run(),
+        alignLeft: () => editor.chain().focus().setTextAlign('left').run(),
+        alignCenter: () => editor.chain().focus().setTextAlign('center').run(),
+        alignRight: () => editor.chain().focus().setTextAlign('right').run(),
+        table: () => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+        tableRow: () => editor.chain().focus().addRowAfter().run(),
+        tableCol: () => editor.chain().focus().addColumnAfter().run(),
+        clear: () => editor.chain().focus().unsetAllMarks().clearNodes().run(),
+        link: () => {
+            const prev = editor.getAttributes('link').href || '';
+            const url = prompt('Адреса посилання (https://...). Порожньо — прибрати посилання:', prev);
+            if (url === null) return;
+            if (!url.trim()) editor.chain().focus().extendMarkRange('link').unsetLink().run();
+            else if (/^https?:\/\//i.test(url.trim())) editor.chain().focus().extendMarkRange('link').setLink({ href: url.trim() }).run();
+            else alert('Посилання має починатися з https://');
+        }
+    };
+
+    document.querySelectorAll('[data-act]').forEach(btn => {
+        btn.addEventListener('mousedown', e => e.preventDefault());
+        btn.addEventListener('click', () => { if (current()) COMMANDS[btn.dataset.act](); });
+    });
+
+    $('#block').addEventListener('change', e => {
+        if (!current()) return;
+        const v = e.target.value;
+        const chain = editor.chain().focus();
+        if (v === 'p') chain.setParagraph().run();
+        else chain.setHeading({ level: Number(v[1]) }).run();
+    });
+
+    function syncToolbar() {
+        document.querySelectorAll('[data-act]').forEach(btn => {
+            const a = btn.dataset.act;
+            const map = { bold: 'bold', italic: 'italic', underline: 'underline', strike: 'strike',
+                bulletList: 'bulletList', orderedList: 'orderedList', blockquote: 'blockquote' };
+            if (map[a]) btn.classList.toggle('on', editor.isActive(map[a]));
+            if (a === 'alignLeft') btn.classList.toggle('on', editor.isActive({ textAlign: 'left' }) || !editor.isActive({ textAlign: 'center' }) && !editor.isActive({ textAlign: 'right' }));
+            if (a === 'alignCenter') btn.classList.toggle('on', editor.isActive({ textAlign: 'center' }));
+            if (a === 'alignRight') btn.classList.toggle('on', editor.isActive({ textAlign: 'right' }));
+        });
+        const h = editor.isActive('heading', { level: 1 }) ? 'h1'
+            : editor.isActive('heading', { level: 2 }) ? 'h2'
+            : editor.isActive('heading', { level: 3 }) ? 'h3' : 'p';
+        $('#block').value = h;
+    }
+
+    /* ---------- Локальні документи ---------- */
     function load() {
         try {
             const d = JSON.parse(localStorage.getItem(KEY) || '[]');
@@ -139,20 +266,26 @@
         } catch (e) { return []; }
     }
     function persist() {
-        try {
-            localStorage.setItem(KEY, JSON.stringify(docs));
-            return true;
-        } catch (e) {
-            statusEl.textContent = 'Помилка збереження (мало місця)';
-            return false;
-        }
+        try { localStorage.setItem(KEY, JSON.stringify(docs)); return true; }
+        catch (e) { statusEl.textContent = 'Помилка збереження (мало місця)'; return false; }
     }
     function uid() { return 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
-    function fmtDate(ts) {
-        return new Date(ts).toLocaleString('uk-UA', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const fmtDate = ts => new Date(ts).toLocaleString('uk-UA', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const clockNow = () => new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+    const current = () => docs.find(d => d.id === currentId);
+
+    function plural(n, one, few, many) {
+        const m10 = n % 10, m100 = n % 100;
+        if (m10 === 1 && m100 !== 11) return one;
+        if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+        return many;
     }
-    function clockNow() { return new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }); }
-    function current() { return docs.find(d => d.id === currentId); }
+
+    function updateCount() {
+        const text = editor.getText().trim();
+        const words = text ? text.split(/\s+/).length : 0;
+        countEl.textContent = words + ' ' + plural(words, 'слово', 'слова', 'слів');
+    }
 
     function renderList() {
         const q = searchEl.value.trim().toLowerCase();
@@ -182,30 +315,52 @@
         });
     }
 
-    function updateCount() {
-        const text = (editor.innerText || '').trim();
-        const words = text ? text.split(/\s+/).length : 0;
-        countEl.textContent = words + ' ' + plural(words, 'слово', 'слова', 'слів');
-    }
-    function plural(n, one, few, many) {
-        const m10 = n % 10, m100 = n % 100;
-        if (m10 === 1 && m100 !== 11) return one;
-        if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
-        return many;
-    }
-
     function open(id) {
         if (currentId) flushSave();
         const d = docs.find(x => x.id === id);
         if (!d) return;
         currentId = id;
         titleEl.value = d.title || '';
-        editor.innerHTML = d.html || '';
+        editor.commands.setContent(d.html || '', false);
         statusEl.textContent = 'Відкрито';
         updateCount();
         renderList();
+        syncToolbar();
     }
 
+    function createDoc() {
+        flushSave();
+        const d = { id: uid(), title: '', html: '', text: '', updated: Date.now() };
+        docs.push(d);
+        persist();
+        open(d.id);
+        titleEl.focus();
+    }
+
+    /* ---------- Збереження ---------- */
+    function flushSave() {
+        clearTimeout(saveTimer);
+        const d = current();
+        if (!d) return;
+        d.title = titleEl.value.trim();
+        d.html = editor.getHTML();
+        d.text = editor.getText();
+        d.updated = Date.now();
+        if (persist()) {
+            statusEl.textContent = 'Збережено о ' + clockNow();
+            pushCloud(d);
+        }
+        renderList();
+    }
+
+    function scheduleSave() {
+        statusEl.textContent = 'Збереження...';
+        updateCount();
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(flushSave, 500);
+    }
+
+    /* ---------- Хмара (Supabase) ---------- */
     async function pushCloud(d) {
         if (!user || !sb) return;
         const { error } = await sb.from('documents').upsert({
@@ -215,20 +370,23 @@
         if (error) statusEl.textContent = 'Помилка хмари: ' + error.message;
         else statusEl.textContent = 'Збережено о ' + clockNow() + ' · у хмарі';
     }
+
     async function removeCloud(id) {
         if (!user || !sb) return;
         const { error } = await sb.from('documents').delete().eq('id', id);
         if (error) statusEl.textContent = 'Помилка хмари: ' + error.message;
     }
-    // Підтягує документи з хмари, зливає з локальними (новіший перемагає)
+
     async function pullCloud() {
         if (!sb) return;
         const { data: sess } = await sb.auth.getSession();
         user = sess && sess.session ? sess.session.user : null;
         if (!user) {
-            statusEl.textContent = 'Документи зберігаються в браузері. Увійдіть в облако, щоб синхронізувати.';
+            whoEl.textContent = 'Не ввійшли: документи лише в цьому браузері';
+            statusEl.textContent = 'Увійдіть в облако, щоб синхронізувати документи.';
             return;
         }
+        whoEl.textContent = user.email || '';
         if (!window.AcoreAccess.limits(user.email).docsSync) {
             statusEl.textContent = 'Синхронізація доступна лише для пошти Acore. Документи зберігаються в браузері.';
             user = null;
@@ -250,8 +408,6 @@
             }
         });
         if (changed) persist();
-
-        // Локальні документи, яких ще немає в хмарі, — завантажити
         docs.forEach(d => { if (!(data || []).some(r => r.id === d.id)) pushCloud(d); });
 
         renderList();
@@ -260,37 +416,134 @@
         statusEl.textContent = 'Синхронізовано з хмарою';
     }
 
-    function createDoc() {
-        flushSave();
-        const d = { id: uid(), title: '', html: '', text: '', updated: Date.now() };
-        docs.push(d);
-        persist();
-        open(d.id);
-        titleEl.focus();
+    /* ---------- Експорт ---------- */
+    function download(name, content, type) {
+        const blob = content instanceof Blob ? content : new Blob([content], { type });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
     }
 
-    function flushSave() {
-        clearTimeout(saveTimer);
+    const baseName = d => (d.title || 'document').replace(/[\\/:*?"<>|]+/g, '_');
+
+    function htmlToDocx(html, title) {
+        const D = window.docx;
+        const doc = new DOMParser().parseFromString(html || '<p></p>', 'text/html');
+
+        const align = el => {
+            const a = (el.style && el.style.textAlign) || '';
+            if (a === 'center') return D.AlignmentType.CENTER;
+            if (a === 'right') return D.AlignmentType.RIGHT;
+            return D.AlignmentType.LEFT;
+        };
+
+        function runs(node, base) {
+            const out = [];
+            node.childNodes.forEach(ch => {
+                if (ch.nodeType === 3) {
+                    if (ch.textContent) out.push(new D.TextRun({ text: ch.textContent, ...base }));
+                    return;
+                }
+                if (ch.nodeType !== 1) return;
+                const t = ch.tagName;
+                if (t === 'BR') { out.push(new D.TextRun({ break: 1 })); return; }
+                const next = { ...base };
+                if (t === 'STRONG' || t === 'B') next.bold = true;
+                if (t === 'EM' || t === 'I') next.italics = true;
+                if (t === 'U') next.underline = {};
+                if (t === 'S' || t === 'DEL' || t === 'STRIKE') next.strike = true;
+                out.push(...runs(ch, next));
+            });
+            return out;
+        }
+
+        function listParas(list, ordered, level) {
+            const out = [];
+            Array.from(list.children).forEach((li, i) => {
+                const prefix = ordered ? (i + 1) + '. ' : '';
+                const r = runs(li, {});
+                if (prefix) r.unshift(new D.TextRun({ text: prefix }));
+                out.push(new D.Paragraph({
+                    children: r,
+                    indent: { left: 360 * (level + 1), hanging: 360 },
+                    bullet: ordered ? undefined : { level },
+                    spacing: { after: 80 }
+                }));
+            });
+            return out;
+        }
+
+        function blocks(parent) {
+            const out = [];
+            Array.from(parent.children).forEach(el => {
+                const t = el.tagName;
+                if (t === 'P') {
+                    out.push(new D.Paragraph({ children: runs(el, {}), alignment: align(el), spacing: { after: 160 } }));
+                } else if (/^H[1-3]$/.test(t)) {
+                    const lvl = { H1: D.HeadingLevel.HEADING_1, H2: D.HeadingLevel.HEADING_2, H3: D.HeadingLevel.HEADING_3 }[t];
+                    out.push(new D.Paragraph({ heading: lvl, children: runs(el, {}), alignment: align(el), spacing: { before: 240, after: 120 } }));
+                } else if (t === 'UL') {
+                    out.push(...listParas(el, false, 0));
+                } else if (t === 'OL') {
+                    out.push(...listParas(el, true, 0));
+                } else if (t === 'BLOCKQUOTE') {
+                    out.push(...blocks(el).map(p => p));
+                } else if (t === 'TABLE') {
+                    const rows = Array.from(el.querySelectorAll('tr')).map(tr => new D.TableRow({
+                        children: Array.from(tr.children).map(cell => new D.TableCell({
+                            children: [new D.Paragraph({ children: runs(cell, cell.tagName === 'TH' ? { bold: true } : {}) })],
+                            margins: { top: 80, bottom: 80, left: 100, right: 100 }
+                        }))
+                    }));
+                    out.push(new D.Table({ rows, width: { size: 100, type: D.WidthType.PERCENTAGE } }));
+                    out.push(new D.Paragraph({ children: [] }));
+                } else if (el.textContent && el.textContent.trim()) {
+                    out.push(new D.Paragraph({ children: runs(el, {}), spacing: { after: 160 } }));
+                }
+            });
+            return out;
+        }
+
+        const children = [
+            new D.Paragraph({ text: title || 'Документ', heading: D.HeadingLevel.TITLE, spacing: { after: 240 } }),
+            ...blocks(doc.body)
+        ];
+        return new D.Document({ sections: [{ properties: {}, children }] });
+    }
+
+    async function exportDocx() {
+        flushSave();
         const d = current();
         if (!d) return;
-        d.title = titleEl.value.trim();
-        d.html = editor.innerHTML;
-        d.text = editor.innerText || '';
-        d.updated = Date.now();
-        if (persist()) {
-            statusEl.textContent = 'Збережено о ' + clockNow();
-            pushCloud(d);
+        if (!window.docx) { alert('Бібліотека Word не завантажилась. Перевірте інтернет і оновіть сторінку.'); return; }
+        try {
+            const doc = htmlToDocx(d.html, d.title);
+            const blob = await window.docx.Packer.toBlob(doc);
+            download(baseName(d) + '.docx', blob, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        } catch (e) {
+            alert('Не вдалося створити Word-файл: ' + e.message);
         }
-        renderList();
-    }
-    function scheduleSave() {
-        statusEl.textContent = 'Збереження...';
-        updateCount();
-        clearTimeout(saveTimer);
-        saveTimer = setTimeout(flushSave, 500);
     }
 
-    function deleteDoc() {
+    function exportTxt() {
+        flushSave();
+        const d = current();
+        if (d) download(baseName(d) + '.txt', d.text || '', 'text/plain;charset=utf-8');
+    }
+
+    function exportHtml() {
+        flushSave();
+        const d = current();
+        if (!d) return;
+        const page = '<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><title>' +
+            (d.title || 'Документ').replace(/</g, '&lt;') + '</title></head><body>' + (d.html || '') + '</body></html>';
+        download(baseName(d) + '.html', page, 'text/html;charset=utf-8');
+    }
+
+    async function deleteDoc() {
         const d = current();
         if (!d) return;
         if (!confirm('Видалити документ «' + (d.title || 'Без назви') + '»?')) return;
@@ -300,82 +553,28 @@
         currentId = null;
         clearTimeout(saveTimer);
         titleEl.value = '';
-        editor.innerHTML = '';
+        editor.commands.setContent('', false);
         statusEl.textContent = 'Документ видалено';
         renderList();
         updateCount();
         if (docs.length) open(docs[0].id);
     }
 
-    function download(name, content, type) {
-        const blob = new Blob([content], { type });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = name;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
-    }
-    function exportDoc(kind) {
-        flushSave();
-        const d = current();
-        if (!d) return;
-        const base = (d.title || 'document').replace(/[\\/:*?"<>|]+/g, '_');
-        if (kind === 'txt') download(base + '.txt', (d.text || ''), 'text/plain;charset=utf-8');
-        if (kind === 'html') {
-            const page = '<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><title>' +
-                (d.title || 'Документ').replace(/</g, '&lt;') + '</title></head><body>' + d.html + '</body></html>';
-            download(base + '.html', page, 'text/html;charset=utf-8');
-        }
-    }
-
-    // ----- панель форматування -----
-    document.querySelectorAll('[data-cmd]').forEach(btn => {
-        btn.addEventListener('mousedown', e => e.preventDefault());
-        btn.addEventListener('click', () => {
-            if (!current()) return;
-            editor.focus();
-            document.execCommand(btn.dataset.cmd, false, null);
-            scheduleSave();
-        });
-    });
-    document.querySelectorAll('[data-block]').forEach(btn => {
-        btn.addEventListener('mousedown', e => e.preventDefault());
-        btn.addEventListener('click', () => {
-            if (!current()) return;
-            editor.focus();
-            document.execCommand('formatBlock', false, btn.dataset.block);
-            scheduleSave();
-        });
-    });
-
-    // ----- події -----
+    /* ---------- Події ---------- */
     $('#new-doc').addEventListener('click', createDoc);
     searchEl.addEventListener('input', renderList);
-    editor.addEventListener('input', scheduleSave);
     titleEl.addEventListener('input', scheduleSave);
+    $('#btn-docx').addEventListener('click', exportDocx);
+    $('#btn-txt').addEventListener('click', exportTxt);
+    $('#btn-html').addEventListener('click', exportHtml);
+    $('#btn-delete').addEventListener('click', deleteDoc);
     window.addEventListener('beforeunload', flushSave);
 
-    // Окремий кнопочний блок експорту/видалення в шапці редактора
-    const meta = document.querySelector('.meta-row');
-    meta.style.display = 'flex';
-    meta.textContent = '';
-    const bar = document.createElement('div');
-    bar.className = 'export-box';
-    [['Експорт .txt', () => exportDoc('txt')], ['Експорт .html', () => exportDoc('html')], ['Видалити', deleteDoc]]
-        .forEach(([label, fn]) => {
-            const b = document.createElement('button');
-            b.type = 'button';
-            b.textContent = label;
-            b.addEventListener('click', fn);
-            bar.appendChild(b);
-        });
-    meta.appendChild(bar);
-
-    // Старт: відкрити останній документ або показати порожній стан
+    // Старт
     if (docs.length) open(docs.slice().sort((a, b) => b.updated - a.updated)[0].id);
     renderList();
     updateCount();
+    syncToolbar();
     pullCloud();
 })();
 </script>
