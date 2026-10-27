@@ -319,7 +319,8 @@
             }
 
             try {
-                const fileName = `${currentUser.id}/${Date.now()}-${file.name}`;
+                const safeName = file.name.replace(/[^A-Za-z0-9._-]/g, '_');
+                const fileName = `${currentUser.id}/${Date.now()}-${safeName}`;
                 
                 // Завантажити в Storage
                 const { error: uploadError } = await supabaseClient.storage
