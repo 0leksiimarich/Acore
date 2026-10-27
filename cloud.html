@@ -73,6 +73,8 @@
                 .auth-tab { flex: 1; padding: 8px; border: 1px solid #1a4a84; background: #fff; color: #1a4a84; border-radius: 6px; cursor: pointer; font-weight: bold; }
                 .auth-tab.on { background: #1a4a84; color: #fff; }
                 .auth-link { background: none; border: none; color: #1a4a84; cursor: pointer; font-size: 13px; text-decoration: underline; margin-top: 6px; }
+                .auth-divider { text-align: center; color: #999; font-size: 12px; margin: 12px 0; }
+                .auth-btn.oauth { background: #fff; color: #333; border: 1px solid #ccc; margin-top: 6px; }
                 .auth-msg { font-size: 13px; margin-top: 10px; min-height: 18px; color: #c00; }
                 .auth-msg.ok { color: #198754; }
             </style>
@@ -83,7 +85,8 @@
             </div>
             <input type="email" id="emailInput" class="auth-input" placeholder="ваша@email.com" autocomplete="email">
             <div id="emailHint" style="font-size:12px; margin:-4px 0 8px; min-height:16px;"></div>
-            <input type="password" id="passwordInput" class="auth-input" placeholder="Пароль" autocomplete="current-password">
+            <input type="password" id="passwordInput" class="auth-input" placeholder="Пароль (мінімум 6 символів)" autocomplete="current-password">
+            <input type="password" id="passwordConfirm" class="auth-input" placeholder="Повторіть пароль" autocomplete="new-password" style="display:none;">
             <button class="auth-btn" id="authSubmit" type="button" onclick="submitAuth()">Увійти</button>
             <button class="auth-link" type="button" onclick="resetPassword()">Забули пароль?</button>
             <div id="authMsg" class="auth-msg"></div>
@@ -97,7 +100,7 @@
                     <span><strong id="userName">Користувач</strong></span>
                     <button class="logout-btn" onclick="logout()">Вийти</button>
                 </div>
-                <div>Використано простору: <strong id="usedStorage">0</strong> MB / <strong id="quotaLabel">100</strong> MB</div>
+                <div>Використано простору: <strong id="usedStorage">0</strong> MB / <strong id="quotaLabel">5000</strong> MB</div>
                 <div class="storage-bar">
                     <div class="storage-used" id="storageBar"></div>
                 </div>
@@ -109,7 +112,7 @@
                 <div class="upload-area" id="uploadArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('fileInput').click()">
                     <div class="empty-icon">📁</div>
                     <p style="font-weight: bold; color: #1a4a84;">Перетягніть файли сюди або клікніть для вибору</p>
-                    <p style="font-size: 12px; color: #999;">Підтримуються всі типи файлів до 50 MB</p>
+                    <p style="font-size: 12px; color: #999;">Фото та файли до 10 MB. Загальний простір — 70 MB</p>
                 </div>
                 <input type="file" id="fileInput" class="file-input" onchange="handleFileSelect(event)" multiple>
             </div>
@@ -137,18 +140,22 @@
 
     <script>
         // ===== SUPABASE ІНТЕГРАЦІЯ =====
+        const { createClient } = window.supabase;
+        
+        // Отримати конфіг з config.js (якщо він завантажено)
         let supabaseClient = null;
         let currentUser = null;
 
         // Ініціалізація Supabase після завантаження config.js
         function initSupabase() {
             if (supabaseClient) return;
-            if (typeof ACORE_CONFIG === 'undefined' || !window.supabase) {
-                console.error('❌ config.js або Supabase не завантажено!');
-                authMsg('Не вдалося завантажити сервіс входу. Оновіть сторінку.');
+            if (typeof ACORE_CONFIG === 'undefined') {
+                console.error('❌ config.js не завантажено!');
+                alert('Помилка конфіга. Перезавантажте сторінку.');
                 return;
             }
-            supabaseClient = window.supabase.createClient(
+            
+            supabaseClient = createClient(
                 ACORE_CONFIG.SUPABASE_URL,
                 ACORE_CONFIG.SUPABASE_KEY
             );
@@ -165,16 +172,21 @@
 
         function setAuthMode(mode) {
             authMode = mode;
-            document.getElementById('tab-login').classList.toggle('on', mode === 'login');
+            const signup = mode === 'signup';
+            document.getElementById('tab-login').classList.toggle('on', !signup);
+            document.getElementById('tab-signup').classList.toggle('on', signup);
+            document.getElementById('passwordConfirm').style.display = signup ? 'block' : 'none';
+            document.getElementById('authSubmit').textContent = signup ? 'Створити акаунт' : 'Увійти';
             authMsg('');
         }
 
         function translateAuthError(msg) {
             const m = String(msg || '');
             if (/Invalid login credentials/i.test(m)) return 'Невірна пошта або пароль.';
+            if (/already registered|already exists/i.test(m)) return 'Такий акаунт уже є. Перейдіть на вкладку «Вхід».';
             if (/Email not confirmed/i.test(m)) return 'Спочатку підтвердіть пошту: перейдіть за посиланням у листі.';
+            if (/Password should be at least/i.test(m)) return 'Пароль має бути мінімум 6 символів.';
             if (/invalid.*email/i.test(m)) return 'Некоректна адреса пошти.';
-            if (/rate limit|too many|security purposes/i.test(m)) return 'Забагато спроб. Зачекайте кілька хвилин.';
             return 'Помилка: ' + m;
         }
 
@@ -193,25 +205,38 @@
         }
 
         async function submitAuth() {
-            const email = document.getElementById('emailInput').value.trim().toLowerCase();
+            const email = document.getElementById('emailInput').value.trim();
             const password = document.getElementById('passwordInput').value;
+            const confirm = document.getElementById('passwordConfirm').value;
 
             if (!email || !password) { authMsg('Заповніть пошту та пароль.'); return; }
-            initSupabase();
+            if (!supabaseClient) initSupabase();
             if (!supabaseClient) return;
 
-            const btn = document.getElementById('authSubmit');
-            btn.disabled = true;
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            btn.disabled = false;
+            if (authMode === 'login') {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) { authMsg(translateAuthError(error.message)); return; }
+                enterApp(data.user);
+                return;
+            }
+
+            // Реєстрація
+            if (password.length < 6) { authMsg('Пароль має бути мінімум 6 символів.'); return; }
+            if (password !== confirm) { authMsg('Паролі не збігаються.'); return; }
+            const { data, error } = await supabaseClient.auth.signUp({
+                email, password, options: { emailRedirectTo: redirectUrl() }
+            });
             if (error) { authMsg(translateAuthError(error.message)); return; }
-            enterApp(data.user);
+            if (data.session) { enterApp(data.user); return; }
+            // Якщо в Supabase увімкнено підтвердження пошти
+            authMsg('Лист для підтвердження надіслано на ' + email + '. Перейдіть за посиланням і увійдіть.', true);
+            setAuthMode('login');
         }
 
         async function resetPassword() {
             const email = document.getElementById('emailInput').value.trim();
             if (!email) { authMsg('Введіть пошту, на яку зареєстровано акаунт.'); return; }
-            initSupabase();
+            if (!supabaseClient) initSupabase();
             if (!supabaseClient) return;
             const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: redirectUrl() });
             if (error) authMsg(translateAuthError(error.message));
@@ -220,9 +245,9 @@
 
         // Відновлення сесії після перезавантаження сторінки
         async function restoreSession() {
-            initSupabase();
+            if (!supabaseClient) initSupabase();
             if (!supabaseClient) return;
-            supabaseClient.auth.onAuthStateChange(async (event) => {
+            supabaseClient.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'PASSWORD_RECOVERY') {
                     const np = prompt('Введіть новий пароль (мінімум 6 символів):');
                     if (!np || np.length < 6) { authMsg('Пароль не змінено.'); return; }
@@ -236,7 +261,9 @@
 
         async function logout() {
             if (!confirm('Вийти з облака?')) return;
-            initSupabase();
+
+            if (!supabaseClient) initSupabase();
+
             try {
                 await supabaseClient.auth.signOut();
                 currentUser = null;
@@ -244,7 +271,7 @@
                 document.getElementById('mainPanel').style.display = 'none';
                 document.getElementById('emailInput').value = '';
                 document.getElementById('passwordInput').value = '';
-                authMsg('Ви вийшли з акаунта.', true);
+                alert('✅ Вихід успішний');
             } catch (err) {
                 alert('❌ Помилка: ' + err.message);
             }
@@ -252,7 +279,8 @@
 
         // Завантаження файлів
         function handleFileSelect(event) {
-            Array.from(event.target.files).forEach(file => uploadFile(file));
+            const files = Array.from(event.target.files);
+            files.forEach(file => uploadFile(file));
         }
 
         function handleDragOver(event) {
@@ -260,14 +288,15 @@
             document.getElementById('uploadArea').classList.add('dragover');
         }
 
-        function handleDragLeave() {
+        function handleDragLeave(event) {
             document.getElementById('uploadArea').classList.remove('dragover');
         }
 
         function handleDrop(event) {
             event.preventDefault();
             document.getElementById('uploadArea').classList.remove('dragover');
-            Array.from(event.dataTransfer.files).forEach(file => uploadFile(file));
+            const files = Array.from(event.dataTransfer.files);
+            files.forEach(file => uploadFile(file));
         }
 
         async function uploadFile(file) {
@@ -275,7 +304,8 @@
                 alert('❌ Спочатку увійдіть в акаунт');
                 return;
             }
-            initSupabase();
+
+            if (!supabaseClient) initSupabase();
 
             const lim = AcoreAccess.limits(currentUser.email);
             if (file.size > lim.fileMb * 1024 * 1024) {
@@ -290,12 +320,15 @@
 
             try {
                 const fileName = `${currentUser.id}/${Date.now()}-${file.name}`;
-
+                
+                // Завантажити в Storage
                 const { error: uploadError } = await supabaseClient.storage
                     .from(ACORE_CONFIG.SUPABASE_BUCKET)
                     .upload(fileName, file);
+
                 if (uploadError) throw uploadError;
 
+                // Зберегти метадані в БД
                 const { error: insertError } = await supabaseClient
                     .from('files')
                     .insert({
@@ -304,6 +337,7 @@
                         size_mb: (file.size / 1024 / 1024).toFixed(2),
                         file_path: fileName
                     });
+
                 if (insertError) throw insertError;
 
                 alert(`✅ Файл "${file.name}" завантажено!`);
@@ -326,6 +360,7 @@
                     .select('*')
                     .eq('user_id', currentUser.id)
                     .order('uploaded_at', { ascending: false });
+
                 if (error) throw error;
 
                 let totalSize = 0;
@@ -336,9 +371,11 @@
                     document.getElementById('filesContainer').innerHTML = '';
                 } else {
                     document.getElementById('emptyState').style.display = 'none';
+
                     for (const file of files) {
                         totalSize += parseFloat(file.size_mb);
                         const uploadDate = new Date(file.uploaded_at).toLocaleDateString('uk-UA');
+                        
                         html += `
                             <div class="file-item">
                                 <div>
@@ -352,12 +389,13 @@
                             </div>
                         `;
                     }
+
                     document.getElementById('filesContainer').innerHTML = html;
                 }
 
                 document.getElementById('fileCount').innerText = files ? files.length : 0;
                 document.getElementById('usedStorage').innerText = totalSize.toFixed(2);
-                const quota = AcoreAccess.limits(currentUser.email).quotaMb;
+                const quota = AcoreAccess.limits(currentUser && currentUser.email).quotaMb;
                 document.getElementById('quotaLabel').innerText = quota;
                 document.getElementById('storageBar').style.width = Math.min(100, (totalSize / quota) * 100) + '%';
             } catch (err) {
@@ -365,25 +403,28 @@
             }
         }
 
-        async function downloadFile(fileId) {
+        async function downloadFile(fileId, fileName) {
             if (!currentUser || !supabaseClient) return;
+
             try {
                 const { data: fileRecord, error: queryError } = await supabaseClient
                     .from('files')
-                    .select('file_path, name')
+                    .select('file_path')
                     .eq('id', fileId)
                     .single();
+
                 if (queryError) throw queryError;
 
                 const { data, error } = await supabaseClient.storage
                     .from(ACORE_CONFIG.SUPABASE_BUCKET)
                     .download(fileRecord.file_path);
+
                 if (error) throw error;
 
                 const url = URL.createObjectURL(data);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = fileRecord.name;
+                link.download = fileName;
                 link.click();
                 URL.revokeObjectURL(url);
             } catch (err) {
@@ -393,6 +434,7 @@
 
         async function deleteFile(fileId) {
             if (!confirm('Видалити файл?')) return;
+
             if (!currentUser || !supabaseClient) return;
 
             try {
@@ -401,17 +443,22 @@
                     .select('file_path')
                     .eq('id', fileId)
                     .single();
+
                 if (queryError) throw queryError;
 
+                // Видалити з Storage
                 const { error: deleteStorageError } = await supabaseClient.storage
                     .from(ACORE_CONFIG.SUPABASE_BUCKET)
                     .remove([fileRecord.file_path]);
+
                 if (deleteStorageError) throw deleteStorageError;
 
+                // Видалити з БД
                 const { error: deleteDbError } = await supabaseClient
                     .from('files')
                     .delete()
                     .eq('id', fileId);
+
                 if (deleteDbError) throw deleteDbError;
 
                 alert('✅ Файл видалено');
@@ -421,7 +468,10 @@
             }
         }
 
-        // Підказка під полем пошти
+        // Ініціалізація при завантаженні
+        window.addEventListener('load', () => {
+            initSupabase();
+        });
         document.getElementById('emailInput').addEventListener('input', e => {
             const v = e.target.value.trim();
             const hint = document.getElementById('emailHint');
@@ -435,10 +485,9 @@
             } else {
                 hint.style.color = '#b26a00';
                 hint.textContent = '⚠️ Інша пошта: обмежений доступ (' + AcoreAccess.limits(v).quotaMb +
-                    ' MB, файли до ' + AcoreAccess.limits(v).fileMb + ' MB, без синхронізації документів).';
+                    ' MB, файли до ' + AcoreAccess.limits(v).fileMb + ' MB, без синхронізації документів). Повний доступ — з пошти @' + AcoreAccess.DOMAIN + '.';
             }
         });
-
         restoreSession();
     </script>
 </body>
