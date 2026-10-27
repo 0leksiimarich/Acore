@@ -68,7 +68,7 @@
         .chat-msg { padding: 10px 14px; border-radius: 8px; max-width: 85%; font-size: 14px; line-height: 1.4; animation: popIn 0.2s ease-out; word-break: break-word; position: relative; }
         .chat-msg.user { background: #1a4a84; color: white; align-self: flex-end; }
         .chat-msg.ai { background: #eef2f5; color: #1c1e21; align-self: flex-start; }
-        
+
         .tts-btn { display: inline-block; margin-top: 6px; padding: 3px 10px; font-size: 11px; background: #1a4a84; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .tts-btn:hover { background: #0056b3; }
 
@@ -116,6 +116,7 @@
         .chat-input-area input { flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
         .chat-input-area button { padding: 8px 12px; background: #1a4a84; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
     </style>
+    <link rel="stylesheet" href="css/chat.css">
 </head>
 <body>
 
@@ -191,7 +192,7 @@
         <div class="tab-content" id="content-ai">
             <div class="card">
                 <h3>🤖 Чат із ШІ (Акорик)</h3>
-                
+
                 <!-- Блок Маскота -->
                 <div class="ai-header-box">
                     <img id="mascot-img" class="ai-mascot-img" src="mascot.png" alt="Acore Mascot">
@@ -212,7 +213,7 @@
 
                 <form id="ai-form" onsubmit="event.preventDefault();" style="display:flex; gap:6px;">
                     <input type="text" id="ai-input" placeholder="Напишіть запитання або 'намалюй ...'" style="flex:1; padding:8px; border:1px solid #ccc; border-radius:6px;">
-                    <button type="button" id="ai-send" class="btn-action" style="width:auto; padding:8px 16px;">Надіслати</button>
+                    <button type="submit" id="ai-send" class="btn-action" style="width:auto; padding:8px 16px;">Надіслати</button>
                     <button type="button" id="ai-clear" class="btn-action" style="width:auto; padding:8px 16px; background:#dc3545;">Очистити</button>
                 </form>
 
