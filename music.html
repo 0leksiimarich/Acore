@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0d0d0f">
-<title>AMusic</title>
+<title>Acore Музика</title>
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     [hidden] { display: none !important; }
@@ -93,7 +93,7 @@
 </head>
 <body>
 <header>
-    <div class="logo">AMusic</div>
+    <div class="logo">♪ Acore Музика</div>
     <a href="index.html">← Головна</a>
     <div class="who" id="who"></div>
 </header>
@@ -170,7 +170,6 @@
 (function () {
     'use strict';
     const CFG = window.ACORE_CONFIG || {};
-    const ADMIN_EMAIL = 'oleksijmaric20@gmail.com';        // та сама пошта, що в supabase_music.sql
     const MAX_MB = CFG.MUSIC_MAX_MB || 5;
     const QUOTA_MB = CFG.MUSIC_QUOTA_MB || 20;
     const LICENSE_TEXT = { 'own': 'Власна музика', 'cc-by': 'CC BY', 'public-domain': 'Public domain' };
@@ -484,7 +483,12 @@
     async function init() {
         const { data } = await sb.auth.getSession();
         user = data && data.session ? data.session.user : null;
-        isAdmin = !!(user && user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+        isAdmin = false;
+        if (user) {
+            // Адмін, якщо його пошта є в таблиці music_admins (RLS віддає лише власний рядок)
+            const { data: adm } = await sb.from('music_admins').select('email').eq('email', user.email).maybeSingle();
+            isAdmin = !!adm;
+        }
         $('who').textContent = user ? (user.email || '') : 'Не ввійшли';
         $('tabReview').hidden = !isAdmin;
         $('toggleUpload').hidden = !user;
