@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0d0d0f">
-<title>Acore Музика</title>
+<title>A-Music</title>
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     [hidden] { display: none !important; }
@@ -30,25 +30,23 @@
     h2 { font-size: 20px; margin: 4px 0 12px; }
     section { margin-bottom: 26px; }
 
-    /* Горизонтальний ряд карток */
     .row { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory; }
-    .card { flex: 0 0 150px; scroll-snap-align: start; cursor: default; }
-    .cov { width: 150px; height: 150px; border-radius: 8px; overflow: hidden; position: relative; background: #1f1f24; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 700; color: rgba(255,255,255,.85); }
+    .card { flex: 0 0 150px; scroll-snap-align: start; }
+    .cov { width: 150px; height: 150px; border-radius: 8px; overflow: hidden; position: relative; background: #1f1f24; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 700; color: rgba(255,255,255,.85); cursor: pointer; }
     .cov img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .cplay { position: absolute; right: 8px; bottom: 8px; width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--accent); color: #fff; font-size: 15px; cursor: pointer; opacity: 1; box-shadow: 0 2px 8px rgba(0,0,0,.5); }
-    .ctt { margin-top: 8px; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cplay { position: absolute; right: 8px; bottom: 8px; width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--accent); color: #fff; font-size: 15px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.5); }
+    .ctt { margin-top: 8px; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
     .cta { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* Список треків */
     .list { display: flex; flex-direction: column; }
     .track { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 10px; }
     .track:hover { background: var(--panel); }
     .track.playing .tt { color: var(--accent); }
-    .thumb { width: 52px; height: 52px; flex-shrink: 0; border-radius: 6px; overflow: hidden; background: #1f1f24; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: rgba(255,255,255,.85); }
+    .thumb { width: 52px; height: 52px; flex-shrink: 0; border-radius: 6px; overflow: hidden; background: #1f1f24; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: rgba(255,255,255,.85); cursor: pointer; }
     .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .play { width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; border: none; background: var(--accent); color: #fff; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .play:disabled { background: #2a2a2e; cursor: default; }
-    .meta { flex: 1; min-width: 0; }
+    .meta { flex: 1; min-width: 0; cursor: pointer; }
     .tt { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ta { font-size: 13px; color: var(--muted); margin-top: 2px; }
     .tags { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
@@ -69,6 +67,22 @@
     .msg { font-size: 13px; min-height: 16px; color: #ff7a7a; }
     .msg.ok { color: #7ee0a0; }
 
+    /* Вікно деталей треку */
+    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+    .modal { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; width: min(580px, 100%); max-height: 90vh; overflow-y: auto; padding: 20px; position: relative; }
+    .mclose { position: absolute; right: 12px; top: 8px; background: none; border: none; color: var(--muted); font-size: 26px; cursor: pointer; }
+    .mtop { display: flex; gap: 18px; align-items: flex-start; }
+    .mcov { width: 170px; height: 170px; flex-shrink: 0; border-radius: 10px; overflow: hidden; background: #1f1f24; display: flex; align-items: center; justify-content: center; font-size: 60px; font-weight: 700; color: rgba(255,255,255,.85); }
+    .mcov img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .minfo { flex: 1; min-width: 0; }
+    .minfo h3 { font-size: 20px; margin-bottom: 4px; word-break: break-word; }
+    .mart { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+    dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13px; margin: 14px 0 4px; }
+    dt { color: var(--muted); }
+    dd { color: var(--text); }
+    .mbtns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .mnote { font-size: 12px; color: var(--muted); margin-top: 10px; word-break: break-all; }
+
     /* Нижній програвач */
     .player { position: fixed; left: 0; right: 0; bottom: 0; background: #000; border-top: 1px solid var(--line); padding: 10px 16px; display: flex; align-items: center; gap: 14px; z-index: 20; }
     .player.off { display: none; }
@@ -88,12 +102,14 @@
         .time { display: none; }
         .acts { display: none; }
         .pcov { display: none; }
+        .mtop { flex-direction: column; }
+        .mcov { width: 100%; height: auto; aspect-ratio: 1; }
     }
 </style>
 </head>
 <body>
 <header>
-    <div class="logo">♪ Acore Музика</div>
+    <div class="logo">♪ A-Music</div>
     <a href="index.html">← Головна</a>
     <div class="who" id="who"></div>
 </header>
@@ -148,6 +164,27 @@
     </section>
 </main>
 
+<div class="modal-bg" id="modalBg" hidden>
+    <div class="modal" role="dialog" aria-modal="true">
+        <button class="mclose" id="mClose" type="button" aria-label="Закрити">×</button>
+        <div class="mtop">
+            <div class="mcov" id="mCov"></div>
+            <div class="minfo">
+                <h3 id="mTitle"></h3>
+                <div class="mart" id="mArtist"></div>
+                <dl>
+                    <dt>Статус</dt><dd id="mStatus"></dd>
+                    <dt>Ліцензія</dt><dd id="mLicense"></dd>
+                    <dt>Розмір</dt><dd id="mSize"></dd>
+                    <dt>Додано</dt><dd id="mDate"></dd>
+                </dl>
+            </div>
+        </div>
+        <div class="mbtns" id="mBtns"></div>
+        <div class="mnote" id="mLink"></div>
+    </div>
+</div>
+
 <div class="player off" id="player">
     <div class="pcov" id="pCov"></div>
     <button class="pbtn" id="pPlay" type="button" aria-label="Відтворити">▶</button>
@@ -173,21 +210,22 @@
     const MAX_MB = CFG.MUSIC_MAX_MB || 5;
     const QUOTA_MB = CFG.MUSIC_QUOTA_MB || 20;
     const LICENSE_TEXT = { 'own': 'Власна музика', 'cc-by': 'CC BY', 'public-domain': 'Public domain' };
+    const STATUS_TEXT = { 'pending': 'на перевірці', 'approved': 'схвалено', 'rejected': 'відхилено' };
     const sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY);
     const $ = id => document.getElementById(id);
     const audio = $('audio');
     let user = null, isAdmin = false, tab = 'all';
-    let queue = [], cur = -1;
+    let queue = [], cur = -1, lastRows = [];
 
     const worker = () => (CFG.MUSIC_WORKER_URL || '').replace(/\/+$/, '');
     const fileUrl = path => worker() + '/music/file?key=' + encodeURIComponent(path);
     const coverUrl = path => sb.storage.from(CFG.SUPABASE_BUCKET).getPublicUrl(path).data.publicUrl;
-    function fmt(sec) {
+    const fmt = sec => {
         if (!isFinite(sec)) return '0:00';
         const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
         return m + ':' + String(s).padStart(2, '0');
-    }
-    function uploadMsg(text, ok) { $('uploadMsg').textContent = text; $('uploadMsg').className = 'msg' + (ok ? ' ok' : ''); }
+    };
+    const uploadMsg = (text, ok) => { $('uploadMsg').textContent = text; $('uploadMsg').className = 'msg' + (ok ? ' ok' : ''); };
 
     // Обкладинка або кольорова заглушка з першою буквою назви
     function art(t, cls) {
@@ -228,9 +266,9 @@
         $('player').classList.remove('off');
         $('pTitle').textContent = t.title;
         $('pArtist').textContent = t.artist;
-        const pc = $('pCov'); pc.textContent = '';
+        const pc = $('pCov');
+        pc.textContent = '';
         pc.appendChild(art(t, 'pcov-in'));
-        pc.firstChild.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;';
         $('pCur').textContent = '0:00';
         $('pSeek').value = 0;
         setPlayingUI();
@@ -253,22 +291,58 @@
     });
     $('pSeek').addEventListener('input', e => { audio.currentTime = Number(e.target.value); });
 
+    /* ---------- Вікно деталей ---------- */
+    function openModal(t) {
+        $('mCov').textContent = '';
+        $('mCov').appendChild(art(t, 'mcov-in'));
+        $('mTitle').textContent = t.title;
+        $('mArtist').textContent = t.artist;
+        $('mStatus').textContent = STATUS_TEXT[t.status] || t.status;
+        $('mLicense').textContent = LICENSE_TEXT[t.license] || t.license;
+        $('mSize').textContent = t.size_mb + ' MB';
+        $('mDate').textContent = new Date(t.created_at).toLocaleString('uk-UA');
+        $('mLink').textContent = location.origin + location.pathname + '?t=' + t.id;
+
+        const btns = $('mBtns');
+        btns.textContent = '';
+        const add = (label, cls, act) => {
+            const b = document.createElement('button');
+            b.className = 'btn ' + cls;
+            b.textContent = label;
+            b.dataset.act = act;
+            b.dataset.id = t.id;
+            btns.appendChild(b);
+        };
+        if (t.status === 'approved') add('▶ Слухати', '', 'play');
+        add('Копіювати посилання', 'ghost', 'copy');
+        if (isAdmin && t.status !== 'approved') add('Схвалити', 'ok', 'approve');
+        if (isAdmin && t.status !== 'rejected') add('Відхилити', 'ghost', 'reject');
+        if (user && (t.user_id === user.id || isAdmin)) add('Видалити', 'danger', 'delete');
+
+        $('modalBg').dataset.id = t.id;
+        $('modalBg').hidden = false;
+    }
+    const closeModal = () => { $('modalBg').hidden = true; };
+    $('mClose').addEventListener('click', closeModal);
+    $('modalBg').addEventListener('click', e => { if (e.target.id === 'modalBg') closeModal(); });
+
     /* ---------- Картки і список ---------- */
     function card(t) {
         const el = document.createElement('div');
         el.className = 'card';
         el.dataset.id = t.id;
-        el.appendChild(art(t, 'cov'));
+        const cov = art(t, 'cov');
+        cov.dataset.open = t.id;
         const b = document.createElement('button');
         b.className = 'cplay';
         b.dataset.act = 'play';
         b.type = 'button';
         b.textContent = '▶';
         b.setAttribute('aria-label', 'Відтворити');
-        el.querySelector('.cov').appendChild(b);
-        const tt = document.createElement('div'); tt.className = 'ctt'; tt.textContent = t.title;
+        cov.appendChild(b);
+        const tt = document.createElement('div'); tt.className = 'ctt'; tt.textContent = t.title; tt.dataset.open = t.id;
         const ta = document.createElement('div'); ta.className = 'cta'; ta.textContent = t.artist;
-        el.append(tt, ta);
+        el.append(cov, tt, ta);
         return el;
     }
 
@@ -276,38 +350,27 @@
         const row = document.createElement('div');
         row.className = 'track';
         row.dataset.id = t.id;
-        row.dataset.path = t.file_path;
-        row.dataset.cover = t.cover_path || '';
-        const own = user && t.user_id === user.id;
         const ok = t.status === 'approved';
+        const thumb = art(t, 'thumb');
+        thumb.dataset.open = t.id;
         const tags = [
-            '<span class="tag">' + LICENSE_TEXT[t.license] + '</span>',
+            '<span class="tag">' + (LICENSE_TEXT[t.license] || '') + '</span>',
             '<span class="tag">' + t.size_mb + ' MB</span>',
-            ok ? '' : '<span class="tag ' + t.status + '">' + (t.status === 'pending' ? 'на перевірці' : 'відхилено') + '</span>'
+            ok ? '' : '<span class="tag ' + t.status + '">' + (STATUS_TEXT[t.status] || '') + '</span>'
         ].join('');
-        const acts = [];
-        if (isAdmin && !ok) acts.push('<button class="btn ok small" data-act="approve" type="button">Схвалити</button>');
-        if (isAdmin && t.status !== 'rejected') acts.push('<button class="btn ghost small" data-act="reject" type="button">Відхилити</button>');
-        if (own || isAdmin) acts.push('<button class="btn danger small" data-act="delete" type="button">Видалити</button>');
-        const left = document.createElement('div');
-        left.className = 'thumb';
-        left.appendChild(art(t, 'thumb-in'));
-        left.firstChild.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;';
         const meta = document.createElement('div');
         meta.className = 'meta';
+        meta.dataset.open = t.id;
         meta.innerHTML = '<div class="tt"></div><div class="ta"></div><div class="tags">' + tags + '</div>';
         meta.querySelector('.tt').textContent = t.title;
         meta.querySelector('.ta').textContent = t.artist;
-        const actsBox = document.createElement('div');
-        actsBox.className = 'acts';
-        actsBox.innerHTML = acts.join('');
         const play = document.createElement('button');
         play.className = 'play';
         play.dataset.act = 'play';
         play.type = 'button';
         play.textContent = '▶';
         play.disabled = !ok;
-        row.append(play, left, meta, actsBox);
+        row.append(play, thumb, meta);
         return row;
     }
 
@@ -327,9 +390,9 @@
         if (error) { box.innerHTML = '<div class="empty">Помилка: ' + error.message.replace(/</g, '&lt;') + '</div>'; return; }
 
         const rows = data || [];
+        lastRows = rows;
         queue = rows.filter(t => t.status === 'approved');
 
-        // Горизонтальний ряд: нові треки (тільки на вкладці «Усі»)
         const rowBox = $('row');
         rowBox.textContent = '';
         $('recentSec').hidden = !(tab === 'all' && queue.length);
@@ -344,32 +407,58 @@
         }
         cur = queue.findIndex(t => audio.src && audio.src.includes(encodeURIComponent(t.file_path)));
         setPlayingUI();
+
+        // Посилання виду ?t=ID відкриває трек одразу
+        const want = new URLSearchParams(location.search).get('t');
+        if (want && !$('modalBg').dataset.shown) {
+            const t = rows.find(x => x.id === want);
+            if (t) { $('modalBg').dataset.shown = '1'; openModal(t); }
+        }
     }
 
-    // Клік по картці, кнопці ▶ у рядку або по діях адміна/власника
+    /* ---------- Дії (картки, список, вікно) ---------- */
     document.addEventListener('click', async e => {
+        const openEl = e.target.closest('[data-open]');
         const btn = e.target.closest('button[data-act]');
-        if (!btn) return;
-        const holder = btn.closest('[data-id]');
-        const id = holder ? holder.dataset.id : null;
+        if (btn && btn.closest('#modalBg')) {
+            await modalAction(btn);
+            return;
+        }
+        if (btn && btn.dataset.act === 'play') {
+            const holder = btn.closest('[data-id]');
+            const i = queue.findIndex(t => t.id === holder.dataset.id);
+            if (i === cur && !audio.paused) audio.pause();
+            else if (i === cur) audio.play();
+            else playAt(i);
+            return;
+        }
+        if (openEl) {
+            const t = lastRows.find(x => x.id === openEl.dataset.open);
+            if (t) openModal(t);
+        }
+    });
+
+    async function modalAction(btn) {
         const act = btn.dataset.act;
+        const id = btn.dataset.id;
+        const t = lastRows.find(x => x.id === id);
         try {
             if (act === 'play') {
-                const i = queue.findIndex(t => t.id === id);
-                if (i === cur && !audio.paused) audio.pause();
-                else if (i === cur) audio.play();
-                else playAt(i);
-                return;
-            }
-            if (!id) return;
-            if (act === 'approve' || act === 'reject') {
+                const i = queue.findIndex(x => x.id === id);
+                if (i >= 0) playAt(i);
+                closeModal();
+            } else if (act === 'copy') {
+                const url = $('mLink').textContent;
+                if (navigator.clipboard) await navigator.clipboard.writeText(url);
+                $('mLink').textContent = 'Посилання скопійовано: ' + url;
+            } else if (act === 'approve' || act === 'reject') {
                 const status = act === 'approve' ? 'approved' : 'rejected';
                 const { error } = await sb.from('tracks').update({ status }).eq('id', id);
                 if (error) throw error;
+                closeModal();
                 load();
             } else if (act === 'delete') {
                 if (!confirm('Видалити трек із сайту?')) return;
-                const row = holder;
                 const { data: sess } = await sb.auth.getSession();
                 const token = sess && sess.session ? sess.session.access_token : '';
                 const res = await fetch(worker() + '/music/delete', {
@@ -379,13 +468,14 @@
                 });
                 const out = await res.json().catch(() => ({}));
                 if (!res.ok) throw new Error(out.error || ('код ' + res.status));
-                if (row && row.dataset.cover) await sb.storage.from(CFG.SUPABASE_BUCKET).remove([row.dataset.cover]);
+                if (t && t.cover_path) await sb.storage.from(CFG.SUPABASE_BUCKET).remove([t.cover_path]);
+                closeModal();
                 load();
             }
         } catch (err) {
             alert('Помилка: ' + err.message);
         }
-    });
+    }
 
     document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
         tab = b.dataset.tab;
@@ -480,6 +570,7 @@
         }
     });
 
+    /* ---------- Старт ---------- */
     async function init() {
         const { data } = await sb.auth.getSession();
         user = data && data.session ? data.session.user : null;
