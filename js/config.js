@@ -32,7 +32,7 @@ window.ACORE_CONFIG = {
     SUPABASE_BUCKET: "acore-files",
 
     // Музика: ліміт пам'яті на користувача і розмір одного треку (MB)
-    MUSIC_WORKER_URL: "",
+    MUSIC_WORKER_URL: "https://acore-music.oleksijmaric20.workers.dev",
     MUSIC_QUOTA_MB: 20,
     MUSIC_MAX_MB: 5,
 
