@@ -139,6 +139,47 @@
     .nrow .nt { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .nrow .na { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+    .now-cov { transition: box-shadow .4s; }
+    .now-cov.live { animation: breathe 3.2s ease-in-out infinite; box-shadow: 0 14px 50px rgba(255,85,0,.35); }
+    @keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+    .now-body > * { animation: fadeUp .35s ease both; }
+    .now-body > *:nth-child(2) { animation-delay: .04s; }
+    .now-body > *:nth-child(3) { animation-delay: .08s; }
+    .now-body > *:nth-child(4) { animation-delay: .12s; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .now-tabs button { transition: color .2s, border-color .2s; }
+    .ncm { padding: 10px 8px; border-bottom: 1px solid #1f1f24; animation: fadeUp .3s ease both; }
+    .ncm .nh { font-size: 13px; font-weight: 600; }
+    .ncm .nd { font-size: 11px; color: var(--muted); margin-left: 6px; font-weight: 400; }
+    .ncm .nb { margin-top: 4px; white-space: pre-wrap; word-break: break-word; font-size: 14px; }
+    .ncm button { background: none; border: none; color: #ff7a7a; font-size: 11px; cursor: pointer; margin-top: 4px; padding: 0; }
+    .nform { display: flex; gap: 8px; margin-top: 12px; }
+    .nform textarea { flex: 1; min-height: 42px; background: #0d0d0f; border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 9px; font-family: inherit; font-size: 14px; resize: vertical; outline: none; }
+    .nform textarea:focus { border-color: var(--accent); }
+    .nhint { font-size: 13px; color: var(--muted); padding: 10px 0; }
+
+    .wave { display: flex; gap: 5px; height: 56px; align-items: flex-end; justify-content: center; margin: 6px 0 12px; }
+    .wave i { width: 8px; height: 30%; border-radius: 4px; background: var(--accent); animation: wv 1.8s ease-in-out infinite; }
+    .wave i:nth-child(2) { animation-delay: .15s; }
+    .wave i:nth-child(3) { animation-delay: .3s; }
+    .wave i:nth-child(4) { animation-delay: .45s; }
+    .wave i:nth-child(5) { animation-delay: .6s; }
+    .wave.busy i { animation-duration: .5s; }
+    @keyframes wv { 0%,100% { height: 18%; } 50% { height: 100%; } }
+    .mood { max-width: 620px; margin: 0 auto; text-align: center; }
+    .mood-title { font-size: 22px; font-weight: 700; }
+    .mood-sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+    .bubble-btn { margin-top: 18px; background: #1f1f24; border: 1px solid var(--line); border-radius: 999px; padding: 12px 20px; color: var(--text); font-size: 15px; cursor: pointer; animation: floaty 3s ease-in-out infinite; }
+    @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    .bubble-box { margin-top: 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 12px; text-align: left; animation: pop .35s ease-out; }
+    @keyframes pop { from { opacity: 0; transform: scale(.92) translateY(8px); } to { opacity: 1; transform: none; } }
+    .bubble-box textarea { width: 100%; min-height: 70px; background: #0d0d0f; border: 1px solid var(--line); color: var(--text); border-radius: 10px; padding: 10px; font-family: inherit; font-size: 14px; resize: vertical; outline: none; }
+    .bubble-box textarea:focus { border-color: var(--accent); }
+    .mrow { display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end; }
+    .mood-reply { margin: 18px 0 8px; min-height: 26px; font-size: 16px; line-height: 1.5; color: #e6e6ea; text-align: left; background: var(--panel); border-radius: 14px; padding: 12px 14px; }
+    .mood-reply:empty { display: none; }
+    .mood .list { text-align: left; }
+
     @media (max-width: 760px) { .now-grid { grid-template-columns: 1fr; gap: 16px; } .now-cov { font-size: 64px; } }
 
     @media (max-width: 640px) {
@@ -165,6 +206,7 @@
         <button class="tab on" data-tab="all" type="button">Усі треки</button>
         <button class="tab" data-tab="albums" type="button">Альбоми</button>
         <button class="tab" data-tab="follows" type="button" id="tabFollows" hidden>Підписки</button>
+        <button class="tab" data-tab="mood" type="button" id="tabMood" hidden>Ваш настрій</button>
         <button class="tab" data-tab="mine" type="button" id="tabMine" hidden>Мої</button>
         <button class="tab" data-tab="review" type="button" id="tabReview" hidden>На перевірці</button>
         <button class="btn" id="toggleUpload" type="button" hidden>+ Завантажити</button>
@@ -175,8 +217,8 @@
     <section class="panel" id="uploadCard" hidden>
         <h3>Завантажити трек</h3>
         <form id="uploadForm" novalidate>
-            <label>MP3-файл, до 5 MB
-                <input type="file" id="file" accept="audio/mpeg,audio/mp3,.mp3">
+            <label>MP3-файли (можна кілька одразу, до 5 MB кожен)
+                <input type="file" id="file" accept="audio/mpeg,audio/mp3,.mp3" multiple>
             </label>
             <label>Обкладинка (необов'язково, JPG або PNG)
                 <input type="file" id="cover" accept="image/jpeg,image/png,image/webp">
@@ -530,6 +572,12 @@
         $('listTitle').textContent = { all: 'Усі треки', albums: 'Альбоми', follows: 'Підписки', mine: 'Мої треки', review: 'На перевірці' }[tab] || '';
         setTabs();
 
+        if (tab === 'mood') {
+            content.textContent = '';
+            renderMood(content);
+            return;
+        }
+
         if (tab === 'mine' || tab === 'review') {
             let rows;
             if (tab === 'mine') rows = await fetchMine();
@@ -729,7 +777,10 @@
                 });
                 const out = await res.json().catch(() => ({}));
                 if (!res.ok) throw new Error(out.error || ('код ' + res.status));
-                if (t.cover_path) await sb.storage.from(CFG.SUPABASE_BUCKET).remove([t.cover_path]);
+                if (t.cover_path) {
+                    const { data: others } = await sb.from('tracks').select('id').eq('cover_path', t.cover_path).neq('id', t.id).limit(1);
+                    if (!others || !others.length) await sb.storage.from(CFG.SUPABASE_BUCKET).remove([t.cover_path]);
+                }
                 closeModal();
                 await fetchApproved();
                 load();
@@ -790,21 +841,28 @@
     /* ---------- Завантаження треку ---------- */
     $('toggleUpload').addEventListener('click', () => { $('uploadCard').hidden = !$('uploadCard').hidden; });
 
+    function cleanName(fname) {
+        return fname.replace(/\.mp3$/i, '').replace(/_+/g, ' ').trim().slice(0, 120) || 'Без назви';
+    }
+
     $('uploadForm').addEventListener('submit', async e => {
         e.preventDefault();
         if (!user) { uploadMsg('Увійдіть в акаунт на головній сторінці.'); return; }
-        const file = $('file').files[0];
-        const title = $('title').value.trim();
+        const files = Array.from($('file').files || []);
         const artist = $('artist').value.trim();
         const album = $('album').value.trim().slice(0, 120);
         const description = $('description').value.trim().slice(0, 1000);
         const license = $('license').value;
-        if (!file) { uploadMsg('Оберіть MP3-файл.'); return; }
-        if (!/\.mp3$/i.test(file.name) && file.type !== 'audio/mpeg') { uploadMsg('Потрібен файл MP3.'); return; }
-        const mb = file.size / 1048576;
-        if (mb > MAX_MB) { uploadMsg('Файл завеликий. Максимум ' + MAX_MB + ' MB.'); return; }
-        if (!title || !artist) { uploadMsg('Вкажіть назву і виконавця.'); return; }
-        if (!$('rights').checked) { uploadMsg('Потрібно підтвердити право на файл.'); return; }
+        const titleField = $('title').value.trim();
+        if (!files.length) { uploadMsg('Оберіть один або кілька MP3.'); return; }
+        if (files.length > 20) { uploadMsg('Не більше 20 файлів за раз.'); return; }
+        for (const f of files) {
+            if (!/\.mp3$/i.test(f.name) && f.type !== 'audio/mpeg') { uploadMsg('Усі файли мають бути MP3.'); return; }
+            if (f.size / 1048576 > MAX_MB) { uploadMsg('Файл «' + f.name + '» завеликий. Максимум ' + MAX_MB + ' MB.'); return; }
+        }
+        if (!artist) { uploadMsg('Вкажіть виконавця.'); return; }
+        if (files.length === 1 && !titleField) { uploadMsg('Вкажіть назву треку.'); return; }
+        if (!$('rights').checked) { uploadMsg('Потрібно підтвердити право на файли.'); return; }
         if (!worker()) { uploadMsg('Сервіс музики ще не підключено.'); return; }
 
         let coverBlob = null;
@@ -813,52 +871,59 @@
             try { coverBlob = await compressCover(cf); }
             catch (err) { uploadMsg('Обкладинка: ' + err.message); return; }
         }
-        const total = mb + (coverBlob ? coverBlob.size / 1048576 : 0);
-
+        const totalMb = files.reduce((s2, f) => s2 + f.size / 1048576, 0) + (coverBlob ? coverBlob.size / 1048576 : 0);
         const { data: mine } = await sb.from('tracks').select('size_mb').eq('user_id', user.id);
-        const used = (mine || []).reduce((s, t) => s + parseFloat(t.size_mb || 0), 0);
-        if (used + total > QUOTA_MB) { uploadMsg('Немає місця (ліміт ' + QUOTA_MB + ' MB). Видаліть старі треки.'); return; }
+        const used = (mine || []).reduce((s2, t) => s2 + parseFloat(t.size_mb || 0), 0);
+        if (used + totalMb > QUOTA_MB) { uploadMsg('Немає місця (ліміт ' + QUOTA_MB + ' MB).'); return; }
 
         $('btnUpload').disabled = true;
-        uploadMsg('Завантажуємо…', true);
+        const { data: sess } = await sb.auth.getSession();
+        const token = sess && sess.session ? sess.session.access_token : '';
+        let coverPath = null, okCount = 0, failMsg = '';
         try {
-            const { data: sess } = await sb.auth.getSession();
-            const token = sess && sess.session ? sess.session.access_token : '';
-            const res = await fetch(worker() + '/music/upload', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Content-Type': 'audio/mpeg',
-                    'X-Title': encodeURIComponent(title),
-                    'X-Artist': encodeURIComponent(artist),
-                    'X-License': license
-                },
-                body: file
-            });
-            const out = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(out.error || ('код ' + res.status));
-
-            // Альбом, опис і обкладинка — окремим оновленням (трек ще на перевірці, власник може оновити)
-            const patch = { album, description };
-            if (coverBlob && out.track && out.track.id) {
-                const cp = user.id + '/covers/' + out.track.id + '.jpg';
+            // Одна обкладинка на весь альбом
+            if (coverBlob) {
+                const cp = user.id + '/covers/' + Date.now() + '-album.jpg';
                 const { error: ce } = await sb.storage.from(CFG.SUPABASE_BUCKET).upload(cp, coverBlob, { contentType: 'image/jpeg' });
-                if (!ce) patch.cover_path = cp;
+                if (!ce) coverPath = cp;
             }
-            if (out.track && out.track.id) {
-                await sb.from('tracks').update(patch).eq('id', out.track.id);
+            for (let i = 0; i < files.length; i++) {
+                const f = files[i];
+                const name = files.length === 1 ? titleField : cleanName(f.name);
+                uploadMsg('Завантажуємо ' + (i + 1) + ' з ' + files.length + '…', true);
+                const res = await fetch(worker() + '/music/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'audio/mpeg',
+                        'X-Title': encodeURIComponent(name),
+                        'X-Artist': encodeURIComponent(artist),
+                        'X-License': license
+                    },
+                    body: f
+                });
+                const out = await res.json().catch(() => ({}));
+                if (!res.ok) { failMsg = '«' + name + '»: ' + (out.error || ('код ' + res.status)); break; }
+                const patch = { album, description };
+                if (coverPath) patch.cover_path = coverPath;
+                if (out.track && out.track.id) await sb.from('tracks').update(patch).eq('id', out.track.id);
+                okCount++;
             }
+        } catch (err) {
+            failMsg = 'Помилка: ' + err.message;
+        } finally {
+            $('btnUpload').disabled = false;
+        }
 
+        if (okCount) {
             $('file').value = ''; $('cover').value = ''; $('title').value = ''; $('artist').value = '';
             $('album').value = ''; $('description').value = ''; $('rights').checked = false;
-            uploadMsg('Надіслано на перевірку ✅', true);
+            uploadMsg('Надіслано на перевірку: ' + okCount + (failMsg ? '. Далі помилка ' + failMsg : '') + ' ✅', true);
             tab = 'mine';
             $('uploadCard').hidden = true;
             load();
-        } catch (err) {
-            uploadMsg('Помилка: ' + err.message);
-        } finally {
-            $('btnUpload').disabled = false;
+        } else {
+            uploadMsg(failMsg || 'Не вдалося завантажити.');
         }
     });
 
@@ -887,6 +952,7 @@
         const cv = $('nCov');
         cv.textContent = '';
         cv.appendChild(art(t, 'now-cov-in'));
+        cv.classList.toggle('live', !audio.paused);
         $('nTitle').textContent = t.title;
         $('nArtist').textContent = t.artist + (t.album ? ' · ' + t.album : '');
         $('nPlay').textContent = audio.paused ? '▶' : '❚❚';
@@ -906,19 +972,85 @@
             d.textContent = t.description || 'Опису немає.';
             body.appendChild(d);
         } else if (nTab === 'comments') {
-            const c = document.createElement('div');
-            c.textContent = 'Коментарів: ' + (t.comments_count || 0);
-            const b = document.createElement('button');
-            b.className = 'btn small';
-            b.style.marginTop = '10px';
-            b.textContent = 'Відкрити коментарі';
-            b.addEventListener('click', () => openModal(t));
-            body.append(c, b);
+            renderNowComments(t);
         } else if (nTab === 'similar') {
             const sim = approved.filter(x => x.id !== t.id && (x.artist === t.artist || (t.album && x.album === t.album))).slice(0, 30);
             if (!sim.length) body.innerHTML = '<div class="empty">Схожих треків поки немає.</div>';
             sim.forEach(x => body.appendChild(nowRow(x, () => { queue = approved.slice(); playAt(queue.findIndex(q => q.id === x.id)); })));
         }
+    }
+
+    async function renderNowComments(t) {
+        const body = $('nBody');
+        body.innerHTML = '<div class="nhint">Завантаження коментарів…</div>';
+        const { data, error } = await sb.from('track_comments').select('*').eq('track_id', t.id)
+            .order('created_at', { ascending: false }).limit(100);
+        if (nTab !== 'comments' || !queue[cur] || queue[cur].id !== t.id) return;
+        body.textContent = '';
+        if (error) { body.innerHTML = '<div class="nhint">Помилка: ' + error.message.replace(/</g, '&lt;') + '</div>'; return; }
+
+        const head = document.createElement('div');
+        head.className = 'nhint';
+        head.textContent = 'Коментарів: ' + (data || []).length;
+        body.appendChild(head);
+
+        if (user) {
+            const form = document.createElement('div');
+            form.className = 'nform';
+            form.innerHTML = '<textarea maxlength="500" placeholder="Напишіть коментар…"></textarea><button class="btn small" type="button">Надіслати</button>';
+            form.querySelector('button').addEventListener('click', async () => {
+                const ta = form.querySelector('textarea');
+                const text = ta.value.trim();
+                if (!text) return;
+                const { error: e2 } = await sb.from('track_comments').insert({ track_id: t.id, user_id: user.id, author: user.email.split('@')[0], body: text });
+                if (e2) { alert('Помилка: ' + e2.message); return; }
+                t.comments_count = (t.comments_count || 0) + 1;
+                renderNowComments(t);
+            });
+            body.appendChild(form);
+        } else {
+            const h = document.createElement('div');
+            h.className = 'nhint';
+            h.textContent = 'Увійдіть на головній сторінці, щоб писати коментарі.';
+            body.appendChild(h);
+        }
+
+        if (!data || !data.length) {
+            const e = document.createElement('div');
+            e.className = 'nhint';
+            e.textContent = 'Коментарів ще немає. Будьте першим.';
+            body.appendChild(e);
+            return;
+        }
+        data.forEach((c, i) => {
+            const d = document.createElement('div');
+            d.className = 'ncm';
+            d.style.animationDelay = (i * 0.04) + 's';
+            const nh = document.createElement('div');
+            nh.className = 'nh';
+            nh.textContent = c.author || 'гість';
+            const nd = document.createElement('span');
+            nd.className = 'nd';
+            nd.textContent = new Date(c.created_at).toLocaleString('uk-UA');
+            nh.appendChild(nd);
+            const nb = document.createElement('div');
+            nb.className = 'nb';
+            nb.textContent = c.body;
+            d.append(nh, nb);
+            if (user && (c.user_id === user.id || isAdmin)) {
+                const del = document.createElement('button');
+                del.textContent = 'Видалити';
+                del.addEventListener('click', async () => {
+                    if (!confirm('Видалити коментар?')) return;
+                    const { error: e3 } = await sb.from('track_comments').delete().eq('id', c.id);
+                    if (e3) { alert('Помилка: ' + e3.message); return; }
+                    t.comments_count = Math.max(0, (t.comments_count || 1) - 1);
+                    renderNowComments(t);
+                });
+                d.appendChild(del);
+            }
+            body.appendChild(d);
+        });
     }
 
     function openNow() {
@@ -939,6 +1071,93 @@
     audio.addEventListener('play', () => { if (!$('nowPanel').hidden) renderNow(); });
     audio.addEventListener('pause', () => { if (!$('nowPanel').hidden) renderNow(); });
 
+    /* ---------- Ваш настрій ---------- */
+    let typeTimer = null;
+    function typeText(el, text) {
+        clearInterval(typeTimer);
+        el.textContent = '';
+        let i = 0;
+        typeTimer = setInterval(() => {
+            i++;
+            el.textContent = text.slice(0, i);
+            if (i >= text.length) clearInterval(typeTimer);
+        }, 18);
+    }
+
+    function renderMood(box) {
+        if (!user) { box.innerHTML = '<div class="empty">Увійдіть, щоб користуватися підбором за настроєм.</div>'; return; }
+        const wrap = document.createElement('div');
+        wrap.className = 'mood';
+        wrap.innerHTML =
+            '<div class="wave" id="wave"><i></i><i></i><i></i><i></i><i></i></div>' +
+            '<div class="mood-title">Ваш настрій</div>' +
+            '<div class="mood-sub">Опишіть, що хочете послухати, або назвіть схожих виконавців</div>' +
+            '<button class="bubble-btn" id="bubbleBtn" type="button">💬 Натисніть, щоб написати</button>' +
+            '<div class="bubble-box" id="bubbleBox" hidden>' +
+                '<textarea id="moodText" maxlength="300" placeholder="Наприклад: спокійне для ночі, або схоже на Ignis, або NMIXX і i-dle"></textarea>' +
+                '<div class="mrow">' +
+                    '<button class="btn ghost small" id="moodClose" type="button">Закрити</button>' +
+                    '<button class="btn small" id="moodGo" type="button">Підібрати</button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="mood-reply" id="moodReply"></div>' +
+            '<div class="list" id="moodList"></div>';
+        box.appendChild(wrap);
+        $('bubbleBtn').addEventListener('click', () => {
+            $('bubbleBox').hidden = false;
+            $('bubbleBtn').hidden = true;
+            $('moodText').focus();
+        });
+        $('moodClose').addEventListener('click', () => {
+            $('bubbleBox').hidden = true;
+            $('bubbleBtn').hidden = false;
+        });
+        $('moodGo').addEventListener('click', askMood);
+        $('moodText').addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askMood(); }
+        });
+    }
+
+    async function askMood() {
+        const q = $('moodText').value.trim();
+        if (!q) return;
+        const wave = $('wave');
+        wave.classList.add('busy');
+        $('moodGo').disabled = true;
+        clearInterval(typeTimer);
+        $('moodReply').textContent = '';
+        $('moodList').textContent = '';
+        try {
+            const { data: sess } = await sb.auth.getSession();
+            const token = sess && sess.session ? sess.session.access_token : '';
+            const res = await fetch(worker() + '/mood', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: q })
+            });
+            const out = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(out.error || ('код ' + res.status));
+            typeText($('moodReply'), out.reply || 'Ось що знайшлося:');
+            const picks = (out.picks || []).map(p => ({ p, t: approved.find(x => x.id === p.id) })).filter(x => x.t);
+            const list = $('moodList');
+            if (!picks.length) { list.innerHTML = '<div class="empty">Нічого не підібралось.</div>'; return; }
+            const playlist = picks.map(x => x.t);
+            picks.forEach(({ p, t }, i) => {
+                const r = nowRow(t, () => { queue = playlist.slice(); playAt(i); });
+                const why = document.createElement('div');
+                why.className = 'na';
+                why.textContent = p.why;
+                r.querySelector('.nm').appendChild(why);
+                list.appendChild(r);
+            });
+        } catch (err) {
+            $('moodReply').textContent = 'Помилка: ' + err.message;
+        } finally {
+            wave.classList.remove('busy');
+            $('moodGo').disabled = false;
+        }
+    }
+
     /* ---------- Старт ---------- */
     async function init() {
         const { data } = await sb.auth.getSession();
@@ -951,6 +1170,7 @@
         $('who').textContent = user ? user.email : 'Гість';
         $('guestHint').hidden = !!user;
         $('tabFollows').hidden = !user;
+        $('tabMood').hidden = !user;
         $('tabMine').hidden = !user;
         $('tabReview').hidden = !isAdmin;
         $('toggleUpload').hidden = !user;
