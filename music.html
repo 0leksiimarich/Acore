@@ -1094,6 +1094,10 @@
             '<div class="mood-sub">Опишіть, що хочете послухати, або назвіть схожих виконавців</div>' +
             '<button class="bubble-btn" id="bubbleBtn" type="button">💬 Натисніть, щоб написати</button>' +
             '<div class="bubble-box" id="bubbleBox" hidden>' +
+                '<div class="mrow" style="justify-content:center; margin:0 0 10px;">' +
+                    '<button class="btn ghost small" id="voiceBtn" type="button">🎤 Скажи</button>' +
+                    '<button class="btn ghost small" id="autoBtn" type="button">🎲 Автоматично</button>' +
+                '</div>' +
                 '<textarea id="moodText" maxlength="300" placeholder="Наприклад: спокійне для ночі, або схоже на Ignis, або NMIXX і i-dle"></textarea>' +
                 '<div class="mrow">' +
                     '<button class="btn ghost small" id="moodClose" type="button">Закрити</button>' +
@@ -1112,14 +1116,47 @@
             $('bubbleBox').hidden = true;
             $('bubbleBtn').hidden = false;
         });
-        $('moodGo').addEventListener('click', askMood);
+        $('moodGo').addEventListener('click', () => askMood());
+        $('autoBtn').addEventListener('click', () => askMood(autoQuery()));
+        $('voiceBtn').addEventListener('click', startVoice);
         $('moodText').addEventListener('keydown', e => {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askMood(); }
         });
     }
 
-    async function askMood() {
-        const q = $('moodText').value.trim();
+    function autoQuery() {
+        const h = new Date().getHours();
+        const period = h < 6 ? 'ніч' : h < 12 ? 'ранок' : h < 18 ? 'день' : h < 23 ? 'вечір' : 'ніч';
+        const counts = {};
+        approved.filter(t => liked.has(t.id)).forEach(t => { counts[t.artist] = (counts[t.artist] || 0) + 1; });
+        const artists = Object.keys(counts).sort((a, b) => counts[b] - counts[a]).slice(0, 3).join(', ');
+        return 'Автоматичний підбір: зараз ' + period + '. ' +
+            (artists ? 'Подобаються виконавці: ' + artists + '. ' : 'Смаків ще немає, підбери різноманітне. ') +
+            'Підбери 6 треків.';
+    }
+
+    // Голосовий запит (працює в Chrome і Edge; потрібен дозвіл на мікрофон)
+    function startVoice() {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { alert('Голосове введення не працює в цьому браузері. Спробуйте Chrome або Edge.'); return; }
+        const rec = new SR();
+        rec.lang = 'uk-UA';
+        rec.interimResults = false;
+        rec.maxAlternatives = 1;
+        const btn = $('voiceBtn');
+        btn.textContent = '🔴 Слухаю…';
+        rec.onresult = e => {
+            const text = e.results[0][0].transcript;
+            $('moodText').value = text;
+            askMood();
+        };
+        rec.onerror = () => { alert('Не вдалося розпізнати. Спробуйте ще раз.'); };
+        rec.onend = () => { btn.textContent = '🎤 Скажи'; };
+        rec.start();
+    }
+
+    async function askMood(override) {
+        const q = (typeof override === 'string' ? override : $('moodText').value).trim();
         if (!q) return;
         const wave = $('wave');
         wave.classList.add('busy');
