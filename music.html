@@ -26,62 +26,79 @@
     .btn.danger { background: #3a1a1a; color: #ff7a7a; }
     .btn.ok { background: #14331f; color: #7ee0a0; }
     .btn.small { padding: 6px 10px; font-size: 12px; }
+    .btn.on { background: var(--text); color: #000; }
 
-    h2 { font-size: 20px; margin: 4px 0 12px; }
+    h2 { font-size: 20px; margin: 4px 0 12px; display: flex; align-items: center; gap: 12px; }
     section { margin-bottom: 26px; }
+    .guest { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 13px; color: var(--muted); margin-bottom: 18px; }
 
     .row { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory; }
-    .card { flex: 0 0 150px; scroll-snap-align: start; }
-    .cov { width: 150px; height: 150px; border-radius: 8px; overflow: hidden; position: relative; background: #1f1f24; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 700; color: rgba(255,255,255,.85); cursor: pointer; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+    .card { flex: 0 0 150px; scroll-snap-align: start; cursor: pointer; }
+    .grid .card { flex: none; }
+    .cov { width: 150px; height: 150px; border-radius: 8px; overflow: hidden; position: relative; background: #1f1f24; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 700; color: rgba(255,255,255,.85); }
+    .grid .cov, .grid .card { width: 100%; }
+    .grid .cov { height: auto; aspect-ratio: 1; }
     .cov img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .cplay { position: absolute; right: 8px; bottom: 8px; width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--accent); color: #fff; font-size: 15px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.5); }
-    .ctt { margin-top: 8px; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+    .ctt { margin-top: 8px; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .cta { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .list { display: flex; flex-direction: column; }
-    .track { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 10px; }
+    .track { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 10px; cursor: pointer; }
     .track:hover { background: var(--panel); }
     .track.playing .tt { color: var(--accent); }
-    .thumb { width: 52px; height: 52px; flex-shrink: 0; border-radius: 6px; overflow: hidden; background: #1f1f24; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: rgba(255,255,255,.85); cursor: pointer; }
+    .thumb { width: 52px; height: 52px; flex-shrink: 0; border-radius: 6px; overflow: hidden; background: #1f1f24; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: rgba(255,255,255,.85); }
     .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .play { width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; border: none; background: var(--accent); color: #fff; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .play:disabled { background: #2a2a2e; cursor: default; }
-    .meta { flex: 1; min-width: 0; cursor: pointer; }
+    .meta { flex: 1; min-width: 0; }
     .tt { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ta { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .ta { font-size: 13px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .tags { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
     .tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #1f1f24; color: var(--muted); }
     .tag.pending { background: #33290f; color: #f0c25a; }
     .tag.rejected { background: #3a1a1a; color: #ff7a7a; }
     .acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
     .empty { text-align: center; color: var(--muted); padding: 30px 10px; font-size: 14px; }
+    .back { font-size: 13px; color: var(--muted); cursor: pointer; margin-bottom: 10px; display: inline-block; }
 
     .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 18px; }
     .panel h3 { font-size: 15px; margin-bottom: 10px; }
     form { display: flex; flex-direction: column; gap: 10px; }
     label { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
-    input[type=text], select { background: #0d0d0f; border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 9px 10px; font-size: 14px; outline: none; }
-    input[type=text]:focus, select:focus { border-color: var(--accent); }
+    input[type=text], select, textarea { background: #0d0d0f; border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 9px 10px; font-size: 14px; outline: none; font-family: inherit; }
+    textarea { min-height: 70px; resize: vertical; }
+    input[type=text]:focus, select:focus, textarea:focus { border-color: var(--accent); }
     input[type=file] { color: var(--muted); font-size: 13px; }
     .check { flex-direction: row; gap: 8px; align-items: flex-start; font-size: 12px; }
     .msg { font-size: 13px; min-height: 16px; color: #ff7a7a; }
     .msg.ok { color: #7ee0a0; }
 
-    /* Вікно деталей треку */
-    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
-    .modal { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; width: min(580px, 100%); max-height: 90vh; overflow-y: auto; padding: 20px; position: relative; }
+    /* Вікно треку */
+    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: flex; align-items: flex-start; justify-content: center; z-index: 50; padding: 24px 12px; overflow-y: auto; }
+    .modal { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; width: min(620px, 100%); padding: 20px; position: relative; }
     .mclose { position: absolute; right: 12px; top: 8px; background: none; border: none; color: var(--muted); font-size: 26px; cursor: pointer; }
     .mtop { display: flex; gap: 18px; align-items: flex-start; }
-    .mcov { width: 170px; height: 170px; flex-shrink: 0; border-radius: 10px; overflow: hidden; background: #1f1f24; display: flex; align-items: center; justify-content: center; font-size: 60px; font-weight: 700; color: rgba(255,255,255,.85); }
+    .mcov { width: 160px; height: 160px; flex-shrink: 0; border-radius: 10px; overflow: hidden; background: #1f1f24; display: flex; align-items: center; justify-content: center; font-size: 56px; font-weight: 700; color: rgba(255,255,255,.85); }
     .mcov img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .minfo { flex: 1; min-width: 0; }
     .minfo h3 { font-size: 20px; margin-bottom: 4px; word-break: break-word; }
-    .mart { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
-    dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13px; margin: 14px 0 4px; }
+    .mart { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+    .mdesc { font-size: 14px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; margin: 12px 0; color: #d6d6dc; }
+    dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 13px; margin-top: 8px; }
     dt { color: var(--muted); }
     dd { color: var(--text); }
     .mbtns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
-    .mnote { font-size: 12px; color: var(--muted); margin-top: 10px; word-break: break-all; }
+    .mlink { font-size: 12px; color: var(--muted); margin-top: 10px; word-break: break-all; }
+    .mcom { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 14px; }
+    .cm { padding: 8px 0; border-bottom: 1px solid #1f1f24; font-size: 13px; }
+    .cm b { font-size: 13px; }
+    .cm .dt { color: var(--muted); font-size: 11px; margin-left: 6px; }
+    .cm .cb { margin-top: 3px; white-space: pre-wrap; word-break: break-word; }
+    .cm button { background: none; border: none; color: #ff7a7a; font-size: 11px; cursor: pointer; margin-top: 3px; }
+    .cform { display: flex; gap: 8px; margin-top: 10px; }
+    .cform textarea { flex: 1; min-height: 40px; }
 
     /* Нижній програвач */
     .player { position: fixed; left: 0; right: 0; bottom: 0; background: #000; border-top: 1px solid var(--line); padding: 10px 16px; display: flex; align-items: center; gap: 14px; z-index: 20; }
@@ -117,10 +134,14 @@
 <main class="wrap">
     <div class="bar">
         <button class="tab on" data-tab="all" type="button">Усі треки</button>
-        <button class="tab" data-tab="mine" type="button">Мої</button>
+        <button class="tab" data-tab="albums" type="button">Альбоми</button>
+        <button class="tab" data-tab="follows" type="button" id="tabFollows" hidden>Підписки</button>
+        <button class="tab" data-tab="mine" type="button" id="tabMine" hidden>Мої</button>
         <button class="tab" data-tab="review" type="button" id="tabReview" hidden>На перевірці</button>
         <button class="btn" id="toggleUpload" type="button" hidden>+ Завантажити</button>
     </div>
+
+    <div class="guest" id="guestHint">Слухати можна без входу. Щоб ставити лайки, підписуватись на виконавців і писати коментарі, увійдіть в акаунт на головній сторінці.</div>
 
     <section class="panel" id="uploadCard" hidden>
         <h3>Завантажити трек</h3>
@@ -136,6 +157,12 @@
             </label>
             <label>Виконавець
                 <input type="text" id="artist" maxlength="120">
+            </label>
+            <label>Альбом (необов'язково)
+                <input type="text" id="album" maxlength="120">
+            </label>
+            <label>Опис пісні (необов'язково, до 1000 символів)
+                <textarea id="description" maxlength="1000"></textarea>
             </label>
             <label>Ліцензія
                 <select id="license">
@@ -160,7 +187,7 @@
 
     <section>
         <h2 id="listTitle">Усі треки</h2>
-        <div class="list" id="list"></div>
+        <div id="content"></div>
     </section>
 </main>
 
@@ -173,6 +200,7 @@
                 <h3 id="mTitle"></h3>
                 <div class="mart" id="mArtist"></div>
                 <dl>
+                    <dt>Альбом</dt><dd id="mAlbum"></dd>
                     <dt>Статус</dt><dd id="mStatus"></dd>
                     <dt>Ліцензія</dt><dd id="mLicense"></dd>
                     <dt>Розмір</dt><dd id="mSize"></dd>
@@ -180,8 +208,14 @@
                 </dl>
             </div>
         </div>
+        <div class="mdesc" id="mDesc"></div>
         <div class="mbtns" id="mBtns"></div>
-        <div class="mnote" id="mLink"></div>
+        <div class="mlink" id="mLink"></div>
+        <div class="mcom">
+            <h3 style="font-size:15px; margin-bottom:8px;">Коментарі (<span id="mComCount">0</span>)</h3>
+            <div id="mComList"></div>
+            <div id="mComForm"></div>
+        </div>
     </div>
 </div>
 
@@ -214,8 +248,13 @@
     const sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY);
     const $ = id => document.getElementById(id);
     const audio = $('audio');
-    let user = null, isAdmin = false, tab = 'all';
-    let queue = [], cur = -1, lastRows = [];
+
+    let user = null, isAdmin = false, tab = 'all', openAlbum = null;
+    let approved = [];          // всі схвалені треки
+    let shown = [];             // треки, які зараз у списку (для черги програвача)
+    let queue = [], cur = -1;
+    let liked = new Set(), follows = new Set();
+    let modalTrack = null;
 
     const worker = () => (CFG.MUSIC_WORKER_URL || '').replace(/\/+$/, '');
     const fileUrl = path => worker() + '/music/file?key=' + encodeURIComponent(path);
@@ -226,6 +265,7 @@
         return m + ':' + String(s).padStart(2, '0');
     };
     const uploadMsg = (text, ok) => { $('uploadMsg').textContent = text; $('uploadMsg').className = 'msg' + (ok ? ' ok' : ''); };
+    const who = () => (user && user.email ? user.email.split('@')[0] : 'гість');
 
     // Обкладинка або кольорова заглушка з першою буквою назви
     function art(t, cls) {
@@ -274,6 +314,13 @@
         setPlayingUI();
     }
 
+    function playTrack(t) {
+        const list = shown.filter(x => x.status === 'approved');
+        queue = list;
+        const i = list.findIndex(x => x.id === t.id);
+        if (i >= 0) playAt(i);
+    }
+
     $('pPlay').addEventListener('click', () => {
         if (cur < 0) { if (queue.length) playAt(0); return; }
         audio.paused ? audio.play() : audio.pause();
@@ -291,48 +338,12 @@
     });
     $('pSeek').addEventListener('input', e => { audio.currentTime = Number(e.target.value); });
 
-    /* ---------- Вікно деталей ---------- */
-    function openModal(t) {
-        $('mCov').textContent = '';
-        $('mCov').appendChild(art(t, 'mcov-in'));
-        $('mTitle').textContent = t.title;
-        $('mArtist').textContent = t.artist;
-        $('mStatus').textContent = STATUS_TEXT[t.status] || t.status;
-        $('mLicense').textContent = LICENSE_TEXT[t.license] || t.license;
-        $('mSize').textContent = t.size_mb + ' MB';
-        $('mDate').textContent = new Date(t.created_at).toLocaleString('uk-UA');
-        $('mLink').textContent = location.origin + location.pathname + '?t=' + t.id;
-
-        const btns = $('mBtns');
-        btns.textContent = '';
-        const add = (label, cls, act) => {
-            const b = document.createElement('button');
-            b.className = 'btn ' + cls;
-            b.textContent = label;
-            b.dataset.act = act;
-            b.dataset.id = t.id;
-            btns.appendChild(b);
-        };
-        if (t.status === 'approved') add('▶ Слухати', '', 'play');
-        add('Копіювати посилання', 'ghost', 'copy');
-        if (isAdmin && t.status !== 'approved') add('Схвалити', 'ok', 'approve');
-        if (isAdmin && t.status !== 'rejected') add('Відхилити', 'ghost', 'reject');
-        if (user && (t.user_id === user.id || isAdmin)) add('Видалити', 'danger', 'delete');
-
-        $('modalBg').dataset.id = t.id;
-        $('modalBg').hidden = false;
-    }
-    const closeModal = () => { $('modalBg').hidden = true; };
-    $('mClose').addEventListener('click', closeModal);
-    $('modalBg').addEventListener('click', e => { if (e.target.id === 'modalBg') closeModal(); });
-
-    /* ---------- Картки і список ---------- */
+    /* ---------- Картки, рядки, альбоми ---------- */
     function card(t) {
         const el = document.createElement('div');
         el.className = 'card';
         el.dataset.id = t.id;
         const cov = art(t, 'cov');
-        cov.dataset.open = t.id;
         const b = document.createElement('button');
         b.className = 'cplay';
         b.dataset.act = 'play';
@@ -340,9 +351,10 @@
         b.textContent = '▶';
         b.setAttribute('aria-label', 'Відтворити');
         cov.appendChild(b);
-        const tt = document.createElement('div'); tt.className = 'ctt'; tt.textContent = t.title; tt.dataset.open = t.id;
+        const tt = document.createElement('div'); tt.className = 'ctt'; tt.textContent = t.title;
         const ta = document.createElement('div'); ta.className = 'cta'; ta.textContent = t.artist;
         el.append(cov, tt, ta);
+        el.addEventListener('click', e => { if (!e.target.closest('.cplay')) openModal(t); });
         return el;
     }
 
@@ -352,18 +364,17 @@
         row.dataset.id = t.id;
         const ok = t.status === 'approved';
         const thumb = art(t, 'thumb');
-        thumb.dataset.open = t.id;
         const tags = [
+            '<span class="tag">♥ ' + (t.likes_count || 0) + '</span>',
+            '<span class="tag">💬 ' + (t.comments_count || 0) + '</span>',
             '<span class="tag">' + (LICENSE_TEXT[t.license] || '') + '</span>',
-            '<span class="tag">' + t.size_mb + ' MB</span>',
             ok ? '' : '<span class="tag ' + t.status + '">' + (STATUS_TEXT[t.status] || '') + '</span>'
         ].join('');
         const meta = document.createElement('div');
         meta.className = 'meta';
-        meta.dataset.open = t.id;
         meta.innerHTML = '<div class="tt"></div><div class="ta"></div><div class="tags">' + tags + '</div>';
         meta.querySelector('.tt').textContent = t.title;
-        meta.querySelector('.ta').textContent = t.artist;
+        meta.querySelector('.ta').textContent = t.artist + (t.album ? ' · ' + t.album : '');
         const play = document.createElement('button');
         play.className = 'play';
         play.dataset.act = 'play';
@@ -371,91 +382,281 @@
         play.textContent = '▶';
         play.disabled = !ok;
         row.append(play, thumb, meta);
+        row.addEventListener('click', e => { if (!e.target.closest('.play')) openModal(t); });
         return row;
     }
 
+    function renderList(rows) {
+        shown = rows;
+        const box = document.createElement('div');
+        box.className = 'list';
+        if (!rows.length) box.innerHTML = '<div class="empty">Нічого не знайдено.</div>';
+        rows.forEach(t => box.appendChild(trackRow(t)));
+        return box;
+    }
+
+    function renderAlbums() {
+        const groups = new Map();
+        approved.filter(t => t.album).forEach(t => {
+            const key = t.album + '||' + t.artist;
+            if (!groups.has(key)) groups.set(key, { album: t.album, artist: t.artist, tracks: [] });
+            groups.get(key).tracks.push(t);
+        });
+        const wrap = document.createElement('div');
+        if (openAlbum) {
+            const g = groups.get(openAlbum);
+            const back = document.createElement('div');
+            back.className = 'back';
+            back.textContent = '← До всіх альбомів';
+            back.addEventListener('click', () => { openAlbum = null; load(); });
+            wrap.appendChild(back);
+            if (g) {
+                const hd = document.createElement('div');
+                hd.className = 'mart';
+                hd.textContent = g.artist + ' · ' + g.tracks.length + ' тр.';
+                wrap.appendChild(hd);
+                wrap.appendChild(renderList(g.tracks));
+            }
+            return wrap;
+        }
+        if (!groups.size) { wrap.innerHTML = '<div class="empty">Альбомів поки немає. Вкажіть альбом при завантаженні треку.</div>'; return wrap; }
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+        groups.forEach((g, key) => {
+            const first = g.tracks[0];
+            const el = document.createElement('div');
+            el.className = 'card';
+            const cov = art(first, 'cov');
+            const tt = document.createElement('div'); tt.className = 'ctt'; tt.textContent = g.album;
+            const ta = document.createElement('div'); ta.className = 'cta'; ta.textContent = g.artist + ' · ' + g.tracks.length + ' тр.';
+            el.append(cov, tt, ta);
+            el.addEventListener('click', () => { openAlbum = key; load(); });
+            grid.appendChild(el);
+        });
+        wrap.appendChild(grid);
+        return wrap;
+    }
+
+    /* ---------- Завантаження даних і вкладки ---------- */
+    async function fetchApproved() {
+        const { data } = await sb.from('tracks').select('*').eq('status', 'approved').order('created_at', { ascending: false }).limit(300);
+        approved = data || [];
+    }
+
+    async function fetchMine() {
+        const { data } = await sb.from('tracks').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(100);
+        return data || [];
+    }
+
+    async function fetchUserState() {
+        liked = new Set(); follows = new Set();
+        if (!user) return;
+        const [l, f] = await Promise.all([
+            sb.from('track_likes').select('track_id').eq('user_id', user.id),
+            sb.from('artist_follows').select('artist').eq('user_id', user.id)
+        ]);
+        (l.data || []).forEach(x => liked.add(x.track_id));
+        (f.data || []).forEach(x => follows.add(x.artist));
+    }
+
+    function setTabs() {
+        document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+    }
+
     async function load() {
-        const box = $('list');
-        if (!user) {
-            box.innerHTML = '<div class="empty">Щоб слухати і завантажувати музику, увійдіть в акаунт на головній сторінці.</div>';
-            $('recentSec').hidden = true;
+        const content = $('content');
+        content.innerHTML = '<div class="empty">Завантаження…</div>';
+        $('recentSec').hidden = true;
+        $('listTitle').textContent = { all: 'Усі треки', albums: 'Альбоми', follows: 'Підписки', mine: 'Мої треки', review: 'На перевірці' }[tab] || '';
+        setTabs();
+
+        if (tab === 'mine' || tab === 'review') {
+            let rows;
+            if (tab === 'mine') rows = await fetchMine();
+            else {
+                const { data } = await sb.from('tracks').select('*').eq('status', 'pending').order('created_at', { ascending: false });
+                rows = data || [];
+            }
+            content.textContent = '';
+            if (!rows.length) content.innerHTML = '<div class="empty">Тут поки порожньо.</div>';
+            else content.appendChild(renderList(rows));
+            shown = rows.filter(t => t.status === 'approved');
             return;
         }
-        box.innerHTML = '<div class="empty">Завантаження…</div>';
-        let q = sb.from('tracks').select('*').order('created_at', { ascending: false }).limit(100);
-        if (tab === 'mine') q = q.eq('user_id', user.id);
-        else if (tab === 'review') q = q.eq('status', 'pending');
-        else q = q.eq('status', 'approved');
-        const { data, error } = await q;
-        if (error) { box.innerHTML = '<div class="empty">Помилка: ' + error.message.replace(/</g, '&lt;') + '</div>'; return; }
 
-        const rows = data || [];
-        lastRows = rows;
-        queue = rows.filter(t => t.status === 'approved');
+        if (tab === 'albums') {
+            content.textContent = '';
+            content.appendChild(renderAlbums());
+            return;
+        }
 
+        if (tab === 'follows') {
+            if (!user) { content.innerHTML = '<div class="empty">Увійдіть, щоб бачити треки виконавців, на яких ви підписані.</div>'; return; }
+            const rows = approved.filter(t => follows.has(t.artist));
+            content.textContent = '';
+            if (!rows.length) content.innerHTML = '<div class="empty">Ви ще ні на кого не підписані. Відкрийте трек і натисніть «Підписатись».</div>';
+            else content.appendChild(renderList(rows));
+            return;
+        }
+
+        // Усі треки
+        content.textContent = '';
+        const recent = approved.slice(0, 12);
         const rowBox = $('row');
         rowBox.textContent = '';
-        $('recentSec').hidden = !(tab === 'all' && queue.length);
-        queue.slice(0, 12).forEach(t => rowBox.appendChild(card(t)));
-
-        $('listTitle').textContent = tab === 'mine' ? 'Мої треки' : tab === 'review' ? 'На перевірці' : 'Усі треки';
-        box.innerHTML = '';
-        if (!rows.length) {
-            box.innerHTML = '<div class="empty">' + (tab === 'mine' ? 'Ви ще нічого не завантажили.' : tab === 'review' ? 'Немає треків на перевірці.' : 'Поки немає схвалених треків.') + '</div>';
-        } else {
-            rows.forEach(t => box.appendChild(trackRow(t)));
-        }
-        cur = queue.findIndex(t => audio.src && audio.src.includes(encodeURIComponent(t.file_path)));
+        recent.forEach(t => rowBox.appendChild(card(t)));
+        $('recentSec').hidden = !recent.length;
+        content.appendChild(renderList(approved));
+        cur = -1;
+        queue = approved.slice();
         setPlayingUI();
+    }
 
-        // Посилання виду ?t=ID відкриває трек одразу
-        const want = new URLSearchParams(location.search).get('t');
-        if (want && !$('modalBg').dataset.shown) {
-            const t = rows.find(x => x.id === want);
-            if (t) { $('modalBg').dataset.shown = '1'; openModal(t); }
+    document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
+        tab = b.dataset.tab;
+        openAlbum = null;
+        load();
+    }));
+
+    /* ---------- Дії у списках ---------- */
+    document.addEventListener('click', e => {
+        const b = e.target.closest('[data-act="play"]');
+        if (!b) return;
+        const holder = b.closest('[data-id]');
+        if (!holder) return;
+        const t = approved.find(x => x.id === holder.dataset.id);
+        if (!t) return;
+        const i = queue.findIndex(x => x.id === t.id);
+        if (i === cur && !audio.paused) audio.pause();
+        else if (i === cur) audio.play();
+        else { queue = shown.filter(x => x.status === 'approved'); playTrack(t); }
+        e.stopPropagation();
+    });
+
+    /* ---------- Вікно треку ---------- */
+    function btn(label, cls, act) {
+        const b = document.createElement('button');
+        b.className = 'btn ' + cls;
+        b.textContent = label;
+        b.dataset.act = act;
+        return b;
+    }
+
+    async function openModal(t) {
+        modalTrack = t;
+        $('mCov').textContent = '';
+        $('mCov').appendChild(art(t, 'mcov-in'));
+        $('mTitle').textContent = t.title;
+        $('mArtist').textContent = t.artist;
+        $('mAlbum').textContent = t.album || '—';
+        $('mStatus').textContent = STATUS_TEXT[t.status] || t.status;
+        $('mLicense').textContent = LICENSE_TEXT[t.license] || t.license;
+        $('mSize').textContent = t.size_mb + ' MB';
+        $('mDate').textContent = new Date(t.created_at).toLocaleString('uk-UA');
+        $('mDesc').textContent = t.description || 'Опису немає.';
+        $('mLink').textContent = location.origin + location.pathname + '?t=' + t.id;
+
+        const bs = $('mBtns');
+        bs.textContent = '';
+        if (t.status === 'approved') {
+            const p = btn('▶ Слухати', '', 'play');
+            bs.appendChild(p);
+            const lk = btn((liked.has(t.id) ? '♥ ' : '♡ ') + (t.likes_count || 0), liked.has(t.id) ? 'on' : 'ghost', 'like');
+            if (!user) lk.disabled = true;
+            bs.appendChild(lk);
+            if (user && t.artist) {
+                const fl = btn(follows.has(t.artist) ? 'Відписатись' : 'Підписатись на ' + t.artist, 'ghost', 'follow');
+                bs.appendChild(fl);
+            }
+        }
+        bs.appendChild(btn('Копіювати посилання', 'ghost', 'copy'));
+        if (isAdmin && t.status !== 'approved') bs.appendChild(btn('Схвалити', 'ok', 'approve'));
+        if (isAdmin && t.status !== 'rejected') bs.appendChild(btn('Відхилити', 'ghost', 'reject'));
+        if (user && (t.user_id === user.id || isAdmin)) bs.appendChild(btn('Видалити', 'danger', 'delete'));
+
+        $('modalBg').hidden = false;
+        await loadComments();
+    }
+
+    function closeModal() { $('modalBg').hidden = true; modalTrack = null; }
+    $('mClose').addEventListener('click', closeModal);
+    $('modalBg').addEventListener('click', e => { if (e.target.id === 'modalBg') closeModal(); });
+
+    async function loadComments() {
+        const t = modalTrack;
+        const list = $('mComList');
+        list.innerHTML = '<div class="empty">Завантаження…</div>';
+        const { data, error } = await sb.from('track_comments').select('*').eq('track_id', t.id).order('created_at', { ascending: true }).limit(200);
+        if (error) { list.innerHTML = '<div class="empty">Помилка: ' + error.message.replace(/</g, '&lt;') + '</div>'; return; }
+        $('mComCount').textContent = (data || []).length;
+        list.textContent = '';
+        if (!data || !data.length) list.innerHTML = '<div class="empty">Коментарів ще немає.</div>';
+        (data || []).forEach(c => {
+            const d = document.createElement('div');
+            d.className = 'cm';
+            d.innerHTML = '<b></b><span class="dt"></span><div class="cb"></div>';
+            d.querySelector('b').textContent = c.author || 'гість';
+            d.querySelector('.dt').textContent = new Date(c.created_at).toLocaleString('uk-UA');
+            d.querySelector('.cb').textContent = c.body;
+            if (user && (c.user_id === user.id || isAdmin)) {
+                const del = document.createElement('button');
+                del.textContent = 'Видалити';
+                del.dataset.act = 'delcomment';
+                del.dataset.id = c.id;
+                d.appendChild(del);
+            }
+            list.appendChild(d);
+        });
+        const form = $('mComForm');
+        form.textContent = '';
+        if (!user) {
+            form.innerHTML = '<div class="empty" style="padding:6px 0;">Увійдіть, щоб писати коментарі.</div>';
+        } else {
+            const wrap = document.createElement('div');
+            wrap.className = 'cform';
+            wrap.innerHTML = '<textarea maxlength="500" placeholder="Напишіть коментар…"></textarea><button class="btn small" type="button" data-act="sendcomment">Надіслати</button>';
+            form.appendChild(wrap);
         }
     }
 
-    /* ---------- Дії (картки, список, вікно) ---------- */
-    document.addEventListener('click', async e => {
-        const openEl = e.target.closest('[data-open]');
-        const btn = e.target.closest('button[data-act]');
-        if (btn && btn.closest('#modalBg')) {
-            await modalAction(btn);
-            return;
-        }
-        if (btn && btn.dataset.act === 'play') {
-            const holder = btn.closest('[data-id]');
-            const i = queue.findIndex(t => t.id === holder.dataset.id);
-            if (i === cur && !audio.paused) audio.pause();
-            else if (i === cur) audio.play();
-            else playAt(i);
-            return;
-        }
-        if (openEl) {
-            const t = lastRows.find(x => x.id === openEl.dataset.open);
-            if (t) openModal(t);
-        }
-    });
-
-    async function modalAction(btn) {
-        const act = btn.dataset.act;
-        const id = btn.dataset.id;
-        const t = lastRows.find(x => x.id === id);
+    async function modalAction(b) {
+        const t = modalTrack;
+        if (!t) return;
+        const act = b.dataset.act;
         try {
-            if (act === 'play') {
-                const i = queue.findIndex(x => x.id === id);
-                if (i >= 0) playAt(i);
-                closeModal();
-            } else if (act === 'copy') {
-                const url = $('mLink').textContent;
-                if (navigator.clipboard) await navigator.clipboard.writeText(url);
-                $('mLink').textContent = 'Посилання скопійовано: ' + url;
+            if (act === 'play') { closeModal(); playTrack(t); }
+            else if (act === 'copy') {
+                if (navigator.clipboard) await navigator.clipboard.writeText($('mLink').textContent);
+                $('mLink').textContent = 'Посилання скопійовано: ' + $('mLink').textContent;
+            } else if (act === 'like') {
+                if (liked.has(t.id)) {
+                    const { error } = await sb.from('track_likes').delete().eq('user_id', user.id).eq('track_id', t.id);
+                    if (error) throw error;
+                    liked.delete(t.id);
+                } else {
+                    const { error } = await sb.from('track_likes').insert({ user_id: user.id, track_id: t.id });
+                    if (error) throw error;
+                    liked.add(t.id);
+                }
+                await refreshTrack(t);
+                openModal(modalTrack);
+            } else if (act === 'follow') {
+                if (follows.has(t.artist)) {
+                    const { error } = await sb.from('artist_follows').delete().eq('user_id', user.id).eq('artist', t.artist);
+                    if (error) throw error;
+                    follows.delete(t.artist);
+                } else {
+                    const { error } = await sb.from('artist_follows').insert({ user_id: user.id, artist: t.artist });
+                    if (error) throw error;
+                    follows.add(t.artist);
+                }
+                openModal(modalTrack);
             } else if (act === 'approve' || act === 'reject') {
                 const status = act === 'approve' ? 'approved' : 'rejected';
-                const { error } = await sb.from('tracks').update({ status }).eq('id', id);
+                const { error } = await sb.from('tracks').update({ status }).eq('id', t.id);
                 if (error) throw error;
                 closeModal();
+                await fetchApproved();
                 load();
             } else if (act === 'delete') {
                 if (!confirm('Видалити трек із сайту?')) return;
@@ -464,24 +665,48 @@
                 const res = await fetch(worker() + '/music/delete', {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id })
+                    body: JSON.stringify({ id: t.id })
                 });
                 const out = await res.json().catch(() => ({}));
                 if (!res.ok) throw new Error(out.error || ('код ' + res.status));
-                if (t && t.cover_path) await sb.storage.from(CFG.SUPABASE_BUCKET).remove([t.cover_path]);
+                if (t.cover_path) await sb.storage.from(CFG.SUPABASE_BUCKET).remove([t.cover_path]);
                 closeModal();
+                await fetchApproved();
                 load();
+            } else if (act === 'sendcomment') {
+                if (!user) return;
+                const ta = $('mComForm').querySelector('textarea');
+                const body = ta.value.trim();
+                if (!body) return;
+                const { error } = await sb.from('track_comments').insert({ track_id: t.id, user_id: user.id, author: who(), body });
+                if (error) throw error;
+                ta.value = '';
+                await refreshTrack(t);
+                loadComments();
+            } else if (act === 'delcomment') {
+                if (!confirm('Видалити коментар?')) return;
+                const { error } = await sb.from('track_comments').delete().eq('id', b.dataset.id);
+                if (error) throw error;
+                await refreshTrack(t);
+                loadComments();
             }
         } catch (err) {
             alert('Помилка: ' + err.message);
         }
     }
 
-    document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
-        tab = b.dataset.tab;
-        document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
-        load();
-    }));
+    async function refreshTrack(t) {
+        const { data } = await sb.from('tracks').select('likes_count,comments_count').eq('id', t.id).maybeSingle();
+        if (data) {
+            t.likes_count = data.likes_count;
+            t.comments_count = data.comments_count;
+        }
+    }
+
+    $('modalBg').addEventListener('click', e => {
+        const b = e.target.closest('button[data-act]');
+        if (b) modalAction(b);
+    });
 
     /* ---------- Обкладинка ---------- */
     function compressCover(file) {
@@ -511,6 +736,8 @@
         const file = $('file').files[0];
         const title = $('title').value.trim();
         const artist = $('artist').value.trim();
+        const album = $('album').value.trim().slice(0, 120);
+        const description = $('description').value.trim().slice(0, 1000);
         const license = $('license').value;
         if (!file) { uploadMsg('Оберіть MP3-файл.'); return; }
         if (!/\.mp3$/i.test(file.name) && file.type !== 'audio/mpeg') { uploadMsg('Потрібен файл MP3.'); return; }
@@ -551,16 +778,21 @@
             const out = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(out.error || ('код ' + res.status));
 
+            // Альбом, опис і обкладинка — окремим оновленням (трек ще на перевірці, власник може оновити)
+            const patch = { album, description };
             if (coverBlob && out.track && out.track.id) {
                 const cp = user.id + '/covers/' + out.track.id + '.jpg';
                 const { error: ce } = await sb.storage.from(CFG.SUPABASE_BUCKET).upload(cp, coverBlob, { contentType: 'image/jpeg' });
-                if (!ce) await sb.from('tracks').update({ cover_path: cp }).eq('id', out.track.id);
+                if (!ce) patch.cover_path = cp;
+            }
+            if (out.track && out.track.id) {
+                await sb.from('tracks').update(patch).eq('id', out.track.id);
             }
 
-            $('file').value = ''; $('cover').value = ''; $('title').value = ''; $('artist').value = ''; $('rights').checked = false;
+            $('file').value = ''; $('cover').value = ''; $('title').value = ''; $('artist').value = '';
+            $('album').value = ''; $('description').value = ''; $('rights').checked = false;
             uploadMsg('Надіслано на перевірку ✅', true);
             tab = 'mine';
-            document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x.dataset.tab === 'mine'));
             $('uploadCard').hidden = true;
             load();
         } catch (err) {
@@ -576,13 +808,24 @@
         user = data && data.session ? data.session.user : null;
         isAdmin = false;
         if (user) {
-            // Адмін, якщо його пошта є в таблиці music_admins (RLS віддає лише власний рядок)
             const { data: adm } = await sb.from('music_admins').select('email').eq('email', user.email).maybeSingle();
             isAdmin = !!adm;
         }
-        $('who').textContent = user ? (user.email || '') : 'Не ввійшли';
+        $('who').textContent = user ? user.email : 'Гість';
+        $('guestHint').hidden = !!user;
+        $('tabFollows').hidden = !user;
+        $('tabMine').hidden = !user;
         $('tabReview').hidden = !isAdmin;
         $('toggleUpload').hidden = !user;
+        await fetchApproved();
+        await fetchUserState();
+
+        // Посилання ?t=ID відкриває трек одразу
+        const want = new URLSearchParams(location.search).get('t');
+        if (want) {
+            const t = approved.find(x => x.id === want);
+            if (t) openModal(t);
+        }
         load();
     }
     init();
