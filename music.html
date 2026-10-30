@@ -112,6 +112,35 @@
     .time { font-size: 11px; color: var(--muted); width: 38px; text-align: center; font-variant-numeric: tabular-nums; }
     input[type=range] { flex: 1; accent-color: var(--accent); cursor: pointer; }
 
+    /* Вікно «Зараз грає» */
+    .now { position: fixed; inset: 0; background: linear-gradient(180deg, #2a1206 0%, #0d0d0f 60%); z-index: 40; overflow-y: auto; padding: 16px 16px 110px; }
+    .now[hidden] { display: none !important; }
+    .now-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .now-close { background: none; border: none; color: var(--text); font-size: 26px; cursor: pointer; }
+    .now-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; max-width: 980px; margin: 0 auto; }
+    .now-cov { width: 100%; max-width: 420px; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #1f1f24; display: flex; align-items: center; justify-content: center; font-size: 96px; font-weight: 700; color: rgba(255,255,255,.85); margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+    .now-cov img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .now-title { font-size: 24px; font-weight: 700; margin-top: 16px; word-break: break-word; }
+    .now-sub { color: var(--muted); font-size: 15px; margin-top: 4px; }
+    .now-ctrl { display: flex; gap: 18px; align-items: center; justify-content: center; margin-top: 18px; }
+    .now-ctrl button { background: none; border: none; color: var(--text); font-size: 22px; cursor: pointer; }
+    .now-ctrl .big { width: 64px; height: 64px; border-radius: 50%; background: var(--text); color: #000; font-size: 24px; }
+    .now-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+    .now-tabs button { flex: 1; background: none; border: none; color: var(--muted); padding: 10px 4px; font-size: 13px; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; }
+    .now-tabs button.on { color: var(--text); border-bottom-color: var(--text); }
+    .now-body { max-height: 62vh; overflow-y: auto; font-size: 14px; line-height: 1.6; }
+    .now-desc { white-space: pre-wrap; word-break: break-word; color: #d6d6dc; }
+    .nrow { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; }
+    .nrow:hover { background: var(--panel); }
+    .nrow.on .nt { color: var(--accent); }
+    .nrow .nthumb { width: 44px; height: 44px; border-radius: 6px; overflow: hidden; background: #1f1f24; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+    .nrow .nthumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .nrow .nm { min-width: 0; flex: 1; }
+    .nrow .nt { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nrow .na { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    @media (max-width: 760px) { .now-grid { grid-template-columns: 1fr; gap: 16px; } .now-cov { font-size: 64px; } }
+
     @media (max-width: 640px) {
         .card { flex-basis: 130px; }
         .cov { width: 130px; height: 130px; }
@@ -219,9 +248,39 @@
     </div>
 </div>
 
+<div class="now" id="nowPanel" hidden>
+    <div class="now-top">
+        <span style="font-size:13px; color:var(--muted);">Зараз грає</span>
+        <button class="now-close" id="nowClose" type="button" aria-label="Закрити">⌄</button>
+    </div>
+    <div class="now-grid">
+        <div>
+            <div class="now-cov" id="nCov"></div>
+            <div class="now-title" id="nTitle"></div>
+            <div class="now-sub" id="nArtist"></div>
+            <div class="now-ctrl">
+                <button id="nPrev" type="button" aria-label="Попередній">⏮</button>
+                <button class="big" id="nPlay" type="button" aria-label="Пауза або відтворення">▶</button>
+                <button id="nNext" type="button" aria-label="Наступний">⏭</button>
+            </div>
+        </div>
+        <div>
+            <div class="now-tabs">
+                <button type="button" data-ntab="queue" class="on">Далі</button>
+                <button type="button" data-ntab="desc">Опис</button>
+                <button type="button" data-ntab="comments">Коментарі</button>
+                <button type="button" data-ntab="similar">Схожі</button>
+            </div>
+            <div class="now-body" id="nBody"></div>
+        </div>
+    </div>
+</div>
+
 <div class="player off" id="player">
     <div class="pcov" id="pCov"></div>
+    <button class="pbtn" id="pPrev" type="button" aria-label="Попередній">⏮</button>
     <button class="pbtn" id="pPlay" type="button" aria-label="Відтворити">▶</button>
+    <button class="pbtn" id="pNext" type="button" aria-label="Наступний">⏭</button>
     <div class="pinfo">
         <div class="tt" id="pTitle"></div>
         <div style="font-size:12px; color:var(--muted);" id="pArtist"></div>
@@ -312,6 +371,7 @@
         $('pCur').textContent = '0:00';
         $('pSeek').value = 0;
         setPlayingUI();
+        if (!$('nowPanel').hidden) renderNow();
     }
 
     function playTrack(t) {
@@ -801,6 +861,83 @@
             $('btnUpload').disabled = false;
         }
     });
+
+    /* ---------- Вікно «Зараз грає» ---------- */
+    let nTab = 'queue';
+
+    function nowRow(x, onClick) {
+        const r = document.createElement('div');
+        r.className = 'nrow';
+        const th = document.createElement('div');
+        th.className = 'nthumb';
+        th.appendChild(art(x, 'nthumb-in'));
+        const m = document.createElement('div');
+        m.className = 'nm';
+        m.innerHTML = '<div class="nt"></div><div class="na"></div>';
+        m.querySelector('.nt').textContent = x.title;
+        m.querySelector('.na').textContent = x.artist;
+        r.append(th, m);
+        r.addEventListener('click', onClick);
+        return r;
+    }
+
+    function renderNow() {
+        const t = queue[cur];
+        if (!t) return;
+        const cv = $('nCov');
+        cv.textContent = '';
+        cv.appendChild(art(t, 'now-cov-in'));
+        $('nTitle').textContent = t.title;
+        $('nArtist').textContent = t.artist + (t.album ? ' · ' + t.album : '');
+        $('nPlay').textContent = audio.paused ? '▶' : '❚❚';
+        document.querySelectorAll('[data-ntab]').forEach(b => b.classList.toggle('on', b.dataset.ntab === nTab));
+
+        const body = $('nBody');
+        body.textContent = '';
+        if (nTab === 'queue') {
+            queue.forEach((x, i) => {
+                const r = nowRow(x, () => playAt(i));
+                if (i === cur) r.classList.add('on');
+                body.appendChild(r);
+            });
+        } else if (nTab === 'desc') {
+            const d = document.createElement('div');
+            d.className = 'now-desc';
+            d.textContent = t.description || 'Опису немає.';
+            body.appendChild(d);
+        } else if (nTab === 'comments') {
+            const c = document.createElement('div');
+            c.textContent = 'Коментарів: ' + (t.comments_count || 0);
+            const b = document.createElement('button');
+            b.className = 'btn small';
+            b.style.marginTop = '10px';
+            b.textContent = 'Відкрити коментарі';
+            b.addEventListener('click', () => openModal(t));
+            body.append(c, b);
+        } else if (nTab === 'similar') {
+            const sim = approved.filter(x => x.id !== t.id && (x.artist === t.artist || (t.album && x.album === t.album))).slice(0, 30);
+            if (!sim.length) body.innerHTML = '<div class="empty">Схожих треків поки немає.</div>';
+            sim.forEach(x => body.appendChild(nowRow(x, () => { queue = approved.slice(); playAt(queue.findIndex(q => q.id === x.id)); })));
+        }
+    }
+
+    function openNow() {
+        if (cur < 0) { if (queue.length) playAt(0); else return; }
+        $('nowPanel').hidden = false;
+        renderNow();
+    }
+
+    document.querySelectorAll('[data-ntab]').forEach(b => b.addEventListener('click', () => { nTab = b.dataset.ntab; renderNow(); }));
+    $('nowClose').addEventListener('click', () => { $('nowPanel').hidden = true; });
+    $('nPlay').addEventListener('click', () => { audio.paused ? audio.play() : audio.pause(); });
+    $('nPrev').addEventListener('click', () => playAt(cur - 1));
+    $('nNext').addEventListener('click', () => playAt(cur + 1));
+    $('pPrev').addEventListener('click', () => playAt(cur - 1));
+    $('pNext').addEventListener('click', () => playAt(cur + 1));
+    document.querySelector('#player .pinfo').addEventListener('click', openNow);
+    $('pCov').addEventListener('click', openNow);
+    audio.addEventListener('play', () => { if (!$('nowPanel').hidden) renderNow(); });
+    audio.addEventListener('pause', () => { if (!$('nowPanel').hidden) renderNow(); });
 
     /* ---------- Старт ---------- */
     async function init() {
