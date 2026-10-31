@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a4a84">
+<title>A-Table</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #eef1f5; color: #222; height: 100vh; display: flex; flex-direction: column; }
+    header { background: #1a4a84; color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    header .logo { font-size: 18px; font-weight: bold; }
+    header a { color: #fff; text-decoration: none; font-size: 13px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.15); }
+    header input { margin-left: auto; padding: 6px 10px; border: none; border-radius: 6px; font-size: 14px; width: 220px; }
+    .bar { background: #fff; border-bottom: 1px solid #d6dde6; padding: 8px 12px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .bar button { height: 30px; padding: 0 10px; border: 1px solid #d6dde6; background: #fafafa; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .bar button:hover { background: #eef2f7; }
+    .bar button.on { background: #1a4a84; color: #fff; border-color: #1a4a84; }
+    .fx { background: #fff; border-bottom: 1px solid #d6dde6; padding: 6px 12px; display: flex; gap: 8px; align-items: center; }
+    #name { width: 70px; height: 28px; border: 1px solid #d6dde6; border-radius: 6px; text-align: center; font-weight: 600; }
+    #fxIn { flex: 1; height: 28px; border: 1px solid #d6dde6; border-radius: 6px; padding: 0 8px; font-size: 14px; outline: none; font-family: ui-monospace, Consolas, monospace; }
+    #fxIn:focus { border-color: #1a4a84; }
+    .grid-wrap { flex: 1; overflow: auto; background: #fff; }
+    table { border-collapse: collapse; table-layout: fixed; }
+    th, td { border: 1px solid #e1e6ed; height: 26px; min-width: 96px; max-width: 96px; padding: 0 6px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    thead th { background: #f4f6f9; position: sticky; top: 0; z-index: 2; font-weight: 600; color: #555; }
+    tbody th { background: #f4f6f9; position: sticky; left: 0; z-index: 1; width: 44px; min-width: 44px; max-width: 44px; text-align: center; font-weight: 600; color: #555; }
+    td { cursor: cell; }
+    td.sel { outline: 2px solid #1a4a84; outline-offset: -2px; background: #f3f7fc; }
+    td.bold { font-weight: 700; }
+    td.num { text-align: right; }
+    td.err { color: #b42318; }
+    .status { font-size: 12px; color: #666; margin-left: auto; }
+</style>
+</head>
+<body>
+<header>
+    <div class="logo">▦ A-Table</div>
+    <a href="index.html">← Головна</a>
+    <input type="text" id="docName" placeholder="Назва таблиці" maxlength="80">
+</header>
+
+<div class="bar">
+    <button type="button" id="bBold"><b>B</b> Жирний</button>
+    <button type="button" id="bAddRow">+ Рядки (50)</button>
+    <button type="button" id="bClear">Очистити клітинку</button>
+    <button type="button" id="bExport">⬇ Експорт .xlsx</button>
+    <span class="status" id="status"></span>
+</div>
+
+<div class="fx">
+    <input id="name" readonly value="A1">
+    <input id="fxIn" placeholder="Введіть значення або формулу, наприклад =SUM(A1:A5) або =A1*2">
+</div>
+
+<div class="grid-wrap" id="gridWrap"><table id="grid"></table></div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+(function () {
+    'use strict';
+    const KEY = 'acore-table';
+    const COLS = 26;
+    let ROWS = 50;
+    const $ = id => document.getElementById(id);
+    let data = load();
+    let sel = { r: 0, c: 0 };
+    let editing = false;
+
+    function load() {
+        try {
+            const d = JSON.parse(localStorage.getItem(KEY) || 'null');
+            if (d && d.cells) return d;
+        } catch (e) { /* пошкоджені дані — почнемо з нуля */ }
+        return { title: '', rows: 50, cells: {} };
+    }
+    function save() {
+        try {
+            data.rows = ROWS;
+            localStorage.setItem(KEY, JSON.stringify(data));
+            $('status').textContent = 'Збережено ' + new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+        } catch (e) { $('status').textContent = 'Мало місця в браузері'; }
+    }
+    if (data.rows) ROWS = data.rows;
+
+    const colName = c => String.fromCharCode(65 + c);
+    const addr = (r, c) => colName(c) + (r + 1);
+    function parseAddr(a) {
+        const m = /^([A-Z])(\d+)$/.exec(a);
+        if (!m) return null;
+        const c = m[1].charCodeAt(0) - 65;
+        const r = parseInt(m[2], 10) - 1;
+        if (c < 0 || c >= COLS || r < 0 || r >= ROWS) return null;
+        return { r, c };
+    }
+
+    /* ---------- Обчислення формул (без eval) ---------- */
+    function tokenize(s) {
+        const out = [];
+        let i = 0;
+        while (i < s.length) {
+            const ch = s[i];
+            if (/\s/.test(ch)) { i++; continue; }
+            if (/[\d.]/.test(ch)) {
+                let j = i;
+                while (j < s.length && /[\d.]/.test(s[j])) j++;
+                const v = Number(s.slice(i, j));
+                if (isNaN(v)) throw new Error('#ФОРМ!');
+                out.push({ t: 'num', v });
+                i = j;
+                continue;
+            }
+            if (/[A-Za-z]/.test(ch)) {
+                let j = i;
+                while (j < s.length && /[A-Za-z]/.test(s[j])) j++;
+                let k = j;
+                while (k < s.length && /\d/.test(s[k])) k++;
+                if (k > j) { out.push({ t: 'ref', v: s.slice(i, k).toUpperCase() }); i = k; }
+                else { out.push({ t: 'fn', v: s.slice(i, j).toUpperCase() }); i = j; }
+                continue;
+            }
+            if ('+-*/^'.includes(ch)) { out.push({ t: 'op', v: ch }); i++; continue; }
+            if (ch === '(') { out.push({ t: 'lp' }); i++; continue; }
+            if (ch === ')') { out.push({ t: 'rp' }); i++; continue; }
+            if (ch === ',') { out.push({ t: 'comma' }); i++; continue; }
+            if (ch === ':') { out.push({ t: 'colon' }); i++; continue; }
+            throw new Error('#ФОРМ!');
+        }
+        return out;
+    }
+
+    function num(x) {
+        if (typeof x === 'number') return x;
+        if (typeof x === 'string') {
+            if (x === '') return 0;
+            const n = Number(x.replace(',', '.'));
+            if (!isNaN(n)) return n;
+        }
+        throw new Error('#ЗНАЧ!');
+    }
+
+    function evalCell(a, stack) {
+        const cell = data.cells[a];
+        const raw = cell ? String(cell.v == null ? '' : cell.v) : '';
+        if (!raw.startsWith('=')) {
+            if (raw === '') return '';
+            const n = Number(raw.replace(',', '.'));
+            return !isNaN(n) ? n : raw;
+        }
+        if (stack.has(a)) throw new Error('#ЦИКЛ!');
+        stack.add(a);
+        try { return evalFormula(raw.slice(1), stack); }
+        finally { stack.delete(a); }
+    }
+
+    function rangeVals(a, b, stack) {
+        const p = parseAddr(a), q = parseAddr(b);
+        if (!p || !q) throw new Error('#ДІАП!');
+        const out = [];
+        for (let r = Math.min(p.r, q.r); r <= Math.max(p.r, q.r); r++)
+            for (let c = Math.min(p.c, q.c); c <= Math.max(p.c, q.c); c++)
+                out.push(evalCell(addr(r, c), stack));
+        return out;
+    }
+
+    function callFn(name, args) {
+        const flat = [];
+        args.forEach(a => { if (a && a.range) a.range.forEach(x => flat.push(x)); else flat.push(a); });
+        const nums = flat.filter(x => typeof x === 'number' || (typeof x === 'string' && x !== '' && !isNaN(Number(x.replace(',', '.')))))
+            .map(x => typeof x === 'number' ? x : Number(x.replace(',', '.')));
+        switch (name) {
+            case 'SUM': return nums.reduce((s, x) => s + x, 0);
+            case 'AVERAGE': if (!nums.length) throw new Error('#ДІЛ/0!'); return nums.reduce((s, x) => s + x, 0) / nums.length;
+            case 'MIN': return nums.length ? Math.min(...nums) : 0;
+            case 'MAX': return nums.length ? Math.max(...nums) : 0;
+            case 'COUNT': return nums.length;
+            case 'ABS': return Math.abs(num(args[0]));
+            case 'ROUND': { const d = args.length > 1 ? num(args[1]) : 0; const k = Math.pow(10, d); return Math.round(num(args[0]) * k) / k; }
+            case 'IF': return num(args[0]) !== 0 ? args[1] : args[2];
+            default: throw new Error('#ІМ?');
+        }
+    }
+
+    function evalFormula(src, stack) {
+        const toks = tokenize(src);
+        let i = 0;
+        const peek = () => toks[i];
+        const next = () => toks[i++];
+
+        function expr() {
+            let v = term();
+            while (peek() && peek().t === 'op' && (peek().v === '+' || peek().v === '-')) {
+                const op = next().v;
+                const r = term();
+                v = op === '+' ? num(v) + num(r) : num(v) - num(r);
+            }
+            return v;
+        }
+        function term() {
+            let v = pow();
+            while (peek() && peek().t === 'op' && (peek().v === '*' || peek().v === '/')) {
+                const op = next().v;
+                const r = pow();
+                if (op === '/') { if (num(r) === 0) throw new Error('#ДІЛ/0!'); v = num(v) / num(r); }
+                else v = num(v) * num(r);
+            }
+            return v;
+        }
+        function pow() {
+            let v = unary();
+            if (peek() && peek().t === 'op' && peek().v === '^') { next(); v = Math.pow(num(v), num(pow())); }
+            return v;
+        }
+        function unary() {
+            if (peek() && peek().t === 'op' && peek().v === '-') { next(); return -num(unary()); }
+            return primary();
+        }
+        function primary() {
+            const t = next();
+            if (!t) throw new Error('#ФОРМ!');
+            if (t.t === 'num') return t.v;
+            if (t.t === 'lp') {
+                const v = expr();
+                if (!peek() || peek().t !== 'rp') throw new Error('#ФОРМ!');
+                next();
+                return v;
+            }
+            if (t.t === 'ref') {
+                if (peek() && peek().t === 'colon') {
+                    next();
+                    const t2 = next();
+                    if (!t2 || t2.t !== 'ref') throw new Error('#ДІАП!');
+                    return { range: rangeVals(t.v, t2.v, stack) };
+                }
+                return evalCell(t.v, stack);
+            }
+            if (t.t === 'fn') {
+                if (!peek() || peek().t !== 'lp') throw new Error('#ФОРМ!');
+                next();
+                const args = [];
+                if (peek() && peek().t !== 'rp') {
+                    args.push(expr());
+                    while (peek() && peek().t === 'comma') { next(); args.push(expr()); }
+                }
+                if (!peek() || peek().t !== 'rp') throw new Error('#ФОРМ!');
+                next();
+                return callFn(t.v, args);
+            }
+            throw new Error('#ФОРМ!');
+        }
+
+        const result = expr();
+        if (i < toks.length) throw new Error('#ФОРМ!');
+        return result;
+    }
+
+    function show(a) {
+        try {
+            const v = evalCell(a, new Set());
+            if (v && typeof v === 'object') return { text: '#ЗНАЧ!', err: true, num: false };
+            if (typeof v === 'number') return { text: String(Math.round(v * 1e10) / 1e10), err: false, num: true };
+            return { text: String(v), err: false, num: false };
+        } catch (e) {
+            return { text: e.message.startsWith('#') ? e.message : '#ПОМИЛКА', err: true, num: false };
+        }
+    }
+
+    /* ---------- Таблиця ---------- */
+    function render() {
+        const t = $('grid');
+        let html = '<thead><tr><th></th>';
+        for (let c = 0; c < COLS; c++) html += '<th>' + colName(c) + '</th>';
+        html += '</tr></thead><tbody>';
+        for (let r = 0; r < ROWS; r++) {
+            html += '<tr><th>' + (r + 1) + '</th>';
+            for (let c = 0; c < COLS; c++) {
+                const a = addr(r, c);
+                const cell = data.cells[a];
+                const s = show(a);
+                const cls = [
+                    r === sel.r && c === sel.c ? 'sel' : '',
+                    cell && cell.b ? 'bold' : '',
+                    s.num ? 'num' : '',
+                    s.err ? 'err' : ''
+                ].filter(Boolean).join(' ');
+                html += '<td data-r="' + r + '" data-c="' + c + '" class="' + cls + '">' + escapeHtml(s.text) + '</td>';
+            }
+            html += '</tr>';
+        }
+        html += '</tbody>';
+        t.innerHTML = html;
+        $('name').value = addr(sel.r, sel.c);
+        const raw = data.cells[addr(sel.r, sel.c)];
+        if (!editing) $('fxIn').value = raw ? String(raw.v == null ? '' : raw.v) : '';
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function select(r, c) {
+        sel = { r: Math.max(0, Math.min(ROWS - 1, r)), c: Math.max(0, Math.min(COLS - 1, c)) };
+        editing = false;
+        render();
+        const el = document.querySelector('td[data-r="' + sel.r + '"][data-c="' + sel.c + '"]');
+        if (el) el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+
+    function commit(value, moveDown) {
+        const a = addr(sel.r, sel.c);
+        const old = data.cells[a] || {};
+        if (value === '') delete data.cells[a];
+        else data.cells[a] = { v: value, b: !!old.b };
+        editing = false;
+        save();
+        if (moveDown) select(sel.r + 1, sel.c);
+        else render();
+    }
+
+    /* ---------- Події ---------- */
+    $('grid').addEventListener('click', e => {
+        const td = e.target.closest('td');
+        if (!td) return;
+        select(Number(td.dataset.r), Number(td.dataset.c));
+        $('fxIn').focus();
+    });
+
+    $('grid').addEventListener('dblclick', () => $('fxIn').focus());
+
+    $('fxIn').addEventListener('input', () => { editing = true; });
+    $('fxIn').addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); commit($('fxIn').value.trim(), true); $('fxIn').blur(); }
+        else if (e.key === 'Tab') { e.preventDefault(); commit($('fxIn').value.trim(), false); select(sel.r, sel.c + 1); $('fxIn').focus(); }
+        else if (e.key === 'Escape') { editing = false; render(); $('fxIn').blur(); }
+    });
+
+    document.addEventListener('keydown', e => {
+        if (document.activeElement === $('fxIn') || e.target.tagName === 'INPUT') return;
+        if (e.key === 'ArrowUp') { e.preventDefault(); select(sel.r - 1, sel.c); }
+        else if (e.key === 'ArrowDown') { e.preventDefault(); select(sel.r + 1, sel.c); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); select(sel.r, sel.c - 1); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); select(sel.r, sel.c + 1); }
+        else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); commit('', false); }
+        else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+            $('fxIn').value = e.key;
+            $('fxIn').focus();
+            editing = true;
+            e.preventDefault();
+        }
+    });
+
+    $('bBold').addEventListener('click', () => {
+        const a = addr(sel.r, sel.c);
+        const cell = data.cells[a] || { v: '' };
+        cell.b = !cell.b;
+        data.cells[a] = cell;
+        save();
+        render();
+    });
+
+    $('bAddRow').addEventListener('click', () => { ROWS += 50; save(); render(); });
+
+    $('bClear').addEventListener('click', () => commit('', false));
+
+    $('docName').value = data.title || '';
+    $('docName').addEventListener('input', e => { data.title = e.target.value.trim(); save(); });
+
+    $('bExport').addEventListener('click', () => {
+        if (!window.XLSX) { alert('Бібліотека таблиць не завантажилась. Оновіть сторінку.'); return; }
+        const ws = {};
+        let maxR = 0, maxC = 0;
+        Object.keys(data.cells).forEach(a => {
+            const p = parseAddr(a);
+            if (!p) return;
+            const raw = String(data.cells[a].v == null ? '' : data.cells[a].v);
+            if (raw === '') return;
+            maxR = Math.max(maxR, p.r);
+            maxC = Math.max(maxC, p.c);
+            if (raw.startsWith('=')) {
+                let v;
+                try { v = evalCell(a, new Set()); } catch (e) { v = 0; }
+                if (v && typeof v === 'object') v = 0;
+                ws[a] = typeof v === 'number' ? { t: 'n', f: raw.slice(1), v } : { t: 's', f: raw.slice(1), v: String(v) };
+            } else {
+                const n = Number(raw.replace(',', '.'));
+                ws[a] = (!isNaN(n)) ? { t: 'n', v: n } : { t: 's', v: raw };
+            }
+        });
+        ws['!ref'] = 'A1:' + colName(maxC) + (maxR + 1);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Аркуш1');
+        const name = (data.title || 'table').replace(/[\\/:*?"<>|]+/g, '_');
+        XLSX.writeFile(wb, name + '.xlsx');
+    });
+
+    render();
+})();
+</script>
+</body>
+</html>
