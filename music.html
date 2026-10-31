@@ -180,6 +180,18 @@
     .mood-reply:empty { display: none; }
     .mood .list { text-align: left; }
 
+    .avat { width: 150px; height: 150px; border-radius: 50%; overflow: hidden; background: #1f1f24; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 700; color: rgba(255,255,255,.85); margin: 0 auto; }
+    .avat img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .artist-card { text-align: center; }
+    .artist-card .ctt { margin-top: 10px; }
+    .prof-head { display: flex; gap: 16px; align-items: center; margin-bottom: 14px; }
+    .prof-head .avat { width: 96px; height: 96px; margin: 0; font-size: 36px; flex-shrink: 0; }
+    .prof-bio { color: var(--muted); font-size: 14px; margin-top: 4px; white-space: pre-wrap; }
+    .prow { display: flex; gap: 10px; align-items: center; padding: 10px; border-bottom: 1px solid var(--line); }
+    .prow .pn { flex: 1; min-width: 0; }
+    .prow .pn b { display: block; font-size: 15px; }
+    .prow .pn span { font-size: 12px; color: var(--muted); }
+
     @media (max-width: 760px) { .now-grid { grid-template-columns: 1fr; gap: 16px; } .now-cov { font-size: 64px; } }
 
     @media (max-width: 640px) {
@@ -207,6 +219,8 @@
         <button class="tab" data-tab="albums" type="button">Альбоми</button>
         <button class="tab" data-tab="follows" type="button" id="tabFollows" hidden>Підписки</button>
         <button class="tab" data-tab="mood" type="button" id="tabMood" hidden>Ваш настрій</button>
+        <button class="tab" data-tab="artists" type="button">Виконавці</button>
+        <button class="btn ghost" id="profilesBtn" type="button" hidden>👤 Мої профілі</button>
         <button class="tab" data-tab="mine" type="button" id="tabMine" hidden>Мої</button>
         <button class="tab" data-tab="review" type="button" id="tabReview" hidden>На перевірці</button>
         <button class="btn" id="toggleUpload" type="button" hidden>+ Завантажити</button>
@@ -226,8 +240,8 @@
             <label>Назва треку
                 <input type="text" id="title" maxlength="120">
             </label>
-            <label>Виконавець
-                <input type="text" id="artist" maxlength="120">
+            <label>Від імені профілю (створіть профіль, якщо ще немає)
+                <select id="profileSel"></select>
             </label>
             <label>Альбом (необов'язково)
                 <input type="text" id="album" maxlength="120">
@@ -315,6 +329,34 @@
             </div>
             <div class="now-body" id="nBody"></div>
         </div>
+    </div>
+</div>
+
+<div class="modal-bg" id="profBg" hidden>
+    <div class="modal" role="dialog" aria-modal="true">
+        <button class="mclose" id="profClose" type="button" aria-label="Закрити">×</button>
+        <h3 style="font-size:18px; margin-bottom:10px;">Мої профілі (<span id="profCount">0</span> з 3)</h3>
+        <div id="profList"></div>
+        <div class="panel" id="profForm" hidden style="margin-top:14px;">
+            <h3 id="profFormTitle">Новий профіль</h3>
+            <form id="profFormEl" novalidate>
+                <label>Назва профілю (2–60 символів)
+                    <input type="text" id="profName" maxlength="60">
+                </label>
+                <label>Опис (до 300 символів)
+                    <textarea id="profBio" maxlength="300"></textarea>
+                </label>
+                <label>Аватарка (необов'язково, JPG або PNG)
+                    <input type="file" id="profAvatar" accept="image/jpeg,image/png,image/webp">
+                </label>
+                <div class="msg" id="profMsg"></div>
+                <div style="display:flex; gap:8px; justify-content:flex-end;">
+                    <button class="btn ghost small" id="profCancel" type="button">Скасувати</button>
+                    <button class="btn small" id="profSave" type="submit">Зберегти</button>
+                </div>
+            </form>
+        </div>
+        <button class="btn" id="profNew" type="button" style="margin-top:12px;">+ Новий профіль</button>
     </div>
 </div>
 
@@ -571,6 +613,12 @@
         $('recentSec').hidden = true;
         $('listTitle').textContent = { all: 'Усі треки', albums: 'Альбоми', follows: 'Підписки', mine: 'Мої треки', review: 'На перевірці' }[tab] || '';
         setTabs();
+
+        if (tab === 'artists') {
+            content.textContent = '';
+            content.appendChild(renderArtists());
+            return;
+        }
 
         if (tab === 'mood') {
             content.textContent = '';
@@ -849,7 +897,10 @@
         e.preventDefault();
         if (!user) { uploadMsg('Увійдіть в акаунт на головній сторінці.'); return; }
         const files = Array.from($('file').files || []);
-        const artist = $('artist').value.trim();
+        const profileId = $('profileSel').value;
+        const prof = myProfiles.find(x => x.id === profileId);
+        if (!prof) { uploadMsg('Спершу створіть профіль (кнопка «Мої профілі»).'); return; }
+        const artist = prof.name;
         const album = $('album').value.trim().slice(0, 120);
         const description = $('description').value.trim().slice(0, 1000);
         const license = $('license').value;
@@ -904,7 +955,7 @@
                 });
                 const out = await res.json().catch(() => ({}));
                 if (!res.ok) { failMsg = '«' + name + '»: ' + (out.error || ('код ' + res.status)); break; }
-                const patch = { album, description };
+                const patch = { album, description, profile_id: profileId };
                 if (coverPath) patch.cover_path = coverPath;
                 if (out.track && out.track.id) await sb.from('tracks').update(patch).eq('id', out.track.id);
                 okCount++;
@@ -916,7 +967,7 @@
         }
 
         if (okCount) {
-            $('file').value = ''; $('cover').value = ''; $('title').value = ''; $('artist').value = '';
+            $('file').value = ''; $('cover').value = ''; $('title').value = '';
             $('album').value = ''; $('description').value = ''; $('rights').checked = false;
             uploadMsg('Надіслано на перевірку: ' + okCount + (failMsg ? '. Далі помилка ' + failMsg : '') + ' ✅', true);
             tab = 'mine';
@@ -1195,6 +1246,197 @@
         }
     }
 
+    /* ---------- Профілі виконавців ---------- */
+    let allProfiles = [], myProfiles = [], artistOpen = null, editingProfileId = null;
+
+    const avatarUrl = path => sb.storage.from(CFG.SUPABASE_BUCKET).getPublicUrl(path).data.publicUrl;
+    function avatarEl(p, cls) {
+        const d = document.createElement('div');
+        d.className = cls || 'avat';
+        if (p && p.avatar_path) {
+            const i = document.createElement('img');
+            i.src = avatarUrl(p.avatar_path);
+            i.alt = '';
+            d.appendChild(i);
+        } else {
+            d.textContent = ((p && p.name) || '?').trim().charAt(0).toUpperCase();
+        }
+        return d;
+    }
+
+    async function fetchProfiles() {
+        const { data } = await sb.from('artist_profiles').select('*').order('created_at', { ascending: true });
+        allProfiles = data || [];
+        myProfiles = user ? allProfiles.filter(p => p.user_id === user.id) : [];
+        fillProfileSelect();
+    }
+
+    function fillProfileSelect() {
+        const sel = $('profileSel');
+        sel.textContent = '';
+        if (!myProfiles.length) {
+            const o = document.createElement('option');
+            o.value = '';
+            o.textContent = 'Немає профілю, створіть його';
+            sel.appendChild(o);
+            return;
+        }
+        myProfiles.forEach(p => {
+            const o = document.createElement('option');
+            o.value = p.id;
+            o.textContent = p.name;
+            sel.appendChild(o);
+        });
+    }
+
+    function renderProfList() {
+        $('profCount').textContent = myProfiles.length;
+        $('profNew').disabled = myProfiles.length >= 3;
+        const box = $('profList');
+        box.textContent = '';
+        if (!myProfiles.length) { box.innerHTML = '<div class="empty">Профілів ще немає.</div>'; return; }
+        myProfiles.forEach(p => {
+            const row = document.createElement('div');
+            row.className = 'prow';
+            row.appendChild(avatarEl(p, 'avat'));
+            row.firstChild.style.cssText = 'width:44px;height:44px;margin:0;font-size:18px;flex-shrink:0;';
+            const pn = document.createElement('div');
+            pn.className = 'pn';
+            pn.innerHTML = '<b></b><span></span>';
+            pn.querySelector('b').textContent = p.name;
+            pn.querySelector('span').textContent = p.bio || 'Без опису';
+            const ed = document.createElement('button');
+            ed.className = 'btn ghost small';
+            ed.textContent = 'Редагувати';
+            ed.addEventListener('click', () => openProfForm(p));
+            row.append(pn, ed);
+            box.appendChild(row);
+        });
+    }
+
+    function openProfModal() {
+        $('profBg').hidden = false;
+        $('profForm').hidden = true;
+        renderProfList();
+    }
+
+    function openProfForm(p) {
+        editingProfileId = p ? p.id : null;
+        $('profFormTitle').textContent = p ? 'Редагувати профіль' : 'Новий профіль';
+        $('profName').value = p ? p.name : '';
+        $('profBio').value = p ? (p.bio || '') : '';
+        $('profAvatar').value = '';
+        $('profMsg').textContent = '';
+        $('profForm').hidden = false;
+        $('profName').focus();
+    }
+
+    function compressAvatar(file) {
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                const S = 256;
+                const side = Math.min(img.width, img.height);
+                const c = document.createElement('canvas');
+                c.width = S; c.height = S;
+                c.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, S, S);
+                c.toBlob(b => b ? resolve(b) : reject(new Error('стиснення не вдалося')), 'image/jpeg', 0.8);
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('це не зображення')); };
+            img.src = url;
+        });
+    }
+
+    $('profNew').addEventListener('click', () => openProfForm(null));
+    $('profCancel').addEventListener('click', () => { $('profForm').hidden = true; });
+    $('profClose').addEventListener('click', () => { $('profBg').hidden = true; });
+    $('profBg').addEventListener('click', e => { if (e.target.id === 'profBg') $('profBg').hidden = true; });
+    $('profilesBtn').addEventListener('click', openProfModal);
+
+    $('profFormEl').addEventListener('submit', async e => {
+        e.preventDefault();
+        const name = $('profName').value.trim();
+        const bio = $('profBio').value.trim().slice(0, 300);
+        if (name.length < 2) { $('profMsg').textContent = 'Назва має бути від 2 символів.'; return; }
+        $('profSave').disabled = true;
+        $('profMsg').textContent = 'Зберігаємо…';
+        try {
+            let id = editingProfileId;
+            if (id) {
+                const { error } = await sb.from('artist_profiles').update({ name, bio }).eq('id', id);
+                if (error) throw error;
+            } else {
+                const { data, error } = await sb.from('artist_profiles').insert({ user_id: user.id, name, bio }).select().single();
+                if (error) {
+                    throw new Error(/row-level|policy/i.test(error.message) ? 'Досягнуто ліміт: не більше 3 профілів.' : error.message);
+                }
+                id = data.id;
+            }
+            const af = $('profAvatar').files[0];
+            if (af) {
+                const blob = await compressAvatar(af);
+                const ap = user.id + '/avatars/' + Date.now() + '.jpg';
+                const { error: ue } = await sb.storage.from(CFG.SUPABASE_BUCKET).upload(ap, blob, { contentType: 'image/jpeg' });
+                if (ue) throw ue;
+                const { error: ae } = await sb.from('artist_profiles').update({ avatar_path: ap }).eq('id', id);
+                if (ae) throw ae;
+            }
+            await fetchProfiles();
+            $('profForm').hidden = true;
+            renderProfList();
+            load();
+        } catch (err) {
+            $('profMsg').textContent = 'Помилка: ' + err.message;
+        } finally {
+            $('profSave').disabled = false;
+        }
+    });
+
+    function renderArtists() {
+        const wrap = document.createElement('div');
+        if (artistOpen) {
+            const p = allProfiles.find(x => x.id === artistOpen);
+            const back = document.createElement('div');
+            back.className = 'back';
+            back.textContent = '← До всіх виконавців';
+            back.addEventListener('click', () => { artistOpen = null; load(); });
+            wrap.appendChild(back);
+            if (p) {
+                const head = document.createElement('div');
+                head.className = 'prof-head';
+                head.appendChild(avatarEl(p, 'avat'));
+                const info = document.createElement('div');
+                info.innerHTML = '<div class="tt" style="font-size:20px;white-space:normal;"></div><div class="prof-bio"></div>';
+                info.querySelector('.tt').textContent = p.name;
+                info.querySelector('.prof-bio').textContent = p.bio || '';
+                head.appendChild(info);
+                wrap.appendChild(head);
+                const tracks = approved.filter(t => t.profile_id === p.id);
+                if (!tracks.length) wrap.insertAdjacentHTML('beforeend', '<div class="empty">Треків ще немає.</div>');
+                else wrap.appendChild(renderList(tracks));
+            }
+            return wrap;
+        }
+        if (!allProfiles.length) { wrap.innerHTML = '<div class="empty">Виконавців ще немає.</div>'; return wrap; }
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+        allProfiles.forEach(p => {
+            const count = approved.filter(t => t.profile_id === p.id).length;
+            const el = document.createElement('div');
+            el.className = 'card artist-card';
+            const av = avatarEl(p, 'avat');
+            const tt = document.createElement('div'); tt.className = 'ctt'; tt.textContent = p.name;
+            const ta = document.createElement('div'); ta.className = 'cta'; ta.textContent = count + ' тр.';
+            el.append(av, tt, ta);
+            el.addEventListener('click', () => { artistOpen = p.id; load(); });
+            grid.appendChild(el);
+        });
+        wrap.appendChild(grid);
+        return wrap;
+    }
+
     /* ---------- Старт ---------- */
     async function init() {
         const { data } = await sb.auth.getSession();
@@ -1208,11 +1450,14 @@
         $('guestHint').hidden = !!user;
         $('tabFollows').hidden = !user;
         $('tabMood').hidden = !user;
+        $('profilesBtn').hidden = !user;
         $('tabMine').hidden = !user;
         $('tabReview').hidden = !isAdmin;
         $('toggleUpload').hidden = !user;
+        // Список показуємо одразу, лайки і підписки догружаються у фоні
+        const stateP = fetchUserState();
         await fetchApproved();
-        await fetchUserState();
+        await fetchProfiles();
 
         // Посилання ?t=ID відкриває трек одразу
         const want = new URLSearchParams(location.search).get('t');
@@ -1221,6 +1466,7 @@
             if (t) openModal(t);
         }
         load();
+        stateP.then(() => load());
     }
     init();
 })();
