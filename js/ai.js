@@ -21,7 +21,8 @@
     ];
 
     const CSS = `
-.ai-plugins{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.ai-models{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 4px}
+.ai-models .sep{width:1px;background:#d6dde6;margin:0 2px}
 .plug{padding:5px 12px;border:1px solid #1a4a84;background:#fff;color:#1a4a84;border-radius:16px;font-size:13px;cursor:pointer}
 .plug.on{background:#1a4a84;color:#fff}
 .plug:disabled{opacity:.45;cursor:default}
@@ -146,7 +147,7 @@
     }
 
     /* ---------- Налаштування і мережа ---------- */
-    const MODE_NAMES = { general: 'Загальний', code: 'Код', orca: 'Орка' };
+    const MODE_NAMES = { general: 'Загальний', code: 'Код', orca: 'DeepSeek' };
     const getMode = () => {
         const m = A.store.get('ai_mode', 'general');
         return MODE_NAMES[m] ? m : 'general';
@@ -521,6 +522,30 @@
         return b;
     }
 
+    function modeChip(key) {
+        return h('button', {
+            class: 'plug' + (getMode() === key ? ' on' : ''),
+            type: 'button',
+            'data-mode': key,
+            'aria-pressed': String(getMode() === key),
+            onclick: () => {
+                A.store.set('ai_mode', key);
+                refreshChips();
+                setStatus('Модель: ' + MODE_NAMES[key]);
+            }
+        }, MODE_NAMES[key]);
+    }
+
+    function refreshChips() {
+        const box = A.$('#ai-models');
+        if (!box) return;
+        box.querySelectorAll('[data-mode]').forEach(b => {
+            const on = b.dataset.mode === getMode();
+            b.classList.toggle('on', on);
+            b.setAttribute('aria-pressed', String(on));
+        });
+    }
+
     function init() {
         log = A.$('#ai-log');
         form = A.$('#ai-form');
@@ -535,23 +560,16 @@
         history = A.store.get('chat2', []);
         if (!Array.isArray(history)) history = [];
 
-        const modeSel = h('select', {
-            class: 'ai-mode',
-            'aria-label': 'Режим ШІ',
-            style: 'margin-bottom:6px; padding:6px; border:1px solid #ccc; border-radius:6px;',
-            onchange: e => { A.store.set('ai_mode', e.target.value); setStatus('Режим: ' + (MODE_NAMES[e.target.value] || 'Загальний')); }
-        },
-            h('option', { value: 'general' }, 'Загальний'),
-            h('option', { value: 'code' }, 'Код'),
-            h('option', { value: 'orca' }, 'Орка'));
-        modeSel.value = getMode();
-
-        const plugins = h('div', { class: 'ai-plugins' },
-            plugBtn('🔍 Пошук', 'ai_search', !A.cfg.AI_PROXY_URL),
-            plugBtn('🧠 Думай', 'ai_think', false));
-
-        form.parentNode.insertBefore(modeSel, form);
-        form.parentNode.insertBefore(plugins, form);
+        let box = A.$('#ai-models');
+        if (!box) {
+            box = h('div', { id: 'ai-models', class: 'ai-models' });
+            form.parentNode.insertBefore(box, form);
+        }
+        box.textContent = '';
+        Object.keys(MODE_NAMES).forEach(k => box.appendChild(modeChip(k)));
+        box.appendChild(h('span', { class: 'sep' }));
+        box.appendChild(plugBtn('🔍 Пошук', 'ai_search', !A.cfg.AI_PROXY_URL));
+        box.appendChild(plugBtn('🧠 Думай', 'ai_think', false));
 
         SUGGESTIONS.forEach(s => suggestEl.appendChild(h('button', { class: 'chip', type: 'button', onclick: () => ask(s) }, s)));
 
