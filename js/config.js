@@ -33,7 +33,7 @@ window.ACORE_CONFIG = {
 
     // Музика: ліміт пам'яті на користувача і розмір одного треку (MB)
     MUSIC_WORKER_URL: "https://acore-music.oleksijmaric20.workers.dev",
-    MUSIC_QUOTA_MB: 20,
+    MUSIC_PROFILE_QUOTA_MB: 200,   // ліміт пам'яті на один профіль виконавця (MB)
     MUSIC_MAX_MB: 5,
 
     // Карти: Worker з місцями з OpenStreetMap і оформленням ШІ (acore-places)
