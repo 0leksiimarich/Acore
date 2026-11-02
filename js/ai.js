@@ -1,4 +1,5 @@
-/* Акорик: чат зі ШІ (через Cloudflare Worker) і генерація картинок (Pollinations). */
+/* Акорик: чат зі ШІ (через Cloudflare Worker), пошук у мережі, режим «Думай»,
+   вкладка коду і генерація картинок (Pollinations). */
 (function () {
     'use strict';
     const A = window.Acore;
@@ -19,6 +20,32 @@
         'Намалюй кота-космонавта'
     ];
 
+    const CSS = `
+.ai-plugins{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.plug{padding:5px 12px;border:1px solid #1a4a84;background:#fff;color:#1a4a84;border-radius:16px;font-size:13px;cursor:pointer}
+.plug.on{background:#1a4a84;color:#fff}
+.plug:disabled{opacity:.45;cursor:default}
+.think{margin:0 0 8px;font-size:13px;color:#555}
+.think summary{cursor:pointer}
+.think pre{white-space:pre-wrap;background:#f6f7f9;padding:8px;border-radius:6px;max-height:220px;overflow:auto;margin:6px 0 0}
+.src{margin-top:8px;font-size:13px;color:#444}
+.src a{color:#1a4a84;word-break:break-all}
+.code-open{margin-top:4px}
+#akCode{position:fixed;top:0;right:0;bottom:0;width:min(440px,100vw);background:#1e1e1e;color:#eee;z-index:9999;display:flex;flex-direction:column;box-shadow:-4px 0 16px rgba(0,0,0,.3);transform:translateX(100%);transition:transform .25s}
+#akCode.open{transform:none}
+#akCode .hd{display:flex;gap:8px;align-items:center;padding:10px;border-bottom:1px solid #333}
+#akCode .hd button{background:#333;color:#eee;border:0;border-radius:6px;padding:6px 10px;cursor:pointer}
+#akCode pre{flex:1;overflow:auto;margin:0;padding:12px;font-size:13px;white-space:pre}
+`;
+
+    function injectCss() {
+        if (document.getElementById('ai-plus-style')) return;
+        const s = document.createElement('style');
+        s.id = 'ai-plus-style';
+        s.textContent = CSS;
+        document.head.appendChild(s);
+    }
+
     /* ---------- Безпечний markdown: спершу екранування, потім розмітка ---------- */
     function md(src) {
         let t = String(src).replace(/\u0000/g, '');
@@ -37,12 +64,10 @@
 
         t = esc(t);
 
-        // [текст](https://адреса)
         t = t.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g, (m, text, url) => {
             links.push('<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + text + '</a>');
             return '\u0000L' + (links.length - 1) + '\u0000';
         });
-        // голі адреси
         t = t.replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)\]])/g, url => {
             links.push('<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + url + '</a>');
             return '\u0000L' + (links.length - 1) + '\u0000';
@@ -52,7 +77,6 @@
         t = t.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
         t = t.replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,!?:;]|$)/g, '$1<em>$2</em>');
 
-        // Абзаци та списки
         const out = [];
         let para = [];
         let list = null;
@@ -121,10 +145,10 @@
         });
     }
 
-    /* ---------- Мережа ---------- */
-    function getMode() {
-        return A.store.get('ai_mode', 'general') === 'code' ? 'code' : 'general';
-    }
+    /* ---------- Налаштування і мережа ---------- */
+    const getMode = () => (A.store.get('ai_mode', 'general') === 'code' ? 'code' : 'general');
+    const searchOn = () => !!A.store.get('ai_search', false) && !!(A.cfg.AI_PROXY_URL || '').trim();
+    const thinkOn = () => !!A.store.get('ai_think', false);
 
     function endpoint() {
         const proxy = (A.cfg.AI_PROXY_URL || '').trim();
@@ -134,6 +158,20 @@
         return null;
     }
 
+    async function webSearch(q) {
+        const base = (A.cfg.AI_PROXY_URL || '').trim().replace(/\/+$/, '');
+        if (!base) return null;
+        const res = await fetch(base + '/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ q: q.slice(0, 200) })
+        });
+        if (!res.ok) return null;
+        const j = await res.json();
+        const results = (j.results || []).slice(0, 6);
+        return results.length ? results : null;
+    }
+
     function explain(status) {
         if (status === 401 || status === 403) return 'Доступ не дозволено. Перевірте ключ або налаштування проксі.';
         if (status === 429) return 'Забагато запитів. Зачекайте хвилину і спробуйте знову.';
@@ -141,6 +179,7 @@
         return 'Не вдалося отримати відповідь (код ' + status + ').';
     }
 
+    // onDelta(kind, chunk): kind — 'content' (відповідь) або 'reasoning' (міркування)
     async function readStream(res, onDelta) {
         const reader = res.body.getReader();
         const dec = new TextDecoder();
@@ -159,10 +198,39 @@
                 try {
                     const j = JSON.parse(data);
                     const d = j.choices && j.choices[0] && j.choices[0].delta;
-                    if (d && d.content) onDelta(d.content);
+                    if (!d) continue;
+                    if (d.content) onDelta('content', d.content);
+                    const r = d.reasoning || d.reasoning_content;
+                    if (r) onDelta('reasoning', r);
                 } catch (e) { /* неповний шматок, чекаємо наступний */ }
             }
         }
+    }
+
+    /* ---------- Вкладка коду ---------- */
+    let codeEl = null;
+
+    function ensureCodePanel() {
+        if (codeEl) return codeEl;
+        codeEl = h('aside', { id: 'akCode', 'aria-label': 'Код' },
+            h('div', { class: 'hd' },
+                h('strong', { text: 'Код' }),
+                h('button', { type: 'button', style: 'margin-left:auto', onclick: copyCode }, 'Копіювати'),
+                h('button', { type: 'button', onclick: () => codeEl.classList.remove('open') }, '×')),
+            h('pre', null, h('code', null)));
+        document.body.appendChild(codeEl);
+        return codeEl;
+    }
+
+    function openCode(text) {
+        const el = ensureCodePanel();
+        el.querySelector('code').textContent = text;
+        el.classList.add('open');
+    }
+
+    function copyCode() {
+        const t = codeEl.querySelector('code').textContent;
+        if (navigator.clipboard) navigator.clipboard.writeText(t).then(() => A.toast('Скопійовано'), () => A.toast('Не вдалося скопіювати'));
     }
 
     /* ---------- Інтерфейс ---------- */
@@ -201,20 +269,37 @@
     }
 
     function addUser(text) {
-        const el = h('div', { class: 'msg user' }, h('div', { class: 'bubble', text }));
-        log.appendChild(el);
+        log.appendChild(h('div', { class: 'msg user' }, h('div', { class: 'bubble', text })));
         toBottom();
     }
 
     function addAi(m) {
         const bubble = h('div', { class: 'bubble' });
-        const el = h('div', { class: 'msg ai' }, A.icon('akorik', 'msg-av'), h('div', { class: 'msg-col' }, bubble));
+        const col = h('div', { class: 'msg-col' }, bubble);
+        const el = h('div', { class: 'msg ai' }, A.icon('akorik', 'msg-av'), col);
         if (m && m.kind === 'image') {
             bubble.classList.add('has-img');
             bubble.append(imageFigure(m.url, m.prompt));
         } else if (m) {
-            bubble.innerHTML = md(m.content);
-            el.querySelector('.msg-col').appendChild(toolButtons(() => m.content));
+            if (m.think) {
+                bubble.append(h('details', { class: 'think' },
+                    h('summary', { text: 'Міркування' }),
+                    h('pre', { text: m.think })));
+            }
+            const ans = h('div', { class: 'ans' });
+            ans.innerHTML = md(m.content);
+            bubble.append(ans);
+            ans.querySelectorAll('pre').forEach(p => {
+                const code = p.textContent;
+                p.after(h('button', { class: 'tool-btn code-open', type: 'button', onclick: () => openCode(code) }, 'Відкрити код'));
+            });
+            if (m.sources && m.sources.length) {
+                col.append(h('div', { class: 'src' },
+                    h('div', { text: 'Джерела:' }),
+                    ...m.sources.map((s, i) => h('div', null,
+                        h('a', { href: s.url, target: '_blank', rel: 'noopener noreferrer' }, '[' + (i + 1) + '] ' + (s.title || s.url))))));
+            }
+            col.append(toolButtons(() => m.content));
         }
         log.appendChild(el);
         return { el, bubble };
@@ -252,22 +337,48 @@
             return;
         }
         setBusy(true);
+
+        // Пошук у мережі: результати додаються в контекст, а джерела показуються під відповіддю
+        let sources = null;
+        const lastUser = [...history].reverse().find(m => m.role === 'user');
+        if (searchOn() && lastUser) {
+            setStatus('Шукає в інтернеті…');
+            try { sources = await webSearch(lastUser.content); }
+            catch (e) { sources = null; }
+            if (!sources) A.toast('Пошук зараз недоступний, відповідаю без нього');
+        }
+
         setStatus('Думає…');
+        const thinkBox = h('details', { class: 'think', hidden: true },
+            h('summary', { text: 'Міркування…' }),
+            h('pre', { class: 'think-pre' }));
+        const ans = h('div', { class: 'ans' },
+            h('span', { class: 'typing' }, h('i'), h('i'), h('i')));
         const typing = h('div', { class: 'msg ai' }, A.icon('akorik', 'msg-av'),
-            h('div', { class: 'msg-col' }, h('div', { class: 'bubble' }, h('span', { class: 'typing' }, h('i'), h('i'), h('i')))));
+            h('div', { class: 'msg-col' }, h('div', { class: 'bubble' }, thinkBox, ans)));
         log.appendChild(typing);
         toBottom();
 
         controller = new AbortController();
         let text = '';
+        let think = '';
         let timer = 0;
-        const bubble = typing.querySelector('.bubble');
         const paint = () => {
             timer = 0;
             const stick = nearBottom();
-            bubble.innerHTML = md(text);
+            if (think) {
+                thinkBox.hidden = false;
+                thinkBox.querySelector('.think-pre').textContent = think;
+            }
+            ans.innerHTML = md(text);
             if (stick) toBottom();
         };
+        const schedule = () => { if (!timer) timer = setTimeout(paint, 45); };
+
+        const sysText = SYSTEM + (sources
+            ? '\n\nРезультати пошуку (посилайся на них як [1], [2] тощо; якщо нічого релевантного немає, скажи про це):\n' +
+              sources.map((s, i) => '[' + (i + 1) + '] ' + s.title + ' — ' + s.url + '\n' + (s.snippet || '')).join('\n\n')
+            : '');
 
         try {
             const headers = { 'Content-Type': 'application/json' };
@@ -279,17 +390,21 @@
                 body: JSON.stringify({
                     mode: getMode(),
                     model: A.cfg.AI_MODEL,
-                    messages: [{ role: 'system', content: SYSTEM }].concat(textHistory()),
+                    messages: [{ role: 'system', content: sysText }].concat(textHistory()),
                     stream: true,
                     temperature: 0.7,
+                    think: thinkOn(),
                     max_completion_tokens: 1200,
-                    reasoning_effort: 'low'
+                    reasoning_effort: thinkOn() ? 'high' : 'low'
                 })
             });
             if (!res.ok) throw Object.assign(new Error('http'), { status: res.status });
 
             if (res.body && res.body.getReader) {
-                await readStream(res, delta => { text += delta; if (!timer) timer = setTimeout(paint, 45); });
+                await readStream(res, (kind, chunk) => {
+                    if (kind === 'content') text += chunk; else think += chunk;
+                    schedule();
+                });
             } else {
                 const j = await res.json();
                 text = (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '';
@@ -297,7 +412,7 @@
             clearTimeout(timer);
             if (!text.trim()) throw Object.assign(new Error('empty'), { status: 0, empty: true });
             typing.remove();
-            history.push({ role: 'assistant', content: text.trim() });
+            history.push({ role: 'assistant', content: text.trim(), think: think.trim() || undefined, sources: sources || undefined });
             save();
             addAi(history[history.length - 1]);
             toBottom();
@@ -306,7 +421,7 @@
             typing.remove();
             if (e.name === 'AbortError') {
                 if (text.trim()) {
-                    history.push({ role: 'assistant', content: text.trim() });
+                    history.push({ role: 'assistant', content: text.trim(), think: think.trim() || undefined, sources: sources || undefined });
                     save();
                     addAi(history[history.length - 1]);
                 }
@@ -384,6 +499,24 @@
         input.style.height = Math.min(input.scrollHeight, 130) + 'px';
     }
 
+    function plugBtn(label, key, disabledWhen) {
+        const on = !!A.store.get(key, false);
+        const b = h('button', {
+            class: 'plug' + (on ? ' on' : ''),
+            type: 'button',
+            'aria-pressed': String(on),
+            disabled: !!disabledWhen,
+            title: disabledWhen ? 'Потрібен AI_PROXY_URL у js/config.js' : '',
+            onclick: () => {
+                const v = !A.store.get(key, false);
+                A.store.set(key, v);
+                b.classList.toggle('on', v);
+                b.setAttribute('aria-pressed', String(v));
+            }
+        }, label);
+        return b;
+    }
+
     function init() {
         log = A.$('#ai-log');
         form = A.$('#ai-form');
@@ -392,6 +525,8 @@
         statusEl = A.$('#ai-status');
         suggestEl = A.$('#ai-suggest');
         if (!log || !form) return;
+
+        injectCss();
 
         history = A.store.get('chat2', []);
         if (!Array.isArray(history)) history = [];
@@ -405,7 +540,13 @@
             h('option', { value: 'general' }, 'Загальний'),
             h('option', { value: 'code' }, 'Код'));
         modeSel.value = getMode();
+
+        const plugins = h('div', { class: 'ai-plugins' },
+            plugBtn('🔍 Пошук', 'ai_search', !A.cfg.AI_PROXY_URL),
+            plugBtn('🧠 Думай', 'ai_think', false));
+
         form.parentNode.insertBefore(modeSel, form);
+        form.parentNode.insertBefore(plugins, form);
 
         SUGGESTIONS.forEach(s => suggestEl.appendChild(h('button', { class: 'chip', type: 'button', onclick: () => ask(s) }, s)));
 
