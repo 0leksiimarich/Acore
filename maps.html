@@ -1,146 +1,276 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1a4a84">
-    <title>AMaps</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #f4f5f7; color: #333; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a4a84">
+<title>AMaps</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    [hidden] { display: none !important; }
+    html, body { height: 100%; }
+    body { display: flex; flex-direction: column; background: #eef1f5; color: #222; overflow: hidden; }
 
-        header { background: #1a4a84; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-        .logo { font-size: 20px; font-weight: bold; }
-        .nav-links { display: flex; gap: 15px; }
-        .nav-links a { color: white; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 4px; transition: background 0.2s; }
-        .nav-links a:hover { background: rgba(255,255,255,0.2); }
+    header { background: #1a4a84; color: #fff; padding: 8px 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; flex-shrink: 0; }
+    header .logo { font-weight: 700; font-size: 16px; }
+    header a { color: #fff; text-decoration: none; font-size: 13px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.15); }
+    .search { display: flex; flex: 1; min-width: 180px; max-width: 520px; gap: 6px; }
+    .search input { flex: 1; padding: 8px 10px; border: none; border-radius: 6px; font-size: 14px; outline: none; min-width: 0; }
+    button { font-size: 14px; border: none; border-radius: 6px; cursor: pointer; }
+    .btn { background: #fff; color: #1a4a84; padding: 8px 12px; font-weight: 600; }
+    .btn.ghost { background: rgba(255,255,255,.15); color: #fff; }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
+    .layout { flex: 1; display: flex; min-height: 0; }
+    aside { width: 320px; background: #fff; border-right: 1px solid #d6dde6; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; }
+    #status { padding: 10px 12px; font-size: 13px; color: #555; border-bottom: 1px solid #eef1f5; }
+    #list { overflow-y: auto; flex: 1; }
+    .row { padding: 10px 12px; border-bottom: 1px solid #f0f2f5; cursor: pointer; }
+    .row:hover { background: #f5f8fc; }
+    .row .nm { font-weight: 600; font-size: 14px; color: #1a4a84; }
+    .row .mt { font-size: 12px; color: #777; margin-top: 2px; }
 
-        .controls { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-        .search-box { display: flex; gap: 8px; }
-        .search-box input { flex: 1; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; outline: none; }
-        .search-box input:focus { border-color: #1a4a84; box-shadow: 0 0 0 3px rgba(26,74,132,0.1); }
-        .search-box button { padding: 10px 20px; background: #1a4a84; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .search-box button:hover { background: #0056b3; }
+    .mapwrap { flex: 1; position: relative; min-width: 0; }
+    #map { position: absolute; inset: 0; }
 
-        .cities { margin-top: 12px; }
-        .cities-title { font-size: 12px; font-weight: bold; color: #666; margin-bottom: 8px; }
-        .city-btn { display: inline-block; padding: 6px 12px; background: #eef2f5; border: 1px solid #ccc; border-radius: 20px; font-size: 12px; margin-right: 6px; margin-bottom: 6px; cursor: pointer; transition: all 0.2s; }
-        .city-btn:hover { background: #1a4a84; color: white; }
+    #card { position: absolute; top: 12px; right: 12px; width: 360px; max-height: calc(100% - 24px); overflow-y: auto; background: #fff; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,.2); z-index: 500; padding: 14px 16px; }
+    #card .x { position: absolute; top: 8px; right: 10px; background: none; font-size: 22px; color: #777; }
+    #card h2 { font-size: 18px; color: #1a4a84; padding-right: 26px; }
+    #card .cat { font-size: 13px; color: #666; margin-top: 2px; }
+    #card .info { margin-top: 10px; font-size: 14px; line-height: 1.5; }
+    #card .info div { margin-top: 6px; }
+    #card .info b { color: #444; }
+    #card .desc { margin-top: 10px; font-size: 14px; color: #333; background: #f5f8fc; padding: 10px; border-radius: 8px; }
+    #card .warn { margin-top: 10px; font-size: 12px; color: #8a5a00; background: #fff8e6; padding: 8px; border-radius: 8px; }
+    #card .note { margin-top: 8px; font-size: 11px; color: #888; }
+    #card .route { display: inline-block; margin-top: 12px; background: #1a4a84; color: #fff; padding: 9px 14px; border-radius: 8px; text-decoration: none; font-size: 14px; }
 
-        #map { height: 500px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-
-        footer { text-align: center; padding: 15px; color: #999; font-size: 12px; margin-top: 20px; }
-
-        .leaflet-popup-content { font-size: 13px; line-height: 1.4; }
-    </style>
+    @media (max-width: 760px) {
+        .layout { flex-direction: column; }
+        aside { width: 100%; height: 38%; border-right: none; border-bottom: 1px solid #d6dde6; }
+        #card { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 55%; }
+    }
+</style>
 </head>
 <body>
-    <header>
-        <div class="logo">AMaps</div>
-        <div class="nav-links">
-            <a href="index.html">← На головну</a>
-        </div>
-    </header>
-
-    <div class="container">
-        <div class="controls">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Шукати місцевість (назва)...">
-                <button onclick="searchLocation()">Шукати</button>
-            </div>
-
-            <div class="cities">
-                <div class="cities-title">🇺🇦 Популярні міста України:</div>
-                <button class="city-btn" onclick="goToCity(49.4444, 32.0598, 'Черкаси')">Черкаси</button>
-                <button class="city-btn" onclick="goToCity(50.4501, 30.5234, 'Київ')">Київ</button>
-                <button class="city-btn" onclick="goToCity(49.5832, 34.8008, 'Полтава')">Полтава</button>
-                <button class="city-btn" onclick="goToCity(48.0, 37.8, 'Донецьк')">Донецьк</button>
-                <button class="city-btn" onclick="goToCity(49.6, 36.6, 'Харків')">Харків</button>
-                <button class="city-btn" onclick="goToCity(46.4775, 30.7326, 'Одеса')">Одеса</button>
-                <button class="city-btn" onclick="goToCity(49.8, 24.0, 'Львів')">Львів</button>
-                <button class="city-btn" onclick="goToCity(48.5, 25.3, 'Івано-Франківськ')">Івано-Франківськ</button>
-                <button class="city-btn" onclick="goToCity(50.63, 26.25, 'Рівне')">Рівне</button>
-                <button class="city-btn" onclick="goToCity(51.5, 31.3, 'Чернігів')">Чернігів</button>
-            </div>
-        </div>
-
-        <div id="map"></div>
+<header>
+    <div class="logo">📍 AMaps</div>
+    <a href="index.html">← Головна</a>
+    <div class="search">
+        <input id="q" type="text" placeholder="Знайти місце, наприклад: ювелірна фабрика" maxlength="80" aria-label="Пошук місця">
+        <button class="btn" id="go" type="button">Знайти</button>
     </div>
+    <button class="btn ghost" id="near" type="button">📍 Поруч</button>
+</header>
 
-    <footer>
-        Карти через OpenStreetMap • Acore Corp ©2026
-    </footer>
+<div class="layout">
+    <aside>
+        <div id="status">Натисніть «Поруч», щоб побачити місця навколо вас, або введіть назву.</div>
+        <div id="list"></div>
+    </aside>
+    <div class="mapwrap">
+        <div id="map"></div>
+        <div id="card" hidden>
+            <button class="x" id="cardClose" type="button" aria-label="Закрити">×</button>
+            <div id="cbody"></div>
+        </div>
+    </div>
+</div>
 
-    <script>
-        // Ініціалізація карти (Черкаси, обласний центр)
-        const map = L.map('map').setView([49.4444, 32.0598], 12);
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/config.js"></script>
+<script>
+(function () {
+    'use strict';
+    const CFG = window.ACORE_CONFIG || {};
+    const W = (CFG.MAPS_WORKER_URL || '').replace(/\/+$/, '');
+    const CITY = CFG.CITY_DEFAULT || { lat: 49.4444, lon: 32.0598, name: 'Черкаси' };
+    const $ = id => document.getElementById(id);
 
-        // OpenStreetMap слой
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap',
-            maxZoom: 19
-        }).addTo(map);
+    const map = L.map('map').setView([CITY.lat, CITY.lon], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+    const placesLayer = L.layerGroup().addTo(map);
+    const meLayer = L.layerGroup().addTo(map);
+    let me = null;
 
-        // Маркер для Черкас
-        const marker = L.marker([49.4444, 32.0598]).addTo(map)
-            .bindPopup('<b>Черкаси</b><br>Помірний клімат, красива природа 🌳');
+    const status = text => { $('status').textContent = text; };
+    const fmtDist = m => (m < 1000 ? m + ' м' : (m / 1000).toFixed(1) + ' км');
+    const haversine = (a, b) => {
+        const R = 6371000, toR = x => x * Math.PI / 180;
+        const dLat = toR(b.lat - a.lat), dLon = toR(b.lon - a.lon);
+        const x = Math.sin(dLat / 2) ** 2 + Math.cos(toR(a.lat)) * Math.cos(toR(b.lat)) * Math.sin(dLon / 2) ** 2;
+        return Math.round(2 * R * Math.asin(Math.sqrt(x)));
+    };
 
-        // Геолокація користувача (якщо дозволено)
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                pos => {
-                    const { latitude, longitude } = pos.coords;
-                    const userMarker = L.marker([latitude, longitude]).addTo(map)
-                        .bindPopup('<b>Ваша позиція 📍</b>');
-                    map.setView([latitude, longitude], 12);
-                },
-                err => console.log('Геолокація не доступна')
-            );
-        }
+    async function api(path, opts) {
+        if (!W) throw new Error('Карти ще не підключені: власнику сайту вкажіть MAPS_WORKER_URL у js/config.js');
+        const r = await fetch(W + path, opts);
+        if (!r.ok) throw new Error('Сервер карт відповів помилкою (' + r.status + ')');
+        return r.json();
+    }
 
-        // Функції
-        function goToCity(lat, lng, name) {
-            map.setView([lat, lng], 12);
-            L.marker([lat, lng]).addTo(map).bindPopup(`<b>${name}</b>`).openPopup();
-        }
-
-        function searchLocation() {
-            const query = document.getElementById('searchInput').value.trim();
-            if (!query) return;
-
-            // Запит "Черкаси" = обласний центр (без плутанини з селами)
-            const city = (window.ACORE_CONFIG && window.ACORE_CONFIG.CITY_DEFAULT) || { name: 'Черкаси', lat: 49.4444, lon: 32.0598 };
-            if (query.toLowerCase() === city.name.toLowerCase()) {
-                showPlace(city.lat, city.lon, city.name + ', Черкаська область');
-                return;
-            }
-
-            // Пошук тільки в Україні; спершу міста, потім інші результати
-            const url = 'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(query) +
-                '&format=json&limit=5&countrycodes=ua&accept-language=uk';
-            fetch(url)
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.length) { alert('Місцевість не знайдена'); return; }
-                    const best = data.find(d => ['city', 'town'].includes(d.type)) || data[0];
-                    showPlace(parseFloat(best.lat), parseFloat(best.lon), best.display_name);
-                })
-                .catch(() => alert('Помилка при пошуку'));
-        }
-
-        function showPlace(lat, lon, name) {
-            map.setView([lat, lon], 12);
-            L.marker([lat, lon]).addTo(map).bindPopup('<b>' + name + '</b>').openPopup();
-        }
-
-        // Enter для пошуку
-        document.getElementById('searchInput').addEventListener('keypress', e => {
-            if (e.key === 'Enter') searchLocation();
+    function renderList(items) {
+        const box = $('list');
+        box.textContent = '';
+        placesLayer.clearLayers();
+        items.forEach(it => {
+            const row = document.createElement('div');
+            row.className = 'row';
+            const nm = document.createElement('div');
+            nm.className = 'nm';
+            nm.textContent = it.name;
+            const mt = document.createElement('div');
+            mt.className = 'mt';
+            mt.textContent = (it.category || 'місце') + (it.distance != null ? ' · ' + fmtDist(it.distance) : '');
+            row.append(nm, mt);
+            row.addEventListener('click', () => selectItem(it));
+            box.appendChild(row);
+            L.marker([it.lat, it.lon]).addTo(placesLayer).bindTooltip(it.name).on('click', () => selectItem(it));
         });
-    </script>
+    }
+
+    async function nearby(lat, lon, q) {
+        status('Шукаю…');
+        try {
+            const d = await api('/places?lat=' + lat + '&lon=' + lon + '&r=2000' + (q ? '&q=' + encodeURIComponent(q) : ''));
+            renderList(d.items);
+            status(d.items.length ? 'Знайдено: ' + d.items.length + ' (радіус 2 км)' : 'Поруч нічого не знайдено.');
+            return d.items.length;
+        } catch (e) {
+            status(e.message);
+            return 0;
+        }
+    }
+
+    function selectItem(it) {
+        map.setView([it.lat, it.lon], 17);
+        openCard(it);
+    }
+
+    async function openCard(it) {
+        const card = $('card');
+        const body = $('cbody');
+        card.hidden = false;
+        body.textContent = 'Завантаження даних…';
+        try {
+            const d = await api('/card', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ place: it })
+            });
+            renderCard(d, it);
+        } catch (e) {
+            body.textContent = e.message;
+        }
+    }
+
+    function infoRow(label, value, href) {
+        const div = document.createElement('div');
+        const b = document.createElement('b');
+        b.textContent = label + ': ';
+        div.appendChild(b);
+        if (href) {
+            const a = document.createElement('a');
+            a.href = href;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.textContent = value;
+            div.appendChild(a);
+        } else {
+            div.appendChild(document.createTextNode(value));
+        }
+        return div;
+    }
+
+    function renderCard(d, it) {
+        const body = $('cbody');
+        body.textContent = '';
+        const h = document.createElement('h2');
+        h.textContent = d.name;
+        body.appendChild(h);
+
+        const cat = document.createElement('div');
+        cat.className = 'cat';
+        cat.textContent = (d.category || 'місце') + (it.distance != null ? ' · ' + fmtDist(it.distance) + ' від вас' : '');
+        body.appendChild(cat);
+
+        const info = document.createElement('div');
+        info.className = 'info';
+        if (d.address) info.appendChild(infoRow('Адреса', d.address));
+        if (d.hours) info.appendChild(infoRow('Години', d.hours));
+        if (d.phone) info.appendChild(infoRow('Телефон', d.phone, 'tel:' + d.phone.replace(/\s+/g, '')));
+        if (d.website) info.appendChild(infoRow('Сайт', d.website.replace(/^https?:\/\//, ''), d.website.startsWith('http') ? d.website : 'https://' + d.website));
+        body.appendChild(info);
+
+        if (d.description) {
+            const desc = document.createElement('div');
+            desc.className = 'desc';
+            desc.textContent = d.description;
+            body.appendChild(desc);
+        }
+
+        if (d.unverified && d.unverified.length) {
+            const w = document.createElement('div');
+            w.className = 'warn';
+            w.textContent = 'У відкритих даних немає: ' + d.unverified.join(', ') + '. Уточніть на місці або на сайті.';
+            body.appendChild(w);
+        }
+
+        const route = document.createElement('a');
+        route.className = 'route';
+        route.target = '_blank';
+        route.rel = 'noopener noreferrer';
+        route.href = 'https://www.google.com/maps/dir/?api=1&destination=' + d.lat + ',' + d.lon;
+        route.textContent = 'Маршрут';
+        body.appendChild(route);
+
+        const note = document.createElement('div');
+        note.className = 'note';
+        note.textContent = d.note || '';
+        body.appendChild(note);
+    }
+
+    $('cardClose').addEventListener('click', () => { $('card').hidden = true; });
+
+    $('near').addEventListener('click', () => {
+        if (!navigator.geolocation) { status('Геолокація недоступна у цьому браузері.'); return; }
+        status('Визначаю ваше місце…');
+        navigator.geolocation.getCurrentPosition(p => {
+            me = { lat: p.coords.latitude, lon: p.coords.longitude };
+            meLayer.clearLayers();
+            L.circleMarker([me.lat, me.lon], { radius: 7, color: '#1a4a84', fillColor: '#1a4a84', fillOpacity: .8 }).addTo(meLayer);
+            map.setView([me.lat, me.lon], 15);
+            nearby(me.lat, me.lon, '');
+        }, () => {
+            status('Не вдалося визначити місце. Дозвольте доступ до геолокації або введіть назву.');
+        }, { enableHighAccuracy: true, timeout: 10000 });
+    });
+
+    async function doSearch() {
+        const q = $('q').value.trim();
+        if (!q) return;
+        const c = me || { lat: CITY.lat, lon: CITY.lon };
+        const found = await nearby(c.lat, c.lon, q);
+        if (found) return;
+        status('Шукаю по всьому місту…');
+        try {
+            const s = await api('/search?q=' + encodeURIComponent(q));
+            if (!s.items.length) { status('Нічого не знайдено. Спробуйте іншу назву.'); return; }
+            const items = s.items.map(x => ({ ...x, distance: haversine(c, x) }));
+            renderList(items);
+            map.setView([items[0].lat, items[0].lon], 15);
+            status('Знайдено: ' + items.length);
+        } catch (e) {
+            status(e.message);
+        }
+    }
+
+    $('go').addEventListener('click', doSearch);
+    $('q').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+    map.on('click', () => { $('card').hidden = true; });
+
+    status('Натисніть «Поруч», щоб побачити місця навколо вас, або введіть назву.');
+})();
+</script>
 </body>
 </html>
