@@ -146,7 +146,11 @@
     }
 
     /* ---------- Налаштування і мережа ---------- */
-    const getMode = () => (A.store.get('ai_mode', 'general') === 'code' ? 'code' : 'general');
+    const MODE_NAMES = { general: 'Загальний', code: 'Код', orca: 'Орка' };
+    const getMode = () => {
+        const m = A.store.get('ai_mode', 'general');
+        return MODE_NAMES[m] ? m : 'general';
+    };
     const searchOn = () => !!A.store.get('ai_search', false) && !!(A.cfg.AI_PROXY_URL || '').trim();
     const thinkOn = () => !!A.store.get('ai_think', false);
 
@@ -535,10 +539,11 @@
             class: 'ai-mode',
             'aria-label': 'Режим ШІ',
             style: 'margin-bottom:6px; padding:6px; border:1px solid #ccc; border-radius:6px;',
-            onchange: e => { A.store.set('ai_mode', e.target.value); setStatus('Режим: ' + (e.target.value === 'code' ? 'Код' : 'Загальний')); }
+            onchange: e => { A.store.set('ai_mode', e.target.value); setStatus('Режим: ' + (MODE_NAMES[e.target.value] || 'Загальний')); }
         },
             h('option', { value: 'general' }, 'Загальний'),
-            h('option', { value: 'code' }, 'Код'));
+            h('option', { value: 'code' }, 'Код'),
+            h('option', { value: 'orca' }, 'Орка'));
         modeSel.value = getMode();
 
         const plugins = h('div', { class: 'ai-plugins' },
