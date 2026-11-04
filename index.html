@@ -2,9 +2,9 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#1a4a84">
-    <meta name="description" content="Українська альтернатива Google. Чат з ШІ, новини, пошта, музика, відео, погода, все у одному">
+    <meta name="description" content="Українська альтернатива Google. Чат з ШІ, новини, пошта, ігри, погода">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.webmanifest">
@@ -115,6 +115,48 @@
         .chat-input-area { display: flex; gap: 4px; }
         .chat-input-area input { flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
         .chat-input-area button { padding: 8px 12px; background: #1a4a84; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
+        /* ===== Мобільна адаптація (телефон) ===== */
+        @media (max-width: 640px) {
+            header { padding: 10px 12px; gap: 8px; }
+            .logo { font-size: 20px; }
+            .slogan { display: none; }
+            .search-box { max-width: none; width: 100%; }
+            .search-box input { font-size: 16px; padding: 10px 12px; min-height: 40px; }
+            .search-box button { min-height: 40px; padding: 0 14px; }
+
+            .top-tabs { justify-content: flex-start; padding: 6px 8px; gap: 6px; }
+            .tab-btn { padding: 9px 13px; font-size: 13px; min-height: 40px; }
+
+            .container { margin: 8px auto; padding: 0 8px; }
+            .card { padding: 12px; margin-bottom: 12px; border-radius: 12px; }
+            .card h3 { font-size: 15px; }
+
+            input, textarea, select { font-size: 16px; }
+            .btn-action { min-height: 44px; font-size: 15px; }
+            .translator-box textarea { height: 90px; }
+
+            .news-item { gap: 8px; }
+            .news-item.lead .news-img { height: 170px; }
+            .news-img { width: 92px; height: 60px; }
+            .news-title { font-size: 14px; }
+
+            .ai-chat-box { height: 58vh; min-height: 280px; }
+            .chat-msg { max-width: 92%; font-size: 15px; }
+            .ai-header-box { padding: 8px 10px; }
+            #ai-form { flex-wrap: wrap; }
+            #ai-form input { min-width: 0; }
+            #ai-form .btn-action { min-height: 44px; }
+
+            .game-canvas { height: 220px; }
+            .mines-grid { grid-template-columns: repeat(8, 30px); }
+            .mines-cell { width: 30px; height: 30px; }
+            .ttt-cell { width: 64px; height: 64px; }
+
+            .side-chat-drawer { width: 86vw; right: -88vw; top: 96px; height: 60vh; }
+            .chat-messages { height: 40vh; }
+            .chat-input-area input { font-size: 16px; min-height: 40px; }
+        }
     </style>
     <link rel="stylesheet" href="css/chat.css">
 </head>
@@ -149,6 +191,7 @@
         <a href="maps.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">🗺️ A-Maps</a>
         <a href="forum.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">💬 A-Write</a>
         <a href="music.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">🎵 A-Music</a>
+        <a href="video.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">🎬 A-Video</a>
         <a href="slides.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">📊 A-Presentation</a>
         <a href="atable.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">▦ A-Table</a>
     </div>
