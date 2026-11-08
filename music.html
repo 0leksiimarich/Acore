@@ -288,7 +288,7 @@
     <div class="guest" id="guestHint">Слухати можна без входу. Щоб ставити лайки, підписуватись на виконавців і писати коментарі, увійдіть в акаунт на головній сторінці.</div>
 
     <section class="panel" id="uploadCard" hidden>
-        <h3>Завантажити трек</h3>
+        <h3>Завантажити трек <button type="button" class="btn ghost small" style="float:right" aria-label="Закрити" onclick="document.getElementById('uploadCard').hidden=true">×</button></h3>
         <form id="uploadForm" novalidate>
             <label>MP3-файли (можна кілька одразу, до 5 MB кожен)
                 <input type="file" id="file" accept="audio/mpeg,audio/mp3,.mp3" multiple>
@@ -567,6 +567,7 @@
         const row = document.createElement('div');
         row.className = 'track';
         row.dataset.id = t.id;
+        row.dataset.pid = t.profile_id || '';
         const ok = t.status === 'approved';
         const thumb = art(t, 'thumb');
         const tags = [
@@ -662,6 +663,28 @@
         ]);
         (l.data || []).forEach(x => liked.add(x.track_id));
         (f.data || []).forEach(x => follows.add(x.artist));
+    }
+
+    // Позначка «🎬 Кліп» біля треку + приховати треки заблокованих профілів
+    async function decorateClips() {
+        const blocked = new Set(allProfiles.filter(p => p.blocked).map(p => p.id));
+        document.querySelectorAll('#list .track').forEach(r => {
+            if (r.dataset.pid && blocked.has(r.dataset.pid)) r.style.display = 'none';
+        });
+        const { data } = await sb.from('videos').select('id,track_id').eq('status', 'approved').not('track_id', 'is', null);
+        const map = new Map((data || []).map(v => [v.track_id, v.id]));
+        document.querySelectorAll('#list .track').forEach(r => {
+            const vid = map.get(r.dataset.id);
+            const tags = r.querySelector('.tags');
+            if (vid && tags && !r.querySelector('.clip')) {
+                const a = document.createElement('a');
+                a.className = 'tag clip';
+                a.href = 'video.html?v=' + vid;
+                a.textContent = '🎬 Кліп';
+                a.style.textDecoration = 'none';
+                tags.appendChild(a);
+            }
+        });
     }
 
     function setTabs() {
@@ -949,6 +972,7 @@
 
     /* ---------- Завантаження треку ---------- */
     $('toggleUpload').addEventListener('click', () => { $('uploadCard').hidden = !$('uploadCard').hidden; });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') $('uploadCard').hidden = true; });
 
     function cleanName(fname) {
         return fname.replace(/\.mp3$/i, '').replace(/_+/g, ' ').trim().slice(0, 120) || 'Без назви';
@@ -1539,6 +1563,10 @@
     }
     $('logoHome').addEventListener('click', goHome);
     $('logoHome').addEventListener('keydown', e => { if (e.key === 'Enter') goHome(); });
+
+    // Після кожного оновлення списку — позначки кліпів і фільтр заблокованих
+    const _loadBase = load;
+    load = async function () { await _loadBase(); decorateClips(); };
 
     init();
 })();
