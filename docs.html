@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1a4a84">
-<title>ADocx</title>
+<title>A-Docx — Документи</title>
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
     body { background: #f4f5f7; color: #333; height: 100vh; display: flex; flex-direction: column; }
@@ -74,11 +74,30 @@
         .paper { padding: 20px 16px; }
         .paper-wrap { padding: 8px; }
     }
-</style>
+    
+        /* ===== Документи на телефоні ===== */
+        @media (max-width: 720px) {
+            header { padding: 8px 10px; }
+            .toolbar { flex-wrap: nowrap; overflow-x: auto; padding: 6px 8px; }
+            .toolbar button, .toolbar select { flex-shrink: 0; }
+            .paper-wrap { padding: 6px; }
+            .paper { padding: 16px 14px; min-height: 60vh; }
+            #doc-title { font-size: 18px; }
+            .meta-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 60px; }
+            .meta-row button { flex-shrink: 0; }
+            .status-bar { font-size: 11px; }
+        }
+
+        /* Друга кнопка «Головна» на телефоні (знизу зліва) */
+        .mhome { display: none; }
+        @media (max-width: 760px) {
+            .mhome { display: flex; position: fixed; left: 10px; bottom: 10px; width: 44px; height: 44px; border-radius: 50%; background: #1a4a84; color: #fff; align-items: center; justify-content: center; text-decoration: none; font-size: 22px; z-index: 500; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+        }
+    </style>
 </head>
 <body>
 <header>
-    <div class="logo">ADocx</div>
+    <div class="logo">A-Docx</div>
     <a href="index.html">← Назад на Acore</a>
     <div class="who" id="who"></div>
 </header>
@@ -622,5 +641,6 @@ import TableCell from 'https://esm.sh/@tiptap/extension-table-cell@2';
     pullCloud();
 })();
 </script>
+    <a class="mhome" href="index.html" aria-label="Головна">⌂</a>
 </body>
 </html>
