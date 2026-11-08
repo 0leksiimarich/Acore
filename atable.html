@@ -31,7 +31,26 @@
     td.num { text-align: right; }
     td.err { color: #b42318; }
     .status { font-size: 12px; color: #666; margin-left: auto; }
-</style>
+    
+        /* ===== Таблиці на телефоні ===== */
+        @media (max-width: 640px) {
+            header { padding: 8px 10px; gap: 8px; }
+            header input { width: 100%; margin-left: 0; }
+            .bar { flex-wrap: nowrap; overflow-x: auto; padding: 6px 8px; }
+            .bar button { flex-shrink: 0; }
+            .fx { padding: 6px 8px; }
+            #name { width: 56px; }
+            #fxIn { font-size: 16px; min-width: 0; }
+            th, td { min-width: 80px; max-width: 80px; font-size: 13px; }
+            .grid-wrap { padding-bottom: 60px; }
+        }
+
+        /* Друга кнопка «Головна» на телефоні (знизу зліва) */
+        .mhome { display: none; }
+        @media (max-width: 760px) {
+            .mhome { display: flex; position: fixed; left: 10px; bottom: 10px; width: 44px; height: 44px; border-radius: 50%; background: #1a4a84; color: #fff; align-items: center; justify-content: center; text-decoration: none; font-size: 22px; z-index: 500; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+        }
+    </style>
 </head>
 <body>
 <header>
@@ -396,5 +415,6 @@
     render();
 })();
 </script>
+    <a class="mhome" href="index.html" aria-label="Головна">⌂</a>
 </body>
 </html>
