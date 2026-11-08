@@ -150,6 +150,7 @@
     <button class="tab" data-tab="channels" data-ic="👥" type="button">👥 Канали</button>
     <button class="tab" data-tab="mine" data-ic="🎞" type="button" id="tabMine" hidden>🎞 Мої відео</button>
     <button class="tab" data-tab="review" data-ic="⏳" type="button" id="tabReview" hidden>⏳ На перевірці</button>
+    <button class="tab" data-tab="accounts" type="button" id="tabAccounts" hidden>🛂 Аккаунти</button>
     <hr>
     <a class="tab link" href="music.html" data-ic="🎵">🎵 Музика (A-Music)</a>
     <a class="tab link" href="index.html" data-ic="⌂">🏠 Головна Acore</a>
@@ -160,7 +161,7 @@
 </div>
 
 <section class="panel" id="upCard" hidden>
-    <h3>Нове відео</h3>
+    <h3>Нове відео <button type="button" id="upClose" class="btn ghost small" style="float:right" aria-label="Закрити">×</button></h3>
     <form id="upForm" novalidate>
         <label>Відеофайл (MP4 або WebM, до 20 MB, до 3 хвилин)
             <input type="file" id="vfile" accept="video/mp4,video/webm">
@@ -173,6 +174,9 @@
         </label>
         <label>Від імені профілю
             <select id="vprof"></select>
+        </label>
+        <label>Кліп до треку (необов'язково, треки вашого профілю)
+            <select id="vtrack"></select>
         </label>
         <label class="check">
             <input type="checkbox" id="vrights">
@@ -247,7 +251,67 @@
     const getList = k => { try { const a = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
     const setList = (k, a) => { try { localStorage.setItem(k, JSON.stringify(a)); } catch (e) { /* мало місця */ } };
 
-    function visible() {
+    function isBlocked(pid) { const p = profiles.find(x => x.id === pid); return !!(p && p.blocked); }
+    function visible() { return visibleRaw().filter(v => !isBlocked(v.profile_id)); }
+
+    let tracksAll = [];
+    async function loadTracksForLink() {
+        const { data } = await sb.from('tracks').select('id,title,profile_id,status').eq('status', 'approved');
+        tracksAll = data || [];
+        fillTrackSelect();
+    }
+    function fillTrackSelect() {
+        const sel = $('vtrack');
+        if (!sel) return;
+        const pid = $('vprof').value;
+        sel.textContent = '';
+        const none = document.createElement('option');
+        none.value = '';
+        none.textContent = 'Без кліпу (просто відео)';
+        sel.appendChild(none);
+        tracksAll.filter(t => t.profile_id === pid).forEach(t => {
+            const o = document.createElement('option');
+            o.value = t.id;
+            o.textContent = t.title;
+            sel.appendChild(o);
+        });
+    }
+
+    function renderAccounts() {
+        const main = $('main');
+        main.textContent = '';
+        const h = document.createElement('h2');
+        h.textContent = 'Аккаунти виконавців';
+        h.style.padding = '16px';
+        main.appendChild(h);
+        if (!profiles.length) { main.insertAdjacentHTML('beforeend', '<div class="empty">Профілів ще немає.</div>'); return; }
+        profiles.forEach(p => {
+            const row = document.createElement('div');
+            row.className = 'ch-card';
+            const info = document.createElement('div');
+            info.style.flex = '1';
+            const nm = document.createElement('div');
+            nm.style.fontWeight = '700';
+            nm.textContent = p.name + (p.blocked ? ' · ЗАБЛОКОВАНО' : '');
+            const c = document.createElement('div');
+            c.className = 'vmeta';
+            c.textContent = 'Відео: ' + videos.filter(v => v.profile_id === p.id).length + ' · власник: ' + String(p.user_id).slice(0, 8);
+            info.append(nm, c);
+            const b = document.createElement('button');
+            b.className = 'btn small ' + (p.blocked ? 'ok' : 'ghost');
+            b.textContent = p.blocked ? 'Розблокувати' : 'Заблокувати';
+            b.addEventListener('click', async () => {
+                const { error } = await sb.from('artist_profiles').update({ blocked: !p.blocked }).eq('id', p.id);
+                if (error) { alert('Помилка: ' + error.message); return; }
+                await loadProfiles();
+                renderGrid();
+            });
+            row.append(info, b);
+            main.appendChild(row);
+        });
+    }
+
+    function visibleRaw() {
         if (tab === 'mine') return videos.filter(v => user && v.user_id === user.id);
         if (tab === 'review') return videos.filter(v => v.status === 'pending');
         if (tab === 'history') {
@@ -350,6 +414,7 @@
     function renderGrid() {
         const main = $('main');
         main.textContent = '';
+        if (tab === 'accounts') { renderAccounts(); return; }
         if (tab === 'channels' || tab === 'channel') { renderChannels(); return; }
         const list = visible();
         if (!list.length) {
@@ -524,6 +589,8 @@
     }
 
     $('toggleUp').addEventListener('click', () => { $('upCard').hidden = !$('upCard').hidden; });
+    $('upClose').addEventListener('click', () => { $('upCard').hidden = true; });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') $('upCard').hidden = true; });
 
     $('upForm').addEventListener('submit', async e => {
         e.preventDefault();
@@ -576,7 +643,7 @@
             const { error } = await sb.from('videos').insert({
                 user_id: user.id, profile_id: pid, title, description: desc,
                 file_path: vpath, thumb_path: tpath,
-                size_mb: mb.toFixed(3), duration_s: Math.round(meta.duration), status: 'pending'
+                size_mb: mb.toFixed(3), duration_s: Math.round(meta.duration), status: 'pending', track_id: ($('vtrack').value || null)
             });
             if (error) {
                 await delVideoFiles(vpath, tpath);
@@ -658,9 +725,12 @@
         $('who').textContent = user ? user.email : 'Гість';
         $('tabMine').hidden = !user;
         $('tabReview').hidden = !isAdmin;
+        $('tabAccounts').hidden = !isAdmin;
         $('toggleUp').hidden = !user;
         await loadProfiles();
         await loadVideos();
+        await loadTracksForLink();
+        $('vprof').addEventListener('change', fillTrackSelect);
         const want = new URLSearchParams(location.search).get('v');
         if (want && videos.find(v => v.id === want)) openVideo(want);
         else renderGrid();
