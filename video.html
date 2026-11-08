@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<title>A-Video</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    [hidden] { display: none !important; }
+    :root { --bg: #f9f9f9; --card: #ffffff; --line: #e5e5e5; --text: #0f0f0f; --muted: #606060; --red: #cc0000; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    header { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: #fff; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 20; flex-wrap: wrap; }
+    header .logo { font-size: 20px; font-weight: 800; color: var(--red); letter-spacing: -0.5px; }
+    header a.back { color: var(--text); text-decoration: none; font-size: 13px; padding: 6px 10px; border-radius: 0; background: #f2f2f2; }
+    header .who { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+    .bar { display: flex; gap: 8px; align-items: center; padding: 12px 16px; flex-wrap: wrap; }
+    .tab { padding: 7px 14px; border: 1px solid var(--line); background: #fff; color: var(--text); border-radius: 0; font-size: 13px; cursor: pointer; }
+    .tab.on { background: var(--text); color: #fff; border-color: var(--text); }
+    .btn { padding: 8px 14px; border: none; border-radius: 0; background: var(--red); color: #fff; font-weight: 600; font-size: 13px; cursor: pointer; }
+    .btn:disabled { opacity: .5; cursor: default; }
+    .btn.ghost { background: #f2f2f2; color: var(--text); }
+    .btn.ok { background: #1f7a3a; }
+    .btn.small { padding: 5px 10px; font-size: 12px; }
+
+    .panel { background: #fff; border: 1px solid var(--line); border-radius: 0; padding: 14px; margin: 0 16px 14px; max-width: 640px; }
+    .panel h3 { font-size: 15px; margin-bottom: 10px; }
+    form { display: flex; flex-direction: column; gap: 10px; }
+    label { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+    input[type=text], select, textarea { border: 1px solid var(--line); border-radius: 0; padding: 9px 10px; font-size: 14px; outline: none; font-family: inherit; }
+    textarea { min-height: 70px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: #888; }
+    .check { flex-direction: row; gap: 8px; align-items: flex-start; font-size: 12px; }
+    .msg { font-size: 13px; min-height: 16px; color: #c00; }
+    .msg.ok { color: #1f7a3a; }
+    .note { font-size: 12px; color: var(--muted); }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px 14px; padding: 0 16px 40px; }
+    .vcard { cursor: pointer; }
+    .thumb { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 0; overflow: hidden; background: #222; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.85); font-size: 40px; font-weight: 700; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .dur { position: absolute; right: 6px; bottom: 6px; background: rgba(0,0,0,.8); color: #fff; font-size: 12px; padding: 2px 5px; border-radius: 0; }
+    .vtitle { font-size: 15px; font-weight: 600; margin-top: 8px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .vmeta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 0; background: #fff3cd; color: #7a5b00; margin-left: 4px; }
+    .tag.rejected { background: #f8d7da; color: #842029; }
+    .empty { padding: 40px 16px; color: var(--muted); font-size: 14px; }
+
+    /* Перегляд відео */
+    .watch { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; padding: 0 16px 40px; max-width: 1280px; margin: 0 auto; }
+    .watch .back-link { font-size: 13px; color: var(--muted); cursor: pointer; margin-bottom: 8px; display: inline-block; }
+    .player-box { background: #000; border-radius: 0; overflow: hidden; aspect-ratio: 16 / 9; }
+    .player-box video { width: 100%; height: 100%; display: block; background: #000; }
+    .w-title { font-size: 20px; font-weight: 700; margin-top: 12px; line-height: 1.3; }
+    .w-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .w-channel { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 14px; font-weight: 600; }
+    .avat { width: 36px; height: 36px; border-radius: 0; background: #444; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; overflow: hidden; flex-shrink: 0; }
+    .avat img { width: 100%; height: 100%; object-fit: cover; }
+    .w-desc { margin-top: 12px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; background: #f2f2f2; border-radius: 0; padding: 12px; }
+    .w-admin { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .side .srow { display: flex; gap: 8px; margin-bottom: 12px; cursor: pointer; }
+    .side .srow .thumb { width: 160px; min-width: 160px; aspect-ratio: 16 / 9; font-size: 20px; border-radius: 0; }
+    .side .srow .sd { min-width: 0; }
+    .side .srow .vtitle { font-size: 14px; margin-top: 0; -webkit-line-clamp: 2; }
+
+    .app { display: flex; min-height: calc(100vh - 56px); }
+    .side { width: 200px; flex-shrink: 0; background: #fff; border-right: 1px solid var(--line); padding: 8px 6px; position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+    .side .tab { border: none; background: none; text-align: left; padding: 9px 12px; font-size: 14px; color: var(--text); width: 100%; }
+    .side .tab:hover { background: #f2f2f2; }
+    .side .tab.on { background: #f2f2f2; font-weight: 700; color: var(--text); }
+    .side .tab.link { display: block; text-decoration: none; }
+    .side hr { border: none; border-top: 1px solid var(--line); margin: 8px 6px; }
+    .content { flex: 1; min-width: 0; }
+    .ch-head { display: flex; align-items: center; gap: 14px; padding: 16px; }
+    .ch-head .avat { width: 72px; height: 72px; font-size: 28px; }
+    .ch-head .nm { font-size: 20px; font-weight: 700; }
+    .ch-head .sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
+    .subbtn { margin-left: auto; }
+    .subbtn.on { background: #f2f2f2; color: var(--text); }
+    .ch-card { display: flex; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); cursor: pointer; background: #fff; }
+    .ch-card .avat { width: 48px; height: 48px; font-size: 18px; flex-shrink: 0; }
+
+    @media (max-width: 760px) {
+        .app { flex-direction: column; }
+        .side { width: 100%; height: auto; position: static; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--line); padding: 6px; }
+        .side .tab { width: auto; white-space: nowrap; }
+        .side hr { display: none; }
+    }
+    @media (max-width: 860px) {
+        .watch { grid-template-columns: 1fr; }
+        .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    }
+
+        /* ===== Мобільна адаптація (телефон) ===== */
+        @media (max-width: 640px) {
+            html { -webkit-text-size-adjust: 100%; }
+            body { overflow-x: hidden; }
+            input, select, textarea, button { font-size: 16px; }
+            button, a.btn, .btn { min-height: 40px; }
+            img, video, canvas, iframe, svg { max-width: 100%; }
+            table { display: block; overflow-x: auto; max-width: 100%; }
+            header { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+            header .who, header .st { font-size: 11px; }
+            .container, .wrap, .bar, main { padding-left: 10px; padding-right: 10px; }
+            .card, .panel, .modal { padding: 12px; }
+            .modal { width: 100%; max-height: 92vh; overflow-y: auto; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+            .tabs, .bar { flex-wrap: wrap; }
+            .tab, .tab-btn { padding: 8px 12px; font-size: 13px; }
+            .player { padding: 8px 10px; gap: 8px; }
+            .pinfo { width: 110px; }
+            .time { display: none; }
+            .titlebar input { width: 140px; }
+        }
+
+        /* ===== Мобільна навігація знизу (телефон) ===== */
+        @media (max-width: 760px) {
+            body { padding-bottom: 60px; }
+            .side { position: fixed; left: 0; right: 0; bottom: 0; top: auto; height: auto; width: 100%; flex-direction: row; justify-content: space-around; border-right: none; border-top: 1px solid var(--line); padding: 6px 4px; z-index: 30; overflow: visible; background: #fff; }
+            .side .tab, .side .tab.link { font-size: 0; width: 46px; height: 44px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: none; background: transparent; color: var(--muted); text-decoration: none; }
+            .side .tab::before { content: attr(data-ic); font-size: 22px; }
+            .side .tab.on { background: rgba(204,0,0,.1); color: var(--red); }
+            .side hr { display: none; }
+        }
+    
+        /* ===== Шапка в один рядок (телефон) ===== */
+        @media (max-width: 640px) {
+            header { flex-wrap: nowrap; gap: 8px; padding: 8px 12px; align-items: center; }
+            header .logo { font-size: 17px; white-space: nowrap; }
+            header .who { display: none; }
+            header a { font-size: 0; padding: 6px 10px; margin-left: auto; }
+            header a::before { content: '←'; font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo" id="logoHome" role="button" tabindex="0">▶ A-Video</div>
+    <a class="back" href="index.html">← Головна</a>
+    <div class="who" id="who"></div>
+</header>
+
+<div class="app">
+<aside class="side" id="side">
+    <button class="tab on" data-tab="all" data-ic="🏠" type="button">🏠 Головна</button>
+    <button class="tab" data-tab="history" data-ic="🕘" type="button">🕘 Історія</button>
+    <button class="tab" data-tab="subs" data-ic="📺" type="button">📺 Підписки</button>
+    <button class="tab" data-tab="channels" data-ic="👥" type="button">👥 Канали</button>
+    <button class="tab" data-tab="mine" data-ic="🎞" type="button" id="tabMine" hidden>🎞 Мої відео</button>
+    <button class="tab" data-tab="review" data-ic="⏳" type="button" id="tabReview" hidden>⏳ На перевірці</button>
+    <hr>
+    <a class="tab link" href="music.html" data-ic="🎵">🎵 Музика (A-Music)</a>
+    <a class="tab link" href="index.html" data-ic="⌂">🏠 Головна Acore</a>
+</aside>
+<div class="content">
+<div class="bar" id="bar">
+    <button class="btn" id="toggleUp" type="button" hidden>+ Завантажити відео</button>
+</div>
+
+<section class="panel" id="upCard" hidden>
+    <h3>Нове відео</h3>
+    <form id="upForm" novalidate>
+        <label>Відеофайл (MP4 або WebM, до 20 MB, до 3 хвилин)
+            <input type="file" id="vfile" accept="video/mp4,video/webm">
+        </label>
+        <label>Назва
+            <input type="text" id="vtitle" maxlength="120">
+        </label>
+        <label>Опис (необов'язково)
+            <textarea id="vdesc" maxlength="1000"></textarea>
+        </label>
+        <label>Від імені профілю
+            <select id="vprof"></select>
+        </label>
+        <label class="check">
+            <input type="checkbox" id="vrights">
+            <span>Це моє відео або я маю на нього права. Погоджуюсь, що його зніматимуть за запитом правовласника.</span>
+        </label>
+        <div class="msg" id="upMsg"></div>
+        <div class="note">Ліміт пам'яті: 100 MB на профіль. Відео з'явиться на сайті після перевірки адміном.</div>
+        <button class="btn" id="btnUp" type="submit">Надіслати на перевірку</button>
+    </form>
+</section>
+
+<main id="main"></main>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script>
+(function () {
+    'use strict';
+    const CFG = window.ACORE_CONFIG || {};
+    const sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY);
+    const $ = id => document.getElementById(id);
+    const QUOTA_MB = 100, MAX_MB = 20, MAX_SEC = 180;
+    const STATUS = { pending: 'на перевірці', rejected: 'відхилено' };
+
+    let user = null, isAdmin = false, tab = 'all';
+    let videos = [], profiles = [], myProfiles = [];
+
+    const W = () => (CFG.VIDEO_WORKER_URL || '').replace(/\/+$/, '');
+    const fileUrl = path => W() + '/video/file?key=' + encodeURIComponent(path);
+    async function authToken() {
+        const { data } = await sb.auth.getSession();
+        return data && data.session ? data.session.access_token : '';
+    }
+    async function delVideoFiles(a, b) {
+        try {
+            await fetch(W() + '/video/delete', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + await authToken(), 'Content-Type': 'application/json' },
+                body: JSON.stringify({ file_path: a, thumb_path: b || null })
+            });
+        } catch (e) { /* файл лишиться, але запис видалено */ }
+    }
+    const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+    const profOf = id => profiles.find(p => p.id === id);
+    const upMsg = (t, ok) => { $('upMsg').textContent = t; $('upMsg').className = 'msg' + (ok ? ' ok' : ''); };
+
+    function gradientBox(text, cls) {
+        const d = document.createElement('div');
+        d.className = cls;
+        const h = [...(text || '?')].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
+        d.style.background = 'linear-gradient(135deg, hsl(' + h + ' 45% 35%), hsl(' + ((h + 50) % 360) + ' 45% 15%))';
+        d.textContent = (text || '?').trim().charAt(0).toUpperCase();
+        return d;
+    }
+
+    function thumbEl(v, cls) {
+        if (v.thumb_path) {
+            const d = document.createElement('div');
+            d.className = cls;
+            const i = document.createElement('img');
+            i.src = fileUrl(v.thumb_path);
+            i.alt = '';
+            i.loading = 'lazy';
+            d.appendChild(i);
+            return d;
+        }
+        return gradientBox(v.title, cls);
+    }
+
+    const getList = k => { try { const a = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
+    const setList = (k, a) => { try { localStorage.setItem(k, JSON.stringify(a)); } catch (e) { /* мало місця */ } };
+
+    function visible() {
+        if (tab === 'mine') return videos.filter(v => user && v.user_id === user.id);
+        if (tab === 'review') return videos.filter(v => v.status === 'pending');
+        if (tab === 'history') {
+            const ids = getList('avideo_hist');
+            return ids.map(id => videos.find(v => v.id === id)).filter(v => v && v.status === 'approved');
+        }
+        if (tab === 'subs') {
+            const subs = getList('avideo_subs');
+            return videos.filter(v => v.status === 'approved' && subs.includes(v.profile_id));
+        }
+        if (tab === 'channel') return videos.filter(v => v.status === 'approved' && v.profile_id === chOpen);
+        return videos.filter(v => v.status === 'approved');
+    }
+
+    let chOpen = null;
+
+    function renderChannels() {
+        const main = $('main');
+        main.textContent = '';
+        if (chOpen) {
+            const p = profOf(chOpen);
+            if (p) {
+                const head = document.createElement('div');
+                head.className = 'ch-head';
+                head.appendChild(p.avatar_path ? (() => { const d = document.createElement('div'); d.className = 'avat'; const i = document.createElement('img'); i.src = fileUrl(p.avatar_path); i.alt = ''; d.appendChild(i); return d; })()
+                    : (() => { const d = document.createElement('div'); d.className = 'avat'; d.textContent = p.name.charAt(0).toUpperCase(); return d; })());
+                const info = document.createElement('div');
+                const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = p.name;
+                const sb2 = document.createElement('div'); sb2.className = 'sub'; sb2.textContent = p.bio || '';
+                info.append(nm, sb2);
+                head.appendChild(info);
+                const subs = getList('avideo_subs');
+                const btn = document.createElement('button');
+                btn.className = 'btn subbtn' + (subs.includes(p.id) ? ' on' : '');
+                btn.textContent = subs.includes(p.id) ? 'Відписатися' : 'Підписатися';
+                btn.addEventListener('click', () => {
+                    const cur = getList('avideo_subs');
+                    setList('avideo_subs', cur.includes(p.id) ? cur.filter(x => x !== p.id) : cur.concat([p.id]));
+                    renderGrid();
+                });
+                head.appendChild(btn);
+                main.appendChild(head);
+            }
+            const back = document.createElement('div');
+            back.className = 'empty';
+            back.style.textAlign = 'left';
+            back.textContent = '← Усі канали';
+            back.style.cursor = 'pointer';
+            back.addEventListener('click', () => { chOpen = null; renderGrid(); });
+            main.insertBefore(back, main.firstChild);
+            const list = visible();
+            if (!list.length) { const e = document.createElement('div'); e.className = 'empty'; e.textContent = 'У каналу ще немає схвалених відео.'; main.appendChild(e); }
+            else { const g = document.createElement('div'); g.className = 'grid'; list.forEach(v => g.appendChild(card(v))); main.appendChild(g); }
+            return;
+        }
+        const chans = profiles.filter(p => videos.some(v => v.profile_id === p.id && v.status === 'approved'));
+        if (!chans.length) { main.innerHTML = '<div class="empty">Каналів з відео ще немає.</div>'; return; }
+        chans.forEach(p => {
+            const row = document.createElement('div');
+            row.className = 'ch-card';
+            const av = p.avatar_path ? (() => { const d = document.createElement('div'); d.className = 'avat'; const i = document.createElement('img'); i.src = fileUrl(p.avatar_path); i.alt = ''; d.appendChild(i); return d; })()
+                : (() => { const d = document.createElement('div'); d.className = 'avat'; d.textContent = p.name.charAt(0).toUpperCase(); return d; })();
+            const t = document.createElement('div');
+            const nm = document.createElement('div'); nm.style.fontWeight = '700'; nm.textContent = p.name;
+            const c = document.createElement('div'); c.className = 'vmeta';
+            c.textContent = videos.filter(v => v.profile_id === p.id && v.status === 'approved').length + ' відео';
+            t.append(nm, c);
+            row.append(av, t);
+            row.addEventListener('click', () => { chOpen = p.id; tab = 'channel'; renderGrid(); });
+            main.appendChild(row);
+        });
+    }
+
+    /* ---------- Сітка ---------- */
+    function card(v) {
+        const el = document.createElement('div');
+        el.className = 'vcard';
+        const th = thumbEl(v, 'thumb');
+        const dur = document.createElement('span');
+        dur.className = 'dur';
+        dur.textContent = fmt(v.duration_s);
+        th.appendChild(dur);
+        const t = document.createElement('div');
+        t.className = 'vtitle';
+        t.textContent = v.title;
+        const m = document.createElement('div');
+        m.className = 'vmeta';
+        m.textContent = (profOf(v.profile_id) ? profOf(v.profile_id).name : '') + ' · ' + new Date(v.created_at).toLocaleDateString('uk-UA');
+        if (v.status !== 'approved') {
+            const tg = document.createElement('span');
+            tg.className = 'tag' + (v.status === 'rejected' ? ' rejected' : '');
+            tg.textContent = STATUS[v.status];
+            m.appendChild(tg);
+        }
+        el.append(th, t, m);
+        el.addEventListener('click', () => openVideo(v.id));
+        return el;
+    }
+
+    function renderGrid() {
+        const main = $('main');
+        main.textContent = '';
+        if (tab === 'channels' || tab === 'channel') { renderChannels(); return; }
+        const list = visible();
+        if (!list.length) {
+            const e = document.createElement('div');
+            e.className = 'empty';
+            e.textContent = tab === 'mine' ? 'Ви ще не завантажили відео.' : tab === 'review' ? 'Немає відео на перевірці.' : 'Поки немає відео. Станьте першим!';
+            main.appendChild(e);
+            return;
+        }
+        const g = document.createElement('div');
+        g.className = 'grid';
+        list.forEach(v => g.appendChild(card(v)));
+        main.appendChild(g);
+    }
+
+    /* ---------- Перегляд ---------- */
+    let currentId = null;
+
+    function openVideo(id) {
+        const v = videos.find(x => x.id === id);
+        if (!v) return;
+        currentId = id;
+        const hist = getList('avideo_hist').filter(x => x !== id);
+        hist.unshift(id);
+        setList('avideo_hist', hist.slice(0, 100));
+        const main = $('main');
+        main.textContent = '';
+        const wrap = document.createElement('div');
+        wrap.className = 'watch';
+
+        const left = document.createElement('div');
+        const back = document.createElement('div');
+        back.className = 'back-link';
+        back.textContent = '← До списку';
+        back.addEventListener('click', closeVideo);
+        const box = document.createElement('div');
+        box.className = 'player-box';
+        const video = document.createElement('video');
+        video.controls = true;
+        video.playsInline = true;
+        video.preload = 'metadata';
+        video.src = fileUrl(v.file_path);
+        box.appendChild(video);
+
+        const ttl = document.createElement('div');
+        ttl.className = 'w-title';
+        ttl.textContent = v.title;
+        const meta = document.createElement('div');
+        meta.className = 'w-meta';
+        meta.textContent = fmt(v.duration_s) + ' · ' + new Date(v.created_at).toLocaleDateString('uk-UA') +
+            (v.status !== 'approved' ? ' · ' + STATUS[v.status] : '');
+
+        const ch = document.createElement('div');
+        ch.className = 'w-channel';
+        const p = profOf(v.profile_id);
+        const av = p && p.avatar_path
+            ? (() => { const d = document.createElement('div'); d.className = 'avat'; const i = document.createElement('img'); i.src = fileUrl(p.avatar_path); i.alt = ''; d.appendChild(i); return d; })()
+            : (() => { const d = document.createElement('div'); d.className = 'avat'; d.textContent = (p ? p.name : '?').charAt(0).toUpperCase(); return d; })();
+        const chName = document.createElement('span');
+        chName.textContent = p ? p.name : 'Автор';
+        ch.append(av, chName);
+
+        left.append(back, box, ttl, meta, ch);
+        if (v.description) {
+            const d = document.createElement('div');
+            d.className = 'w-desc';
+            d.textContent = v.description;
+            left.appendChild(d);
+        }
+        if (user && (v.user_id === user.id || isAdmin)) {
+            const acts = document.createElement('div');
+            acts.className = 'w-admin';
+            if (isAdmin && v.status !== 'approved') acts.appendChild(actBtn('Схвалити', 'btn ok small', () => setStatus(v.id, 'approved')));
+            if (isAdmin && v.status !== 'rejected') acts.appendChild(actBtn('Відхилити', 'btn ghost small', () => setStatus(v.id, 'rejected')));
+            acts.appendChild(actBtn('Видалити', 'btn ghost small', () => removeVideo(v)));
+            left.appendChild(acts);
+        }
+
+        const side = document.createElement('div');
+        side.className = 'side';
+        visible().filter(x => x.id !== v.id).slice(0, 15).forEach(x => {
+            const r = document.createElement('div');
+            r.className = 'srow';
+            const th = thumbEl(x, 'thumb');
+            const sd = document.createElement('div');
+            sd.className = 'sd';
+            const t = document.createElement('div');
+            t.className = 'vtitle';
+            t.textContent = x.title;
+            const m = document.createElement('div');
+            m.className = 'vmeta';
+            m.textContent = profOf(x.profile_id) ? profOf(x.profile_id).name : '';
+            sd.append(t, m);
+            r.append(th, sd);
+            r.addEventListener('click', () => openVideo(x.id));
+            side.appendChild(r);
+        });
+
+        wrap.append(left, side);
+        main.appendChild(wrap);
+        window.scrollTo(0, 0);
+        video.play().catch(() => {});
+        history.replaceState(null, '', '?v=' + v.id);
+    }
+
+    function closeVideo() {
+        currentId = null;
+        history.replaceState(null, '', location.pathname);
+        renderGrid();
+    }
+
+    function actBtn(label, cls, fn) {
+        const b = document.createElement('button');
+        b.className = cls;
+        b.type = 'button';
+        b.textContent = label;
+        b.addEventListener('click', async () => {
+            b.disabled = true;
+            try { await fn(); } catch (e) { alert('Помилка: ' + e.message); }
+            b.disabled = false;
+        });
+        return b;
+    }
+
+    async function setStatus(id, status) {
+        const { error } = await sb.from('videos').update({ status }).eq('id', id);
+        if (error) throw error;
+        await loadVideos();
+        openVideo(id);
+    }
+
+    async function removeVideo(v) {
+        if (!confirm('Видалити відео?')) return;
+        const { error } = await sb.from('videos').delete().eq('id', v.id);
+        if (error) throw error;
+        await delVideoFiles(v.file_path, v.thumb_path);
+        currentId = null;
+        history.replaceState(null, '', location.pathname);
+        await loadVideos();
+        renderGrid();
+    }
+
+    /* ---------- Завантаження ---------- */
+    function readMeta(file) {
+        return new Promise((resolve, reject) => {
+            const v = document.createElement('video');
+            v.preload = 'metadata';
+            v.muted = true;
+            const url = URL.createObjectURL(file);
+            v.onloadedmetadata = () => resolve({ v, url, duration: v.duration });
+            v.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Не вдалося прочитати відео. Спробуйте MP4 з кодеком H.264.')); };
+            v.src = url;
+        });
+    }
+
+    function makeThumb(v, duration) {
+        return new Promise(resolve => {
+            const t = Math.min(1, Math.max(0, duration / 2));
+            const timer = setTimeout(() => resolve(null), 6000);
+            v.onseeked = () => {
+                clearTimeout(timer);
+                const c = document.createElement('canvas');
+                c.width = 320; c.height = 180;
+                const g = c.getContext('2d');
+                const k = Math.max(320 / v.videoWidth, 180 / v.videoHeight);
+                const w = v.videoWidth * k, h = v.videoHeight * k;
+                g.drawImage(v, (320 - w) / 2, (180 - h) / 2, w, h);
+                c.toBlob(b => resolve(b), 'image/jpeg', 0.8);
+            };
+            v.currentTime = t;
+        });
+    }
+
+    $('toggleUp').addEventListener('click', () => { $('upCard').hidden = !$('upCard').hidden; });
+
+    $('upForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        if (!user) { upMsg('Увійдіть в акаунт на головній сторінці.'); return; }
+        const file = $('vfile').files[0];
+        const title = $('vtitle').value.trim();
+        const desc = $('vdesc').value.trim().slice(0, 1000);
+        const pid = $('vprof').value;
+        if (!file) { upMsg('Оберіть відеофайл.'); return; }
+        if (!/\.(mp4|webm)$/i.test(file.name) && !/^video\/(mp4|webm)$/.test(file.type)) { upMsg('Потрібен файл MP4 або WebM.'); return; }
+        const mb = file.size / 1048576;
+        if (mb > MAX_MB) { upMsg('Файл завеликий. Максимум ' + MAX_MB + ' MB.'); return; }
+        if (!title) { upMsg('Вкажіть назву.'); return; }
+        if (!pid) { upMsg('Спершу створіть профіль (кнопка «Мої профілі» на головній музики).'); return; }
+        if (!$('vrights').checked) { upMsg('Підтвердіть права на відео.'); return; }
+
+        const meta = await readMeta(file).catch(err => { upMsg(err.message); return null; });
+        if (!meta) return;
+        if (meta.duration > MAX_SEC) { URL.revokeObjectURL(meta.url); upMsg('Відео довше ' + (MAX_SEC / 60) + ' хв.'); return; }
+
+        const used = videos.filter(v => v.profile_id === pid).reduce((s, v) => s + parseFloat(v.size_mb || 0), 0);
+        if (used + mb > QUOTA_MB) { URL.revokeObjectURL(meta.url); upMsg('У цьому профілі немає місця (ліміт ' + QUOTA_MB + ' MB).'); return; }
+
+        if (!W()) { upMsg('Сервіс відео ще не підключено (VIDEO_WORKER_URL у config.js).'); return; }
+        $('btnUp').disabled = true;
+        upMsg('Готуємо обкладинку…', true);
+        try {
+            const thumbBlob = await makeThumb(meta.v, meta.duration);
+            URL.revokeObjectURL(meta.url);
+            const token = await authToken();
+            upMsg('Завантажуємо відео…', true);
+            const up = await fetch(W() + '/video/upload', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': file.type || 'video/mp4' },
+                body: file
+            });
+            const upj = await up.json().catch(() => ({}));
+            if (!up.ok) throw new Error(upj.error === 'not_video' ? 'Файл не схожий на справжнє відео MP4 або WebM.' : (upj.error === 'size' ? 'Файл завеликий.' : (upj.error || ('код ' + up.status))));
+            const vpath = upj.key;
+            let tpath = null;
+            if (thumbBlob) {
+                const tr = await fetch(W() + '/video/thumb?v=' + encodeURIComponent(vpath.split('/')[0]), {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'image/jpeg' },
+                    body: thumbBlob
+                });
+                const tj = await tr.json().catch(() => ({}));
+                if (tr.ok) tpath = tj.key;
+            }
+            const { error } = await sb.from('videos').insert({
+                user_id: user.id, profile_id: pid, title, description: desc,
+                file_path: vpath, thumb_path: tpath,
+                size_mb: mb.toFixed(3), duration_s: Math.round(meta.duration), status: 'pending'
+            });
+            if (error) {
+                await delVideoFiles(vpath, tpath);
+                throw error;
+            }
+            $('vfile').value = ''; $('vtitle').value = ''; $('vdesc').value = ''; $('vrights').checked = false;
+            upMsg('Надіслано на перевірку ✅', true);
+            $('upCard').hidden = true;
+            tab = 'mine';
+            setTabs();
+            await loadVideos();
+            renderGrid();
+        } catch (err) {
+            upMsg('Помилка: ' + err.message);
+        } finally {
+            $('btnUp').disabled = false;
+        }
+    });
+
+    /* ---------- Дані і старт ---------- */
+    async function loadProfiles() {
+        const { data } = await sb.from('artist_profiles').select('*').order('created_at', { ascending: true });
+        profiles = data || [];
+        myProfiles = user ? profiles.filter(p => p.user_id === user.id) : [];
+        const sel = $('vprof');
+        sel.textContent = '';
+        if (!myProfiles.length) {
+            const o = document.createElement('option');
+            o.value = '';
+            o.textContent = 'Немає профілю';
+            sel.appendChild(o);
+        }
+        myProfiles.forEach(p => {
+            const o = document.createElement('option');
+            o.value = p.id;
+            o.textContent = p.name;
+            sel.appendChild(o);
+        });
+    }
+
+    async function loadVideos() {
+        const { data } = await sb.from('videos').select('*').order('created_at', { ascending: false }).limit(200);
+        videos = data || [];
+    }
+
+    function setTabs() {
+        document.querySelectorAll('.tab[data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+    }
+
+    document.querySelectorAll('.tab[data-tab]').forEach(b => b.addEventListener('click', () => {
+        tab = b.dataset.tab;
+        chOpen = null;
+        setTabs();
+        currentId = null;
+        history.replaceState(null, '', location.pathname);
+        renderGrid();
+    }));
+
+    function goHome() {
+        tab = 'all';
+        chOpen = null;
+        currentId = null;
+        history.replaceState(null, '', location.pathname);
+        setTabs();
+        renderGrid();
+        window.scrollTo(0, 0);
+    }
+    $('logoHome').addEventListener('click', goHome);
+    $('logoHome').addEventListener('keydown', e => { if (e.key === 'Enter') goHome(); });
+
+    async function init() {
+        const { data } = await sb.auth.getSession();
+        user = data && data.session ? data.session.user : null;
+        isAdmin = false;
+        if (user) {
+            const { data: adm } = await sb.from('music_admins').select('email').eq('email', user.email).maybeSingle();
+            isAdmin = !!adm;
+        }
+        $('who').textContent = user ? user.email : 'Гість';
+        $('tabMine').hidden = !user;
+        $('tabReview').hidden = !isAdmin;
+        $('toggleUp').hidden = !user;
+        await loadProfiles();
+        await loadVideos();
+        const want = new URLSearchParams(location.search).get('v');
+        if (want && videos.find(v => v.id === want)) openVideo(want);
+        else renderGrid();
+    }
+
+    init();
+})();
+</script>
+</body>
+</html>
