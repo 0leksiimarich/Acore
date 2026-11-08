@@ -204,7 +204,64 @@
         .mtop { flex-direction: column; }
         .mcov { width: 100%; height: auto; aspect-ratio: 1; }
     }
-</style>
+
+        /* ===== Мобільна адаптація (телефон) ===== */
+        @media (max-width: 640px) {
+            html { -webkit-text-size-adjust: 100%; }
+            body { overflow-x: hidden; }
+            input, select, textarea, button { font-size: 16px; }
+            button, a.btn, .btn { min-height: 40px; }
+            img, video, canvas, iframe, svg { max-width: 100%; }
+            table { display: block; overflow-x: auto; max-width: 100%; }
+            header { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+            header .who, header .st { font-size: 11px; }
+            .container, .wrap, .bar, main { padding-left: 10px; padding-right: 10px; }
+            .card, .panel, .modal { padding: 12px; }
+            .modal { width: 100%; max-height: 92vh; overflow-y: auto; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+            .tabs, .bar { flex-wrap: wrap; }
+            .tab, .tab-btn { padding: 8px 12px; font-size: 13px; }
+            .player { padding: 8px 10px; gap: 8px; }
+            .pinfo { width: 110px; }
+            .titlebar input { width: 140px; }
+        }
+
+        /* ===== Мобільна навігація знизу (телефон) ===== */
+        @media (max-width: 640px) {
+            body { padding-bottom: 124px; }
+            .time { display: inline; }
+            .bar { position: fixed; left: 0; right: 0; bottom: 0; margin: 0; padding: 6px 4px; background: #000; border-top: 1px solid var(--line); justify-content: space-around; flex-wrap: nowrap; z-index: 30; gap: 2px; }
+            .bar .tab, .bar .btn { font-size: 0; width: 46px; height: 44px; min-height: 44px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; border-radius: 12px; background: transparent; color: var(--muted); }
+            .bar .tab::before { content: attr(data-ic); font-size: 22px; }
+            .bar .tab.on { background: rgba(255,85,0,.18); color: var(--accent); }
+            .bar .btn { background: var(--accent); color: #fff; }
+            .bar .btn::before { content: "＋"; font-size: 24px; }
+            .player { bottom: 56px; }
+        }
+    
+        /* ===== Шапка в один рядок (телефон) ===== */
+        @media (max-width: 640px) {
+            header { flex-wrap: nowrap; gap: 8px; padding: 8px 12px; align-items: center; }
+            header .logo { font-size: 17px; white-space: nowrap; }
+            header .who { display: none; }
+            header a { font-size: 0; padding: 6px 10px; margin-left: auto; }
+            header a::before { content: '←'; font-size: 18px; }
+        }
+    
+        /* ===== Вкладки: стовпець зліва (комп'ютер), рядок іконок внизу (телефон) ===== */
+        .app { display: flex; align-items: flex-start; }
+        .side { flex-direction: column; align-items: stretch; justify-content: flex-start; width: 210px; flex-shrink: 0; position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto; margin: 0; padding: 12px 8px; background: #000; border-right: 1px solid var(--line); gap: 4px; flex-wrap: nowrap; }
+        .side .tab { width: 100%; text-align: left; padding: 10px 12px; font-size: 14px; border-radius: 10px; }
+        .side .btn { width: 100%; margin-top: 8px; }
+        .content { flex: 1; min-width: 0; }
+        @media (max-width: 640px) {
+            .app { display: block !important; }
+            .content { width: 100%; }
+            .side { position: fixed !important; top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: auto !important; height: auto !important; flex-direction: row !important; justify-content: space-around !important; align-items: center !important; border-right: none !important; border-top: 1px solid var(--line); padding: 6px 4px !important; margin: 0 !important; overflow: visible !important; z-index: 30; background: #000 !important; gap: 2px !important; }
+            .side .tab { width: 46px !important; text-align: center; padding: 0 !important; font-size: 0 !important; }
+            .side .btn { width: 46px !important; margin-top: 0 !important; }
+        }
+    </style>
 </head>
 <body>
 <header>
@@ -214,17 +271,19 @@
 </header>
 
 <main class="wrap">
-    <div class="bar">
-        <button class="tab on" data-tab="all" type="button">Усі треки</button>
-        <button class="tab" data-tab="albums" type="button">Альбоми</button>
-        <button class="tab" data-tab="follows" type="button" id="tabFollows" hidden>Підписки</button>
-        <button class="tab" data-tab="mood" type="button" id="tabMood" hidden>Ваш настрій</button>
-        <button class="tab" data-tab="artists" type="button">Виконавці</button>
+    <div class="app">
+<aside class="side bar">
+        <button class="tab on" data-tab="all" data-ic="🎵" type="button">Усі треки</button>
+        <button class="tab" data-tab="albums" data-ic="💿" type="button">Альбоми</button>
+        <button class="tab" data-tab="follows" data-ic="📺" type="button" id="tabFollows" hidden>Підписки</button>
+        <button class="tab" data-tab="mood" data-ic="🧠" type="button" id="tabMood" hidden>Ваш настрій</button>
+        <button class="tab" data-tab="artists" data-ic="👤" type="button">Виконавці</button>
         <button class="btn ghost" id="profilesBtn" type="button" hidden>👤 Мої профілі</button>
-        <button class="tab" data-tab="mine" type="button" id="tabMine" hidden>Мої</button>
-        <button class="tab" data-tab="review" type="button" id="tabReview" hidden>На перевірці</button>
+        <button class="tab" data-tab="mine" data-ic="🎞" type="button" id="tabMine" hidden>Мої</button>
+        <button class="tab" data-tab="review" data-ic="⏳" type="button" id="tabReview" hidden>На перевірці</button>
         <button class="btn" id="toggleUpload" type="button" hidden>+ Завантажити</button>
-    </div>
+    </aside>
+<div class="content">
 
     <div class="guest" id="guestHint">Слухати можна без входу. Щоб ставити лайки, підписуватись на виконавців і писати коментарі, увійдіть в акаунт на головній сторінці.</div>
 
@@ -275,6 +334,8 @@
         <div id="content"></div>
     </section>
 </main>
+</div>
+</div>
 
 <div class="modal-bg" id="modalBg" hidden>
     <div class="modal" role="dialog" aria-modal="true">
