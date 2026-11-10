@@ -133,6 +133,21 @@
             header a { font-size: 0; padding: 6px 10px; margin-left: auto; }
             header a::before { content: '←'; font-size: 18px; }
         }
+    
+    .pbg { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 900; display: flex; align-items: flex-start; justify-content: center; padding: 24px 12px; overflow-y: auto; }
+    .pbg[hidden] { display: none !important; }
+    .pbox { background: #fff; width: min(520px, 100%); padding: 18px; border: 1px solid var(--line); position: relative; }
+    .pbox h3 { font-size: 17px; margin-bottom: 12px; }
+    .pbox .x { position: absolute; right: 10px; top: 6px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--muted); }
+    .prow2 { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    .prow2 .pn { flex: 1; min-width: 0; }
+    .prow2 .pn b { display: block; font-size: 15px; }
+    .prow2 .pn span { font-size: 12px; color: var(--muted); }
+    .pform { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+    .pform label { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+    .pform input[type=text], .pform textarea { border: 1px solid var(--line); padding: 9px; font-size: 14px; font-family: inherit; }
+    .pform textarea { min-height: 70px; }
+    .pmsg { font-size: 13px; min-height: 16px; color: #c00; margin-top: 6px; }
     </style>
 </head>
 <body>
@@ -151,6 +166,7 @@
     <button class="tab" data-tab="mine" data-ic="🎞" type="button" id="tabMine" hidden>🎞 Мої відео</button>
     <button class="tab" data-tab="review" data-ic="⏳" type="button" id="tabReview" hidden>⏳ На перевірці</button>
     <button class="tab" data-tab="accounts" type="button" id="tabAccounts" hidden>🛂 Аккаунти</button>
+    <button class="tab" type="button" id="profBtn" data-ic="👤" hidden>👤 Мої профілі</button>
     <hr>
     <a class="tab link" href="music.html" data-ic="🎵">🎵 Музика (A-Music)</a>
     <a class="tab link" href="index.html" data-ic="⌂">🏠 Головна Acore</a>
@@ -166,6 +182,12 @@
         <label>Відеофайл (MP4 або WebM, до 20 MB, до 3 хвилин)
             <input type="file" id="vfile" accept="video/mp4,video/webm">
         </label>
+        <div class="note" id="vWarn">
+            ⚠️ Стиснення в браузері працює повільно: коротке відео може тривати кілька хвилин, довге — годину і більше.
+            На слабких телефонах вкладка може зависнути або закритися. Стиснення доступне тільки для відео до 15 хвилин.
+        </div>
+        <button type="button" class="btn ghost small" id="compressBtn" hidden>🔧 Стиснути до 720p у браузері</button>
+        <div class="note" id="compressNote"></div>
         <label>Назва
             <input type="text" id="vtitle" maxlength="120">
         </label>
@@ -192,6 +214,25 @@
 </div>
 </div>
 
+<div class="pbg" id="pBg" hidden>
+  <div class="pbox">
+    <button class="x" id="pClose" type="button" aria-label="Закрити">×</button>
+    <h3>Мої профілі (<span id="pCount">0</span> з 3)</h3>
+    <div id="pList"></div>
+    <div class="pform" id="pForm" hidden>
+      <h3 id="pFormTitle">Новий профіль</h3>
+      <label>Назва (2–60 символів)<input type="text" id="pName" maxlength="60"></label>
+      <label>Опис (до 300 символів)<textarea id="pBio" maxlength="300"></textarea></label>
+      <label>Аватарка (необов'язково, JPG або PNG)<input type="file" id="pAvatar" accept="image/jpeg,image/png,image/webp"></label>
+      <div class="pmsg" id="pMsg"></div>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button class="btn ghost small" id="pCancel" type="button">Скасувати</button>
+        <button class="btn small" id="pSave" type="button">Зберегти</button>
+      </div>
+    </div>
+    <button class="btn" id="pNew" type="button" style="margin-top:12px;">+ Новий профіль</button>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
 <script>
@@ -200,7 +241,9 @@
     const CFG = window.ACORE_CONFIG || {};
     const sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY);
     const $ = id => document.getElementById(id);
-    const QUOTA_MB = 100, MAX_MB = 20, MAX_SEC = 180;
+    const QUOTA_MB = 100, MAX_MB = 100, MAX_SEC = 3600;
+    const BROWSER_MAX_SEC = 900;   // стиснення в браузері — тільки до 15 хвилин
+    let compressedFile = null;
     const STATUS = { pending: 'на перевірці', rejected: 'відхилено' };
 
     let user = null, isAdmin = false, tab = 'all';
@@ -558,6 +601,66 @@
     }
 
     /* ---------- Завантаження ---------- */
+    // ---- Стиснення до 720p у браузері (ffmpeg.wasm) ----
+    let ffmpegInstance = null;
+    async function getFFmpeg() {
+        if (ffmpegInstance) return ffmpegInstance;
+        const load = src => new Promise((res, rej) => {
+            const sc = document.createElement('script');
+            sc.src = src; sc.onload = res; sc.onerror = () => rej(new Error('Не вдалося завантажити ffmpeg'));
+            document.head.appendChild(sc);
+        });
+        await load('https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js');
+        await load('https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js');
+        const { FFmpeg } = window.FFmpegWASM;
+        const { toBlobURL } = window.FFmpegUtil;
+        const ff = new FFmpeg();
+        await ff.load({
+            coreURL: await toBlobURL('https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js', 'text/javascript'),
+            wasmURL: await toBlobURL('https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm', 'application/wasm')
+        });
+        ffmpegInstance = ff;
+        return ff;
+    }
+
+    async function compressBrowser(file) {
+        const meta = await readMeta(file);
+        URL.revokeObjectURL(meta.url);
+        if (meta.duration > BROWSER_MAX_SEC) throw new Error('Відео довше 15 хвилин. Стисніть його на комп\'ютері та завантажте.');
+        const ff = await getFFmpeg();
+        await ff.writeFile('in.mp4', new Uint8Array(await file.arrayBuffer()));
+        await ff.exec(['-i', 'in.mp4', '-vf', 'scale=-2:720', '-c:v', 'libx264', '-preset', 'veryfast',
+            '-crf', '28', '-c:a', 'aac', '-b:a', '96k', '-movflags', '+faststart', 'out.mp4']);
+        const data = await ff.readFile('out.mp4');
+        await ff.deleteFile('in.mp4');
+        await ff.deleteFile('out.mp4');
+        return new File([data.buffer], file.name.replace(/\.\w+$/, '') + '_720p.mp4', { type: 'video/mp4' });
+    }
+
+    $('vfile').addEventListener('change', () => {
+        compressedFile = null;
+        $('compressNote').textContent = '';
+        const f = $('vfile').files[0];
+        $('compressBtn').hidden = !(f && f.size > 20 * 1048576);
+    });
+
+    $('compressBtn').addEventListener('click', async () => {
+        const f = $('vfile').files[0];
+        if (!f) return;
+        $('compressBtn').disabled = true;
+        $('compressNote').textContent = 'Завантажуємо кодек і стискаємо… не закривайте сторінку.';
+        try {
+            compressedFile = await compressBrowser(f);
+            const mb = (compressedFile.size / 1048576).toFixed(1);
+            $('compressNote').textContent = 'Готово: ' + mb + ' MB. Тепер натисніть «Надіслати на перевірку».';
+        } catch (err) {
+            compressedFile = null;
+            $('compressNote').textContent = 'Помилка стиснення: ' + err.message;
+        } finally {
+            $('compressBtn').disabled = false;
+        }
+    });
+
     function readMeta(file) {
         return new Promise((resolve, reject) => {
             const v = document.createElement('video');
@@ -595,7 +698,7 @@
     $('upForm').addEventListener('submit', async e => {
         e.preventDefault();
         if (!user) { upMsg('Увійдіть в акаунт на головній сторінці.'); return; }
-        const file = $('vfile').files[0];
+        const file = compressedFile || $('vfile').files[0];
         const title = $('vtitle').value.trim();
         const desc = $('vdesc').value.trim().slice(0, 1000);
         const pid = $('vprof').value;
@@ -649,7 +752,7 @@
                 await delVideoFiles(vpath, tpath);
                 throw error;
             }
-            $('vfile').value = ''; $('vtitle').value = ''; $('vdesc').value = ''; $('vrights').checked = false;
+            $('vfile').value = ''; compressedFile = null; $('compressNote').textContent = ''; $('compressBtn').hidden = true; $('vtitle').value = ''; $('vdesc').value = ''; $('vrights').checked = false;
             upMsg('Надіслано на перевірку ✅', true);
             $('upCard').hidden = true;
             tab = 'mine';
@@ -726,6 +829,7 @@
         $('tabMine').hidden = !user;
         $('tabReview').hidden = !isAdmin;
         $('tabAccounts').hidden = !isAdmin;
+        $('profBtn').hidden = !user;
         $('toggleUp').hidden = !user;
         await loadProfiles();
         await loadVideos();
@@ -735,6 +839,108 @@
         if (want && videos.find(v => v.id === want)) openVideo(want);
         else renderGrid();
     }
+
+
+    /* ---------- Мої профілі (створення і редагування з A-Video) ---------- */
+    let editingPid = null;
+    function renderMyProfiles() {
+        const list = $('pList');
+        list.textContent = '';
+        $('pCount').textContent = myProfiles.length;
+        $('pNew').disabled = myProfiles.length >= 3;
+        if (!myProfiles.length) { list.innerHTML = '<div class="empty" style="padding:12px 0;">Профілів ще немає. Створіть перший.</div>'; return; }
+        myProfiles.forEach(p => {
+            const row = document.createElement('div');
+            row.className = 'prow2';
+            const av = document.createElement('div');
+            av.className = 'avat';
+            av.style.width = '44px'; av.style.height = '44px'; av.style.fontSize = '18px'; av.style.margin = '0';
+            if (p.avatar_path) { const i = document.createElement('img'); i.src = fileUrl(p.avatar_path); i.alt = ''; av.appendChild(i); }
+            else av.textContent = p.name.charAt(0).toUpperCase();
+            const pn = document.createElement('div');
+            pn.className = 'pn';
+            pn.innerHTML = '<b></b><span></span>';
+            pn.querySelector('b').textContent = p.name;
+            pn.querySelector('span').textContent = p.bio || 'Без опису';
+            const ed = document.createElement('button');
+            ed.className = 'btn ghost small';
+            ed.textContent = 'Редагувати';
+            ed.addEventListener('click', () => openProfForm(p));
+            row.append(av, pn, ed);
+            list.appendChild(row);
+        });
+    }
+    function openProfs() {
+        $('pBg').hidden = false;
+        $('pForm').hidden = true;
+        renderMyProfiles();
+    }
+    function openProfForm(p) {
+        editingPid = p ? p.id : null;
+        $('pFormTitle').textContent = p ? 'Редагувати профіль' : 'Новий профіль';
+        $('pName').value = p ? p.name : '';
+        $('pBio').value = p ? (p.bio || '') : '';
+        $('pAvatar').value = '';
+        $('pMsg').textContent = '';
+        $('pForm').hidden = false;
+        $('pName').focus();
+    }
+    function compressAvatar2(file) {
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                const S = 256, side = Math.min(img.width, img.height);
+                const c = document.createElement('canvas'); c.width = S; c.height = S;
+                c.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, S, S);
+                c.toBlob(b => b ? resolve(b) : reject(new Error('стиснення не вдалося')), 'image/jpeg', 0.8);
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('це не зображення')); };
+            img.src = url;
+        });
+    }
+    $('profBtn').addEventListener('click', openProfs);
+    $('pClose').addEventListener('click', () => { $('pBg').hidden = true; });
+    $('pBg').addEventListener('click', e => { if (e.target.id === 'pBg') $('pBg').hidden = true; });
+    $('pNew').addEventListener('click', () => openProfForm(null));
+    $('pCancel').addEventListener('click', () => { $('pForm').hidden = true; });
+    $('pSave').addEventListener('click', async () => {
+        const name = $('pName').value.trim();
+        const bio = $('pBio').value.trim().slice(0, 300);
+        if (name.length < 2) { $('pMsg').textContent = 'Назва має бути від 2 символів.'; return; }
+        $('pSave').disabled = true;
+        $('pMsg').textContent = 'Зберігаємо…';
+        try {
+            let id = editingPid;
+            if (id) {
+                const { error } = await sb.from('artist_profiles').update({ name, bio }).eq('id', id);
+                if (error) throw error;
+            } else {
+                const { data, error } = await sb.from('artist_profiles').insert({ user_id: user.id, name, bio }).select().single();
+                if (error) throw new Error(/row-level|policy/i.test(error.message) ? 'Досягнуто ліміт: не більше 3 профілів.' : error.message);
+                id = data.id;
+            }
+            const af = $('pAvatar').files[0];
+            if (af) {
+                const blob = await compressAvatar2(af);
+                const ap = user.id + '/avatars/' + Date.now() + '.jpg';
+                const { error: ue } = await sb.storage.from(CFG.SUPABASE_BUCKET).upload(ap, blob, { contentType: 'image/jpeg' });
+                if (ue) throw ue;
+                const { error: ae } = await sb.from('artist_profiles').update({ avatar_path: ap }).eq('id', id);
+                if (ae) throw ae;
+            }
+            await loadProfiles();
+            fillTrackSelect();
+            $('pForm').hidden = true;
+            renderMyProfiles();
+            renderGrid();
+        } catch (err) {
+            $('pMsg').textContent = 'Помилка: ' + err.message;
+        } finally {
+            $('pSave').disabled = false;
+        }
+    });
 
     init();
 })();
