@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1a4a84">
-    <title>ASearch</title>
+    <title>Asearch</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #f4f5f7; color: #333; overflow-x: hidden; }
@@ -43,7 +43,7 @@
 </head>
 <body>
     <header>
-        <div class="logo">ASearch</div>
+        <div class="logo">🔍 Asearch</div>
         <div class="nav-links">
             <a href="index.html">← На головну</a>
         </div>
@@ -58,7 +58,11 @@
             </div>
         </div>
 
-        <div class="results" id="resultsContainer"></div>
+        <div style="margin:12px 0;">
+    <button id="aiBtn" type="button" style="padding:9px 14px; border:none; border-radius:8px; background:#1a4a84; color:#fff; font-weight:700; cursor:pointer;">🧠 Огляд від ШІ</button>
+    <div id="aiOverview" style="margin-top:10px; white-space:pre-wrap; line-height:1.5; font-size:15px;"></div>
+</div>
+<div class="results" id="resultsContainer"></div>
     </div>
 
     <footer>
@@ -118,5 +122,70 @@
         input.addEventListener('keypress', e => { if (e.key === 'Enter') search(); });
         input.focus();
     </script>
+<script src="js/mobile.js"></script>
+<script>
+(function () {
+    const CFG = window.ACORE_CONFIG || {};
+    const W = (CFG.AI_PROXY_URL || '').replace(/\/+$/, '');
+    const out = document.getElementById('aiOverview');
+    const btn = document.getElementById('aiBtn');
+    async function overview() {
+        const q = document.getElementById('searchInput').value.trim();
+        if (!q) { out.textContent = 'Спершу введіть запит.'; return; }
+        if (!W) { out.textContent = 'ШІ ще не підключено (AI_PROXY_URL у config.js).'; return; }
+        btn.disabled = true;
+        out.textContent = 'Шукаю і готую огляд…';
+        try {
+            const sr = await fetch(W + '/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ q }) });
+            const sj = await sr.json();
+            const items = (sj.results || []).slice(0, 8);
+            if (!items.length) { out.textContent = 'Нічого не знайшов у пошуку.'; return; }
+            const ctx = items.map((r, i) => '[' + (i + 1) + '] ' + r.title + ' — ' + r.url + '\n' + (r.snippet || '')).join('\n\n');
+            const sys = 'Ти пошуковий помічник. Зроби короткий огляд відповіді на запит ЛИШЕ на основі наведених джерел, українською. ' +
+                'Посилайся на джерела як [1], [2]. Якщо джерела не відповідають запиту, так і скажи. Нічого не вигадуй.';
+            const res = await fetch(W + '/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode: 'general', messages: [{ role: 'system', content: sys }, { role: 'user', content: 'Запит: ' + q + '\n\nДжерела:\n' + ctx }], stream: true }) });
+            if (!res.ok) throw new Error('код ' + res.status);
+            out.textContent = '';
+            const reader = res.body.getReader();
+            const dec = new TextDecoder();
+            let buf = '';
+            for (;;) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buf += dec.decode(value, { stream: true });
+                let nl;
+                while ((nl = buf.indexOf('\n')) >= 0) {
+                    const line = buf.slice(0, nl).trim();
+                    buf = buf.slice(nl + 1);
+                    if (!line.startsWith('data:')) continue;
+                    const d = line.slice(5).trim();
+                    if (d === '[DONE]') break;
+                    try {
+                        const j = JSON.parse(d);
+                        const c = j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content;
+                        if (c) out.textContent += c;
+                    } catch (e) { /* неповний шматок */ }
+                }
+            }
+            const src = document.createElement('div');
+            src.style.cssText = 'margin-top:10px; font-size:13px; color:#555;';
+            src.textContent = 'Джерела: ';
+            items.forEach((r, i) => {
+                const a = document.createElement('a');
+                a.href = r.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+                a.textContent = ' [' + (i + 1) + '] ' + (r.title || r.url);
+                src.appendChild(a);
+            });
+            out.appendChild(src);
+        } catch (e) {
+            out.textContent = 'Помилка: ' + e.message;
+        } finally {
+            btn.disabled = false;
+        }
+    }
+    btn.addEventListener('click', overview);
+})();
+</script>
 </body>
 </html>
