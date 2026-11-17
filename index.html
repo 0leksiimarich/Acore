@@ -34,6 +34,7 @@
 
         header { background: #1a4a84; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
         .logo-group { display: flex; align-items: baseline; gap: 8px; }
+        .brand-img { height: 30px; width: auto; display: block; }
         .logo { font-size: 24px; font-weight: bold; letter-spacing: 0.5px; }
         .slogan { font-size: 12px; opacity: 0.85; font-style: italic; }
 
@@ -157,6 +158,41 @@
             .chat-messages { height: 40vh; }
             .chat-input-area input { font-size: 16px; min-height: 40px; }
         }
+
+        /* ===== Меню: рядок на комп'ютері (з початку, з підписами), нижня панель з іконками на телефоні ===== */
+        .app { display: block; }
+        .app .top-tabs { display: flex; flex-direction: row; justify-content: flex-start; align-items: center; width: auto; flex-shrink: initial; position: static; max-height: none; overflow-x: auto; overflow-y: hidden; border-right: none; border-bottom: 1px solid #e2e8f0; padding: 6px 8px; gap: 6px; background: #fff; }
+        .app .top-tabs .tab-btn { width: auto; text-align: center; border-radius: 16px; padding: 8px 14px; font-size: 13px; display: flex; align-items: center; gap: 6px; flex-shrink: 0; white-space: nowrap; }
+        .app .container { flex: none; min-width: 0; }
+        .ic { font-size: 16px; line-height: 1; }
+        @media (max-width: 640px) {
+            .app .top-tabs { position: fixed; left: 0; right: 0; bottom: 0; top: auto; width: auto; max-height: none; flex-direction: row; justify-content: space-around; border-right: none; border-top: 1px solid #e2e8f0; padding: 6px 4px; z-index: 200; background: #fff; box-shadow: 0 -2px 8px rgba(0,0,0,.08); overflow: visible; }
+            .app .top-tabs .tab-btn { width: auto; justify-content: center; padding: 8px 6px; border-radius: 10px; }
+            .app .top-tabs .lbl { display: none; }
+            .app .top-tabs .ic { font-size: 22px; }
+            .container { padding-bottom: 80px; }
+        }
+        /* ===== Кібер-стиль (темна тема з неоновими акцентами) ===== */
+        body { background: radial-gradient(1200px 600px at 80% -10%, #1b2a4a, #070b14 60%) fixed; color: #d8e6ff; }
+        header { background: linear-gradient(90deg, #0b1220, #14213d) !important; border-bottom: 1px solid #00e5ff55; box-shadow: 0 0 22px #00e5ff33; }
+        .logo { color: #e8fbff; text-shadow: 0 0 12px #00e5ff; }
+        .slogan { color: #7fdcff; }
+        .top-tabs { background: #0b1220; border-bottom: 1px solid #00e5ff33; }
+        .tab-btn { background: #121b2e; color: #9fb6d9; border: 1px solid #1f3352; }
+        .tab-btn:hover { color: #00e5ff; box-shadow: 0 0 10px #00e5ff55; }
+        .tab-btn.active { background: linear-gradient(90deg, #00e5ff, #7c4dff); color: #04101e; box-shadow: 0 0 16px #00e5ff77; }
+        .card { background: #0f1729; border: 1px solid #1f3352; box-shadow: 0 0 18px #00e5ff14; color: #d8e6ff; }
+        .card h3 { color: #00e5ff; border-bottom-color: #1f3352; text-shadow: 0 0 8px #00e5ff66; }
+        .btn-action, .search-box button, .mono-btn { background: linear-gradient(90deg, #00b8d4, #7c4dff) !important; box-shadow: 0 0 14px #00e5ff55; }
+        input, textarea, select { background: #0a1222 !important; color: #d8e6ff; border-color: #1f3352 !important; }
+        .ai-header-box { background: #0f1729 !important; border: 1px solid #1f3352; }
+        .ai-mascot-name { color: #7fdcff; }
+        .chat-msg.ai { background: #14213a; color: #d8e6ff; }
+        .chat-msg.user { background: linear-gradient(90deg, #00b8d4, #7c4dff); }
+        .news-item a, .news-title { color: #7fdcff !important; }
+        .news-meta { color: #6b7fa3; }
+        .side-chat-drawer { background: #0f1729; border-color: #00e5ff; }
+        .chat-header { background: linear-gradient(90deg, #00b8d4, #7c4dff); }
     </style>
     <link rel="stylesheet" href="css/chat.css">
 </head>
@@ -170,7 +206,7 @@
 
     <header>
         <div class="logo-group">
-            <div class="logo">Acore</div>
+            <div class="logo" style="display:flex; align-items:center; gap:8px;"><img class="brand-img" src="img/logo.png" alt="" width="30" height="30">Acore</div>
             <div class="slogan">Все для вас</div>
         </div>
 
@@ -180,20 +216,21 @@
         </div>
     </header>
 
+    <div class="app">
     <div class="top-tabs">
-        <button class="tab-btn active" onclick="switchTopTab('news', this)">📰 Новини</button>
-        <button class="tab-btn" onclick="switchTopTab('ai', this)">🤖 Чат з AI</button>
-        <button class="tab-btn" onclick="switchTopTab('mail', this)">📧 Пошта Acore</button>
-        <button class="tab-btn" onclick="switchTopTab('extra', this)">⚙️ Додатково</button>
-        <a href="docs.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">📝 A-Docx</a>
-        <a href="cloud.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">☁️ A-Cloud</a>
-        <a href="search.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">🔍 A-Search</a>
-        <a href="maps.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">🗺️ A-Maps</a>
-        <a href="forum.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">💬 A-Write</a>
-        <a href="music.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">🎵 A-Music</a>
-        <a href="video.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">🎬 A-Video</a>
-        <a href="slides.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">📊 A-Presentation</a>
-        <a href="atable.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;">▦ A-Table</a>
+        <button class="tab-btn active" onclick="switchTopTab('news', this)"><span class="ic">📰</span><span class="lbl">Новини</span></button>
+        <button class="tab-btn" onclick="switchTopTab('ai', this)"><span class="ic">🤖</span><span class="lbl">Чат з AI</span></button>
+        <button class="tab-btn" onclick="switchTopTab('mail', this)"><span class="ic">📧</span><span class="lbl">Пошта Acore</span></button>
+        <button class="tab-btn" onclick="switchTopTab('extra', this)"><span class="ic">⚙️</span><span class="lbl">Додатково</span></button>
+        <a href="docs.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;"><span class="ic">📝</span><span class="lbl">A-Docx</span></a>
+        <a href="cloud.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;"><span class="ic">☁️</span><span class="lbl">A-Cloud</span></a>
+        <a href="search.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;"><span class="ic">🔍</span><span class="lbl">A-Search</span></a>
+        <a href="maps.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;"><span class="ic">🗺️</span><span class="lbl">A-Maps</span></a>
+        <a href="forum.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;"><span class="ic">💬</span><span class="lbl">A-Write</span></a>
+        <a href="music.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;"><span class="ic">🎵</span><span class="lbl">A-Music</span></a>
+        <a href="video.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;"><span class="ic">🎬</span><span class="lbl">A-Video</span></a>
+        <a href="slides.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;"><span class="ic">📊</span><span class="lbl">A-Presentation</span></a>
+        <a href="atable.html" class="tab-btn" style="text-decoration:none; display:flex; align-items:center;"><span class="ic">▦</span><span class="lbl">A-Table</span></a>
     </div>
 
     <div class="container">
@@ -348,6 +385,8 @@
         </div>
     </div>
 
+    </div>
+
     <!-- Висувний чат -->
     <div class="side-chat-drawer" id="chatDrawer">
         <div class="chat-tab-btn" onclick="toggleChatDrawer()">📖 ЧАТ</div>
@@ -366,6 +405,7 @@
         </div>
     </div>
 
+    <div id="toasts" class="toasts" aria-live="polite"></div>
     <script src="js/config.js"></script>
     <script src="js/core.js"></script>
     <script src="js/ai.js"></script>
@@ -376,5 +416,6 @@
     <script src="js/games/manager.js"></script>
     <script src="js/boot.js"></script>
 
+<script src="js/mobile.js"></script>
 </body>
 </html>
