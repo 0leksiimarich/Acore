@@ -39,6 +39,9 @@ window.ACORE_CONFIG = {
     // Карти: Worker з місцями з OpenStreetMap і оформленням ШІ (acore-places)
     MAPS_WORKER_URL: "https://acore-places.oleksijmaric20.workers.dev",
 
+    // Відео
+    VIDEO_WORKER_URL: "https://acore-video.oleksijmaric20.workers.dev",
+
     // Доступ за поштою. Повний доступ — лише для пошти цього домену.
     // Інші пошти мають обмеження (квота, розмір файлу, без синхронізації документів).
     // Поки домену немає, залиште порожнім: обмежень не буде, повний доступ у всіх.
