@@ -1,0 +1,89 @@
+/* Спільна тема Acore: палітра з фото
+ * #000366  глибокий синій (фон, шапка)
+ * #002466  синій (картки, поверхні)
+ * #1E0066  індиго (акцент)
+ * #004466  бірюзово-синій (рамки, кнопки)
+ * #3F0066  фіолетовий (акцент, градієнти)
+ * Підключення: <link rel="stylesheet" href="css/theme.css"> у <head>.
+ */
+:root {
+    --c-deep: #000366;
+    --c-navy: #002466;
+    --c-indigo: #1E0066;
+    --c-teal: #004466;
+    --c-purple: #3F0066;
+    --c-text: #eef2ff;
+    --c-muted: #a9b8d8;
+    --c-link: #9ad7ff;
+    --c-glow: #5b8cff;
+}
+
+html, body {
+    background: linear-gradient(160deg, var(--c-deep) 0%, var(--c-indigo) 55%, var(--c-purple) 100%) fixed !important;
+    color: var(--c-text) !important;
+}
+
+header, .top-tabs, .topbar, .site-header {
+    background: linear-gradient(90deg, var(--c-deep), var(--c-teal)) !important;
+    border-color: var(--c-teal) !important;
+    color: var(--c-text) !important;
+}
+
+.card, .panel, .box, .modal, .pbox, .section, .msg-col, .feed-card {
+    background: var(--c-navy) !important;
+    border: 1px solid var(--c-teal) !important;
+    color: var(--c-text) !important;
+    box-shadow: 0 4px 18px rgba(0, 3, 40, .45);
+}
+
+h1, h2, h3, h4, .card h3 {
+    color: #ffffff !important;
+}
+
+a { color: var(--c-link); }
+a:hover { color: #ffffff; }
+
+button, .btn, .tab, .tab-btn, .tool-btn, .plug, .chip {
+    background: linear-gradient(90deg, var(--c-teal), var(--c-purple)) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--c-teal) !important;
+}
+button:hover, .btn:hover, .tab-btn:hover, .tab:hover {
+    box-shadow: 0 0 14px rgba(91, 140, 255, .55);
+}
+button:disabled, .btn:disabled { opacity: .5; }
+
+/* Пошукові рядки: підсвічені; при фокусі яскравіше */
+input[type="search"], input[type="text"].search, #searchInput, #q, #ai-input, .search-box input, .search input {
+    background: #001a4d !important;
+    color: var(--c-text) !important;
+    border: 2px solid var(--c-teal) !important;
+    box-shadow: 0 0 12px rgba(63, 0, 102, .7);
+    outline: none !important;
+}
+input[type="search"]:focus, #searchInput:focus, #q:focus, #ai-input:focus, .search-box input:focus, .search input:focus {
+    border-color: var(--c-glow) !important;
+    box-shadow: 0 0 0 3px rgba(91, 140, 255, .35), 0 0 18px rgba(91, 140, 255, .6) !important;
+}
+
+input, textarea, select {
+    background: #001a4d !important;
+    color: var(--c-text) !important;
+    border: 1px solid var(--c-teal) !important;
+}
+input::placeholder, textarea::placeholder { color: var(--c-muted) !important; }
+
+.status, .muted, small, .vmeta, .note, .news-meta {
+    color: var(--c-muted) !important;
+}
+
+.tag { background: var(--c-purple) !important; color: #ffffff !important; }
+table { border-color: var(--c-teal) !important; }
+th, td { border-color: var(--c-teal) !important; color: var(--c-text) !important; }
+
+/* Активна вкладка має виділятися */
+.tab-btn.active, .tab.on, .plug.on {
+    background: linear-gradient(90deg, var(--c-glow), var(--c-purple)) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 16px rgba(91, 140, 255, .6);
+}
