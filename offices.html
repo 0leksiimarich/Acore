@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Офіс — Acore</title>
+<link rel="stylesheet" href="css/theme.css">
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; }
+    header .logo { font-weight: 800; font-size: 20px; color: #fff; }
+    header a.back { color: #fff; text-decoration: none; font-size: 13px; padding: 6px 12px; border-radius: 16px; background: rgba(255,255,255,.12); }
+    main { max-width: 900px; margin: 28px auto; padding: 0 16px; }
+    main h1 { font-size: 22px; margin-bottom: 6px; }
+    main p { color: var(--c-muted); margin-bottom: 22px; font-size: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+    .app { display: block; padding: 22px 18px; border-radius: 12px; text-decoration: none; color: var(--c-text); }
+    .app .ico { font-size: 32px; margin-bottom: 10px; }
+    .app b { display: block; font-size: 17px; color: #fff; margin-bottom: 4px; }
+    .app span { font-size: 13px; color: var(--c-muted); }
+    .app:hover { box-shadow: 0 0 18px rgba(91,140,255,.55); }
+</style>
+</head>
+<body>
+<header>
+    <div class="logo">Acore · Офіс</div>
+    <a class="back" href="index.html">← Головна</a>
+</header>
+<main>
+    <h1>Офісні програми</h1>
+    <p>Документи, презентації й таблиці в одному місці.</p>
+    <div class="grid">
+        <a class="card app" href="docs.html">
+            <div class="ico">📝</div>
+            <b>A-Docx</b>
+            <span>Текстові документи, експорт у Word</span>
+        </a>
+        <a class="card app" href="slides.html">
+            <div class="ico">📊</div>
+            <b>A-Presentation</b>
+            <span>Презентації, слайди, експорт у PowerPoint</span>
+        </a>
+        <a class="card app" href="atable.html">
+            <div class="ico">▦</div>
+            <b>A-Table</b>
+            <span>Таблиці з формулами, експорт в Excel</span>
+        </a>
+    </div>
+</main>
+<script src="js/mobile.js"></script>
+</body>
+</html>
