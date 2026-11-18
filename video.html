@@ -615,7 +615,11 @@
         const { FFmpeg } = window.FFmpegWASM;
         const { toBlobURL } = window.FFmpegUtil;
         const ff = new FFmpeg();
+        // Фоновий скрипт беремо як blob (з того самого домену), інакше браузер блокує крос-доменного працівника
+        const workerSrc = await (await fetch('https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/814.ffmpeg.js')).text();
+        const classWorkerURL = URL.createObjectURL(new Blob([workerSrc], { type: 'text/javascript' }));
         await ff.load({
+            classWorkerURL,
             coreURL: await toBlobURL('https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js', 'text/javascript'),
             wasmURL: await toBlobURL('https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm', 'application/wasm')
         });
