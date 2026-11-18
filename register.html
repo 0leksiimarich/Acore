@@ -52,8 +52,15 @@
     .welcome p { font-size: 17px; color: #333; margin: 10px 0 22px; line-height: 1.5; }
     .welcome .btn { display: inline-block; width: auto; padding: 12px 28px; }
 
+    .notice { background: #fff8e1; border: 1px solid #ffe08a; color: #5c4500; padding: 14px; border-radius: 10px; font-size: 14px; line-height: 1.5; margin-bottom: 16px; }
+    .notice .acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .notice .acts .btn { width: auto; padding: 9px 14px; font-size: 14px; }
+    .btn.alt { background: #eef2f7; color: #1a4a84; }
+    .btn.alt:hover { background: #dce4ec; }
+
     @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
-</style>
+    </style>
+    <link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
 <header>
@@ -65,6 +72,14 @@
 
     <!-- Крок 1: дані -->
     <section class="card" id="stepForm">
+        <div class="notice" id="existing" hidden>
+            У цьому браузері вже увійшов акаунт: <b id="existingEmail"></b>.<br>
+            Можна створити ще один, але бажано увійти зі своєї пошти.
+            <div class="acts">
+                <button class="btn" id="goLogin" type="button">Увійти в мою пошту</button>
+                <button class="btn alt" id="createNew" type="button">Створити інший акаунт</button>
+            </div>
+        </div>
         <h1>Створити акаунт</h1>
         <p class="sub">Заповніть дані. Після реєстрації ми надішлемо лист із посиланням для підтвердження пошти.</p>
         <form id="regForm" novalidate>
@@ -120,7 +135,7 @@
     <section class="card welcome" id="stepDone" hidden>
         <div class="big">🎉</div>
         <h1>Вітаємо!</h1>
-        <p>Вітаємо, ви стали частиною великої сім'ї Acore!</p>
+        <p>Вітаємо, ви стали частиною великої сім'ї Акор!</p>
         <a class="btn" href="cloud.html">Перейти до облака</a>
     </section>
 
@@ -179,12 +194,20 @@
         window.scrollTo(0, 0);
     }
 
-    // Лист із посиланням: сторінка відкривається знову з ?confirmed=1 і з токеном у адресі
-    async function checkConfirmedReturn() {
-        const back = /confirmed=1/.test(location.search) || /access_token|type=signup/.test(location.hash);
-        if (!back) return;
-        const { data } = await sb.auth.getSession();
-        if (data && data.session) showStep('done');
+    // Повернення з листа. Посилання відкривається в тому браузері/застосунку, де клікнули,
+    // тому сесії може не бути. Підтвердження все одно відбулось, тож показуємо привітання.
+    function checkConfirmedReturn() {
+        const hash = new URLSearchParams(location.hash.replace(/^#/, ''));
+        const q = new URLSearchParams(location.search);
+        if (hash.get('error') || hash.get('error_code')) {
+            showStep('form');
+            msg($('formMsg'), 'Посилання для підтвердження не спрацювало (можливо, застаріло). Створіть акаунт знову або надішліть лист ще раз.');
+            return;
+        }
+        if (q.get('confirmed') === '1' || hash.get('access_token') || hash.get('type') === 'signup') {
+            history.replaceState(null, '', location.pathname);
+            showStep('done');
+        }
     }
 
     $('regForm').addEventListener('submit', async e => {
@@ -205,7 +228,7 @@
         const btn = $('btnCreate');
         btn.disabled = true;
         msg($('formMsg'), 'Створюємо акаунт…', true);
-        const redirect = location.origin + location.pathname + '?confirmed=1';
+        const redirect = location.origin + location.pathname.replace('register.html', 'register.html') + '?confirmed=1';
         const { data, error } = await sb.auth.signUp({
             email: v.email,
             password: v.password,
@@ -247,9 +270,26 @@
         showStep('form');
     });
 
-    checkConfirmedReturn();
+    async function checkExistingSession() {
+        const { data } = await sb.auth.getSession();
+        if (!data || !data.session) return;
+        $('existingEmail').textContent = data.session.user.email || '';
+        $('existing').hidden = false;
+    }
+
+    $('goLogin').addEventListener('click', () => { location.href = 'cloud.html'; });
+
+    $('createNew').addEventListener('click', async () => {
+        await sb.auth.signOut();
+        $('existing').hidden = true;
+        msg($('formMsg'), 'Заповніть дані для нового акаунта.', true);
+    });
+
     showStep('form');
+    checkConfirmedReturn();
+    checkExistingSession();
 })();
 </script>
+<script src="js/mobile.js"></script>
 </body>
 </html>
