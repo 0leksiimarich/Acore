@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1a4a84">
-<title>AMaps</title>
+<title>A-Maps</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -50,11 +50,12 @@
         aside { width: 100%; height: 38%; border-right: none; border-bottom: 1px solid #d6dde6; }
         #card { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 55%; }
     }
-</style>
+    </style>
+    <link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
 <header>
-    <div class="logo">📍 AMaps</div>
+    <div class="logo">📍 A-Maps</div>
     <a href="index.html">← Головна</a>
     <div class="search">
         <input id="q" type="text" placeholder="Знайти місце, наприклад: ювелірна фабрика" maxlength="80" aria-label="Пошук місця">
@@ -129,12 +130,21 @@
         });
     }
 
-    async function nearby(lat, lon, q) {
+    // Спершу поблизу, далі ширше. Так найближче місце, а не випадкове далеке.
+    async function findNearest(lat, lon, q) {
+        for (const r of [1500, 5000, 15000]) {
+            const n = await nearby(lat, lon, q, r);
+            if (n > 0) return n;
+        }
+        return 0;
+    }
+
+    async function nearby(lat, lon, q, r) {
         status('Шукаю…');
         try {
-            const d = await api('/places?lat=' + lat + '&lon=' + lon + '&r=2000' + (q ? '&q=' + encodeURIComponent(q) : ''));
+            const d = await api('/places?lat=' + lat + '&lon=' + lon + '&r=' + (r || 2000) + (q ? '&q=' + encodeURIComponent(q) : ''));
             renderList(d.items);
-            status(d.items.length ? 'Знайдено: ' + d.items.length + ' (радіус 2 км)' : 'Поруч нічого не знайдено.');
+            status(d.items.length ? 'Знайдено: ' + d.items.length + ' (радіус ' + ((r || 2000) / 1000) + ' км)' : 'Поруч нічого не знайдено.');
             return d.items.length;
         } catch (e) {
             status(e.message);
@@ -240,7 +250,7 @@
             meLayer.clearLayers();
             L.circleMarker([me.lat, me.lon], { radius: 7, color: '#1a4a84', fillColor: '#1a4a84', fillOpacity: .8 }).addTo(meLayer);
             map.setView([me.lat, me.lon], 15);
-            nearby(me.lat, me.lon, '');
+            findNearest(me.lat, me.lon, '');
         }, () => {
             status('Не вдалося визначити місце. Дозвольте доступ до геолокації або введіть назву.');
         }, { enableHighAccuracy: true, timeout: 10000 });
@@ -250,7 +260,7 @@
         const q = $('q').value.trim();
         if (!q) return;
         const c = me || { lat: CITY.lat, lon: CITY.lon };
-        const found = await nearby(c.lat, c.lon, q);
+        const found = await findNearest(c.lat, c.lon, q);
         if (found) return;
         status('Шукаю по всьому місту…');
         try {
@@ -272,5 +282,6 @@
     status('Натисніть «Поруч», щоб побачити місця навколо вас, або введіть назву.');
 })();
 </script>
+<script src="js/mobile.js"></script>
 </body>
 </html>
