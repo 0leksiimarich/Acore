@@ -638,7 +638,7 @@
         const data = await ff.readFile('out.mp4');
         await ff.deleteFile('in.mp4');
         await ff.deleteFile('out.mp4');
-        return new File([data.buffer], file.name.replace(/\.\w+$/, '') + '_720p.mp4', { type: 'video/mp4' });
+        return new File([data], file.name.replace(/\.\w+$/, '') + '_720p.mp4', { type: 'video/mp4' });
     }
 
     $('vfile').addEventListener('change', () => {
@@ -659,7 +659,9 @@
             $('compressNote').textContent = 'Готово: ' + mb + ' MB. Тепер натисніть «Надіслати на перевірку».';
         } catch (err) {
             compressedFile = null;
-            $('compressNote').textContent = 'Помилка стиснення: ' + err.message;
+            const det = (err && (err.message || err.type || err.reason)) || (err && err.toString && err.toString()) || 'невідома помилка';
+            $('compressNote').textContent = 'Помилка стиснення: ' + det + ' (деталі в консолі F12)';
+            console.error('ffmpeg помилка:', err);
         } finally {
             $('compressBtn').disabled = false;
         }
