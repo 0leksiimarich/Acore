@@ -1,0 +1,26 @@
+/* Біла тема Acore (як було спочатку). Вмикається перемикачем у правому нижньому куті. */
+html, body { background: #f4f6fb !important; color: #1b2433 !important; }
+header, .top-tabs, .topbar, .site-header { background: #1a4a84 !important; color: #ffffff !important; border-color: #1a4a84 !important; box-shadow: none !important; }
+.card, .panel, .box, .modal, .pbox, .section, .msg-col, .feed-card, aside, .side, .srow, .ch-card, .prow2 {
+    background: #ffffff !important; color: #1b2433 !important; border: 1px solid #d6dde6 !important; box-shadow: 0 2px 10px rgba(20,40,80,.06) !important;
+}
+h1, h2, h3, h4, .card h3 { color: #0f1b2d !important; }
+a { color: #1a4a84 !important; }
+button, .btn, .tab, .tab-btn, .tool-btn, .plug, .chip, label.btn, .photo-btn, .btn-photo, .file-btn {
+    background: #1a4a84 !important; color: #ffffff !important; border: 1px solid #1a4a84 !important;
+}
+button:hover, .btn:hover, .tab-btn:hover, .tab:hover { background: #0f3a70 !important; box-shadow: none !important; }
+.tab-btn.active, .tab.on, .plug.on { background: #0f3a70 !important; color: #ffffff !important; }
+input, textarea, select, #q, #searchInput, #ai-input, .search input {
+    background: #ffffff !important; color: #1b2433 !important; border: 1px solid #c8d2e0 !important; box-shadow: none !important;
+}
+input[type="search"]:focus, #searchInput:focus, #q:focus, #ai-input:focus, .search input:focus, input:focus {
+    border-color: #1a4a84 !important; box-shadow: 0 0 0 3px rgba(26,74,132,.2) !important;
+}
+input::placeholder, textarea::placeholder { color: #8a94a6 !important; }
+.ai-chat-box, #ai-log, .chat-box, .translator-result, .tr-result, #trResult, #translateOut,
+[readonly], .result, .output, .out-box { background: #f4f6fb !important; color: #1b2433 !important; border: 1px solid #d6dde6 !important; }
+.status, .muted, small, .vmeta, .note, .news-meta { color: #6b7587 !important; }
+.tag { background: #1a4a84 !important; color: #ffffff !important; }
+table { border-color: #d6dde6 !important; }
+th, td { border-color: #d6dde6 !important; color: #1b2433 !important; }
