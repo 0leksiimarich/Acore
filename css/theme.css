@@ -1,16 +1,16 @@
-/* Тема Acore: чорний фон + м'який фіолетовий акцент з палітри #3F0066 / #1E0066.
+/* Тема Acore: чорний фон + м'який фіолетовий акцент з палітри #2d6a8a / #16232f.
  * Щоб змінити акцент, поміняй --accent і --accent-2.
  */
 :root {
     --bg: #050608;          /* основний фон */
     --surface: #0c0d12;     /* картки, панелі */
     --line: #1c1d27;        /* тонкі рамки */
-    --accent: #3F0066;      /* акцент: кнопки, активна вкладка */
-    --accent-2: #1E0066;    /* темніший відтінок акценту */
-    --glow: #7a3cff;        /* світіння при фокусі */
+    --accent: #2d6a8a;      /* акцент: кнопки, активна вкладка */
+    --accent-2: #16232f;    /* темніший відтінок акценту */
+    --glow: #4aa3c7;        /* світіння при фокусі */
     --text: #ececf2;
     --muted: #8a8fa3;
-    --link: #b89cff;
+    --link: #8fd3ea;
 }
 
 html, body {
@@ -44,7 +44,7 @@ button, .btn, .tab, .tab-btn, .tool-btn, .plug, .chip {
 }
 button:hover, .btn:hover, .tab-btn:hover, .tab:hover {
     background: var(--accent) !important;
-    box-shadow: 0 0 12px rgba(122, 60, 255, .35);
+    box-shadow: 0 0 12px rgba(74, 163, 199, .35);
 }
 button:disabled, .btn:disabled { opacity: .45; }
 
@@ -53,12 +53,12 @@ input[type="search"], input[type="text"].search, #searchInput, #q, #ai-input, .s
     background: #101118 !important;
     color: var(--text) !important;
     border: 2px solid var(--accent) !important;
-    box-shadow: 0 0 10px rgba(63, 0, 102, .55);
+    box-shadow: 0 0 10px rgba(45, 106, 138, .55);
     outline: none !important;
 }
 input[type="search"]:focus, #searchInput:focus, #q:focus, #ai-input:focus, .search-box input:focus, .search input:focus {
     border-color: var(--glow) !important;
-    box-shadow: 0 0 0 3px rgba(122, 60, 255, .25), 0 0 16px rgba(122, 60, 255, .5) !important;
+    box-shadow: 0 0 0 3px rgba(74, 163, 199, .25), 0 0 16px rgba(74, 163, 199, .5) !important;
 }
 
 input, textarea, select {
@@ -78,5 +78,32 @@ th, td { border-color: var(--line) !important; color: var(--text) !important; }
 .tab-btn.active, .tab.on, .plug.on {
     background: var(--accent) !important;
     color: #ffffff !important;
-    box-shadow: 0 0 14px rgba(122, 60, 255, .4);
+    box-shadow: 0 0 14px rgba(74, 163, 199, .4);
 }
+
+/* Бічні панелі й списки відео: без білого фону */
+aside, .side, .srow, .ch-card, .watch .side, .prow2 {
+    background: var(--surface) !important;
+    color: var(--text) !important;
+    border-color: var(--line) !important;
+}
+
+/* ===== Виправлення з тестування ===== */
+/* Чат, перекладач, результати: темні поля замість світлих */
+.ai-chat-box, #ai-log, .chat-box, .translator-result, .tr-result, #trResult, #translateOut,
+[readonly], .result, .output, .out-box { background: #101118 !important; color: var(--text) !important; border: 1px solid var(--line) !important; }
+/* Підписи-кнопки (label як кнопка, наприклад «Фото») */
+label.btn, label[class*="btn"], .photo-btn, .btn-photo, .file-btn, label.tool-btn {
+    background: var(--accent-2) !important; color: #ffffff !important; border: 1px solid var(--accent) !important;
+}
+/* Посилання-кнопки в шапці (← Головна, ← Назад на Acore) */
+header a, a.back, .back { background: var(--accent-2) !important; color: #ffffff !important; border: 1px solid var(--accent) !important; }
+/* Білі світлі блоки, задані inline-стилями: переводимо в темні (крім документа) */
+[style*="background:#f"]:not(.paper), [style*="background: #f"]:not(.paper),
+[style*="background:#e"]:not(.paper), [style*="background: #e"]:not(.paper),
+[style*="background:#fff"]:not(.paper), [style*="background: #fff"]:not(.paper),
+[style*="background:white"]:not(.paper), [style*="background: white"]:not(.paper) {
+    background: var(--surface) !important; color: var(--text) !important;
+}
+/* Робоча область редакторів */
+#slidesPanel, .slides-panel, .thumbs, #thumbs, .sidebar-docs, .doc-list { background: var(--surface) !important; color: var(--text) !important; }
