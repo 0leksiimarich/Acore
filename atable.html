@@ -74,9 +74,11 @@
     <input id="fxIn" placeholder="Введіть значення або формулу, наприклад =SUM(A1:A5) або =A1*2">
 </div>
 
+<div id="ai-table" style="padding:6px 12px;background:#fff;border-bottom:1px solid #d6dde6"></div>
 <div class="grid-wrap" id="gridWrap"><table id="grid"></table></div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="js/office-ai.js"></script>
 <script>
 (function () {
     'use strict';
@@ -413,6 +415,14 @@
         const name = (data.title || 'table').replace(/[\\/:*?"<>|]+/g, '_');
         XLSX.writeFile(wb, name + '.xlsx');
     });
+
+    // ---- ШІ: формула в поточну клітинку ----
+    window.tableInsertAI = t => {
+        $('fxIn').value = t;
+        commit(t, false);
+        $('status').textContent = 'Формулу від ШІ вставлено в ' + addr(sel.r, sel.c);
+    };
+    if (window.OfficeAI) OfficeAI.mount(document.getElementById('ai-table'), { mode: 'table', onInsert: window.tableInsertAI });
 
     render();
 })();
