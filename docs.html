@@ -95,6 +95,7 @@
         }
     </style>
     <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js"></script>
 </head>
 <body>
 <header>
@@ -148,6 +149,7 @@
             <button type="button" data-act="clear" title="Очистити форматування">✕</button>
         </div>
 
+        <div id="ai-docx" style="padding:6px 12px;background:#fff;border-bottom:1px solid #ddd"></div>
         <div class="paper-wrap">
             <div class="paper"><div id="editor"></div></div>
         </div>
@@ -170,6 +172,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
 <script src="js/access.js"></script>
+<script src="js/office-ai.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 
 <script type="module">
@@ -633,6 +636,29 @@ import TableCell from 'https://esm.sh/@tiptap/extension-table-cell@2';
     $('#btn-delete').addEventListener('click', deleteDoc);
     $('#btn-cloud').addEventListener('click', saveToCloud);
     window.addEventListener('beforeunload', flushSave);
+
+    // ---- ШІ: вставка тексту в документ ----
+    function aiToHtml(text) {
+        const esc = x => x.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+        let out = '', inList = false;
+        const closeList = () => { if (inList) { out += '</ul>'; inList = false; } };
+        String(text).split('\n').forEach(line => {
+            const l = line.trim();
+            if (!l) { closeList(); return; }
+            if (l.startsWith('## ')) { closeList(); out += '<h2>' + esc(l.slice(3)) + '</h2>'; }
+            else if (l.startsWith('# ')) { closeList(); out += '<h1>' + esc(l.slice(2)) + '</h1>'; }
+            else if (l.startsWith('- ')) { if (!inList) { out += '<ul>'; inList = true; } out += '<li>' + esc(l.slice(2)) + '</li>'; }
+            else { closeList(); out += '<p>' + esc(l) + '</p>'; }
+        });
+        closeList();
+        return out;
+    }
+    window.docxInsertAI = t => {
+        if (!current()) createDoc();
+        editor.chain().focus().insertContent(aiToHtml(t)).run();
+        statusEl.textContent = 'Текст від ШІ вставлено. Перевірте і відредагуйте.';
+    };
+    if (window.OfficeAI) OfficeAI.mount(document.getElementById('ai-docx'), { mode: 'docx', onInsert: window.docxInsertAI });
 
     // Старт
     if (docs.length) open(docs.slice().sort((a, b) => b.updated - a.updated)[0].id);
