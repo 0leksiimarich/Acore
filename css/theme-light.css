@@ -1,54 +1,52 @@
-/* СВІТЛА ТЕМА Acore: пастельні кольори (як до «Game-turnir»).
- * Головні кольори — у блоці змінних нижче. Змінюй їх тут, решта підлаштується.
+/* БІЛА ТЕМА Acore: нейтральна, як чат Акорика. Без пастельних кольорів.
+ * Головний колір — темно-синій (кнопки, активна вкладка). Змінити: --brand.
  */
 :root {
-    --bg: #f6f7fb;          /* фон сторінки */
-    --surface: #ffffff;     /* картки, панелі */
-    --line: #e3e7f0;        /* рамки */
-    --mint: #cdeee0;        /* шапка, м'ятний */
-    --lavender: #dcd6f5;    /* кнопки, лавандовий */
-    --sky: #cfe6ff;         /* активна вкладка, небесний */
-    --peach: #ffe0cf;       /* підсвітка пошуку, персиковий */
-    --ink: #2b2f3e;         /* текст */
-    --ink-soft: #6b7287;    /* другорядний текст */
-    --link: #4a6fa5;
+    --bg: #f4f6fb;          /* фон сторінки */
+    --surface: #ffffff;     /* картки, панелі, поля */
+    --line: #d9dfea;        /* тонкі рамки */
+    --brand: #1a4a84;       /* головний колір: кнопки, активна вкладка */
+    --brand-dark: #0f3a70;  /* при наведенні */
+    --ink: #1b2433;         /* текст */
+    --ink-soft: #6b7587;    /* другорядний текст */
+    --link: #1a4a84;
 }
 
 html, body { background: var(--bg) !important; color: var(--ink) !important; }
 header, .top-tabs, .topbar, .site-header {
-    background: var(--mint) !important; color: var(--ink) !important;
-    border-color: var(--line) !important; box-shadow: none !important;
+    background: var(--surface) !important; color: var(--ink) !important;
+    border-color: var(--line) !important; box-shadow: 0 1px 0 var(--line) !important;
 }
+header .logo, header .who { color: var(--ink) !important; }
 .card, .panel, .box, .modal, .pbox, .section, .msg-col, .feed-card, aside, .side, .srow, .ch-card, .prow2 {
     background: var(--surface) !important; color: var(--ink) !important;
-    border: 1px solid var(--line) !important; box-shadow: 0 2px 10px rgba(40, 50, 90, .05) !important;
+    border: 1px solid var(--line) !important; box-shadow: 0 1px 4px rgba(20, 30, 50, .05) !important;
 }
-h1, h2, h3, h4, .card h3 { color: #1d2233 !important; }
+h1, h2, h3, h4, .card h3 { color: #0f1b2d !important; }
 a { color: var(--link) !important; }
 
 button, .btn, .tab, .tab-btn, .tool-btn, .plug, .chip, label.btn, .photo-btn, .btn-photo, .file-btn {
-    background: var(--lavender) !important; color: var(--ink) !important; border: 1px solid #c5bdef !important;
+    background: var(--brand) !important; color: #ffffff !important; border: 1px solid var(--brand) !important;
 }
-button:hover, .btn:hover, .tab-btn:hover, .tab:hover { background: #cbc2f0 !important; box-shadow: none !important; }
-.tab-btn.active, .tab.on, .plug.on { background: var(--sky) !important; color: #1d3550 !important; border-color: #a9cdf0 !important; }
+button:hover, .btn:hover, .tab-btn:hover, .tab:hover { background: var(--brand-dark) !important; box-shadow: none !important; }
+.tab-btn.active, .tab.on, .plug.on { background: var(--brand-dark) !important; color: #ffffff !important; border-color: var(--brand-dark) !important; }
 button:disabled, .btn:disabled { opacity: .5; }
 
 input, textarea, select, #q, #searchInput, #ai-input, .search input {
-    background: #ffffff !important; color: var(--ink) !important; border: 1px solid #d5dbe8 !important; box-shadow: none !important;
+    background: var(--surface) !important; color: var(--ink) !important; border: 1px solid var(--line) !important; box-shadow: none !important;
 }
-/* Пошук: персиковий, при фокусі — м'ятний */
 input[type="search"], #searchInput, #q, #ai-input, .search-box input, .search input {
-    background: var(--peach) !important; border: 2px solid #ffc4a6 !important;
+    border: 1px solid var(--line) !important;
 }
-input[type="search"]:focus, #searchInput:focus, #q:focus, #ai-input:focus, .search-box input:focus, .search input:focus, input:focus {
-    border-color: #9fdcc0 !important; box-shadow: 0 0 0 3px rgba(159, 220, 192, .45) !important;
+input[type="search"]:focus, #searchInput:focus, #q:focus, #ai-input:focus, .search-box input:focus, .search input:focus, input:focus, textarea:focus {
+    border-color: var(--brand) !important; box-shadow: 0 0 0 3px rgba(26, 74, 132, .15) !important;
 }
 input::placeholder, textarea::placeholder { color: var(--ink-soft) !important; }
 
 .ai-chat-box, #ai-log, .chat-box, .translator-result, .tr-result, #trResult, #translateOut,
-[readonly], .result, .output, .out-box { background: #f6f7fb !important; color: var(--ink) !important; border: 1px solid var(--line) !important; }
+[readonly], .result, .output, .out-box { background: var(--bg) !important; color: var(--ink) !important; border: 1px solid var(--line) !important; }
 .status, .muted, small, .vmeta, .note, .news-meta { color: var(--ink-soft) !important; }
-.tag { background: var(--mint) !important; color: #1d3b30 !important; }
+.tag { background: var(--line) !important; color: var(--ink) !important; }
 table { border-color: var(--line) !important; }
 th, td { border-color: var(--line) !important; color: var(--ink) !important; }
-header a, a.back, .back { background: var(--lavender) !important; color: var(--ink) !important; border: 1px solid #c5bdef !important; }
+header a, a.back, .back { background: var(--brand) !important; color: #ffffff !important; border: 1px solid var(--brand) !important; }
