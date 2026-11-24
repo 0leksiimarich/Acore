@@ -188,6 +188,7 @@
     </div><div class="gl">Файл</div></div>
 </div>
 
+<div id="ai-slides" style="padding:6px 12px;background:#fff;border-bottom:1px solid #d0d0d0"></div>
 <div class="work">
     <aside id="thumbs"></aside>
     <main id="main"><div id="stageWrap"><div id="stage"></div></div></main>
@@ -200,6 +201,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="js/office-ai.js"></script>
 <script>
 (function () {
     'use strict';
@@ -677,6 +679,35 @@
             alert('Не вдалося створити презентацію: ' + e.message);
         }
     });
+
+    // ---- ШІ: план у слайди ----
+    function aiSlides(text) {
+        const blocks = [];
+        let cur = null;
+        const ensure = () => { if (!cur) { cur = { title: 'Слайд', bullets: [] }; blocks.push(cur); } };
+        String(text).split('\n').forEach(line => {
+            const l = line.trim();
+            if (!l) return;
+            if (l.startsWith('## ')) { cur = { title: l.slice(3).trim(), bullets: [] }; blocks.push(cur); }
+            else if (l.startsWith('- ')) { ensure(); cur.bullets.push(l.slice(2).trim()); }
+            else { ensure(); cur.bullets.push(l); }
+        });
+        if (!blocks.length) return;
+        snap();
+        const start = deck.slides.length;
+        blocks.forEach(b => {
+            const t = th();
+            const items = [txt(6, 6, 88, 14, b.title, 44, true, 'left')];
+            if (b.bullets.length) items.push(txt(6, 26, 88, 64, b.bullets.map(x => '• ' + x).join('\n'), 26, false, 'left'));
+            deck.slides.push({ bg: t.bg, items });
+        });
+        cur = start;
+        selId = null;
+        save();
+        render();
+    }
+    window.slidesInsertAI = t => aiSlides(t);
+    if (window.OfficeAI) OfficeAI.mount(document.getElementById('ai-slides'), { mode: 'slides', onInsert: window.slidesInsertAI });
 
     render();
     save();
