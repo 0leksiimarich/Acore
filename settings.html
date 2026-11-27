@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a4a84">
+<title>Налаштування — Acore</title>
+<link rel="stylesheet" href="css/theme.css">
+<script src="js/theme.js"></script>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; }
+    header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; }
+    header h1 { font-size: 20px; font-weight: 600; }
+    header a { margin-left: auto; color: var(--text); text-decoration: none; font-size: 13px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); }
+    main { max-width: 680px; margin: 20px auto; padding: 0 16px 40px; display: flex; flex-direction: column; gap: 16px; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .card h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .card p { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 0; border-top: 1px solid var(--line); }
+    .row:first-of-type { border-top: none; }
+    .row .lbl { font-size: 14px; }
+    .row .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    /* Перемикач у стилі Material You */
+    .switch { position: relative; width: 52px; height: 30px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch span { position: absolute; inset: 0; background: var(--line); border-radius: 999px; cursor: pointer; transition: background .2s; }
+    .switch span::after { content: ''; position: absolute; left: 4px; top: 4px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .2s; }
+    .switch input:checked + span { background: var(--accent); }
+    .switch input:checked + span::after { transform: translateX(22px); }
+    select { border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; background: var(--bg); color: var(--text); font-size: 14px; min-width: 180px; }
+    .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+    .seg label { padding: 8px 14px; cursor: pointer; font-size: 13px; }
+    .seg input { display: none; }
+    .seg input:checked + span { background: var(--accent); color: #000; }
+    .seg span { padding: 8px 14px; display: block; font-size: 13px; }
+    .ok { font-size: 13px; color: var(--accent); min-height: 18px; margin-top: 8px; }
+    .danger { border: 1px solid #c0392b; color: #c0392b; background: transparent; border-radius: 999px; padding: 9px 16px; cursor: pointer; font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+    <h1>⚙ Налаштування</h1>
+    <a href="index.html">← Головна</a>
+</header>
+
+<main>
+    <section class="card">
+        <h2>Тема оформлення</h2>
+        <p>Темна — чорний фон з неоново-зеленим акцентом. Світла — білий фон із синьою шапкою.</p>
+        <div class="row">
+            <div class="lbl">Тема</div>
+            <div class="seg" id="themeSeg">
+                <label><input type="radio" name="theme" value="dark"><span>🌙 Темна</span></label>
+                <label><input type="radio" name="theme" value="light"><span>☀️ Світла</span></label>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Акорик (ШІ)</h2>
+        <p>Як відповідає ШІ на сторінці ШІ.</p>
+        <div class="row">
+            <div>
+                <div class="lbl">Стиль розмови</div>
+                <div class="sub">Коротко, докладно, дружньо або ділово</div>
+            </div>
+            <select id="style">
+                <option value="short">Коротко</option>
+                <option value="detailed">Докладно</option>
+                <option value="friendly">Дружньо</option>
+                <option value="formal">Ділово</option>
+            </select>
+        </div>
+        <div class="row">
+            <div>
+                <div class="lbl">Пропозиції на початку чату</div>
+                <div class="sub">Готові питання над полем вводу</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="suggest"><span></span></label>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Рекомендації</h2>
+        <p>Що показувати в стрічці та в соцмережі AWrite.</p>
+        <div class="row">
+            <div>
+                <div class="lbl">Рекомендації в AWrite</div>
+                <div class="sub">Популярні й цікаві пости у стрічці</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="awriteRec"><span></span></label>
+        </div>
+        <div class="row">
+            <div>
+                <div class="lbl">Рекомендації відео й музики</div>
+                <div class="sub">Підбірки на головній A-Video і A-Music</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="mediaRec"><span></span></label>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Дані</h2>
+        <p>Історія чатів зберігається в цьому браузері. Її можна очистити.</p>
+        <button class="danger" id="clearChats" type="button">Очистити історію чатів</button>
+    </section>
+
+    <div class="ok" id="saved"></div>
+</main>
+
+<script>
+(function () {
+    'use strict';
+    const SET_KEY = 'acore-settings';
+    const THEME_KEY = 'acore-theme';
+    const DEFAULTS = { style: 'friendly', suggest: true, awriteRec: true, mediaRec: true };
+    const $ = id => document.getElementById(id);
+
+    function read() {
+        try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(SET_KEY) || '{}')); }
+        catch (e) { return Object.assign({}, DEFAULTS); }
+    }
+    function write(patch) {
+        const s = Object.assign(read(), patch);
+        localStorage.setItem(SET_KEY, JSON.stringify(s));
+        flash('Збережено');
+    }
+    let t = null;
+    function flash(msg) {
+        $('saved').textContent = msg;
+        clearTimeout(t);
+        t = setTimeout(() => ($('saved').textContent = ''), 1500);
+    }
+
+    // Стан з пам'яті
+    const s = read();
+    $('style').value = s.style;
+    $('suggest').checked = !!s.suggest;
+    $('awriteRec').checked = !!s.awriteRec;
+    $('mediaRec').checked = !!s.mediaRec;
+    const theme = localStorage.getItem(THEME_KEY) || 'dark';
+    document.querySelectorAll('input[name=theme]').forEach(r => { r.checked = r.value === theme; });
+
+    // Зміни
+    $('style').addEventListener('change', e => write({ style: e.target.value }));
+    $('suggest').addEventListener('change', e => write({ suggest: e.target.checked }));
+    $('awriteRec').addEventListener('change', e => write({ awriteRec: e.target.checked }));
+    $('mediaRec').addEventListener('change', e => write({ mediaRec: e.target.checked }));
+    document.querySelectorAll('input[name=theme]').forEach(r => r.addEventListener('change', e => {
+        localStorage.setItem(THEME_KEY, e.target.value);
+        location.reload();
+    }));
+    $('clearChats').addEventListener('click', () => {
+        if (!confirm('Очистити всю історію чатів Акорика в цьому браузері?')) return;
+        localStorage.removeItem('acore-ai-chats');
+        flash('Історію очищено');
+    });
+})();
+</script>
+<a class="mhome" href="index.html" aria-label="Головна">⌂</a>
+<script src="js/mobile.js"></script>
+</body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a4a84">
+<title>Акорик — ШІ</title>
+<link rel="stylesheet" href="css/theme.css">
+<script src="js/theme.js"></script>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    html, body { height: 100%; }
+    body { display: flex; overflow: hidden; background: var(--bg); color: var(--text); }
+    button, select, textarea { font: inherit; }
+
+    /* Бічна панель */
+    .sb { width: 268px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 12px 10px; gap: 8px; min-height: 0; }
+    .sb-top { display: flex; align-items: center; gap: 8px; padding: 0 4px 6px; }
+    .sb-top .brand { font-weight: 700; font-size: 16px; }
+    .icon-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; color: var(--text); cursor: pointer; font-size: 18px; }
+    .icon-btn:hover { background: rgba(127,127,127,.15); }
+    .newbtn { border: none; border-radius: 999px; padding: 10px 16px; background: var(--accent); color: #000; font-weight: 700; cursor: pointer; text-align: left; }
+    .sb input { border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; background: transparent; color: var(--text); font-size: 13px; outline: none; }
+    .sb input:focus { border-color: var(--accent); }
+    .sb-label { font-size: 12px; color: var(--muted); padding: 10px 8px 2px; }
+    #chatList { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; min-height: 0; }
+    .chat-item { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 14px; }
+    .chat-item:hover { background: rgba(127,127,127,.12); }
+    .chat-item.on { background: rgba(127,127,127,.2); }
+    .chat-item .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-item .del { opacity: 0; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 2px 4px; }
+    .chat-item:hover .del { opacity: 1; }
+    .sb-foot { display: flex; gap: 6px; padding-top: 8px; border-top: 1px solid var(--line); }
+    .sb-foot a { flex: 1; text-align: center; padding: 8px; border-radius: 999px; font-size: 13px; color: var(--text); text-decoration: none; background: rgba(127,127,127,.12); }
+
+    /* Основна область */
+    .main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; position: relative; }
+    .topbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; }
+    .topbar select { border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; background: var(--surface); color: var(--text); font-size: 13px; }
+    .topbar .st { margin-left: auto; font-size: 12px; color: var(--muted); }
+    .log { flex: 1; overflow-y: auto; padding: 8px 16px; min-height: 0; }
+    .wrapmsg { max-width: 760px; margin: 0 auto 18px; }
+    .msg-u { display: flex; justify-content: flex-end; }
+    .bub-u { background: var(--surface); border: 1px solid var(--line); border-radius: 20px 20px 4px 20px; padding: 10px 16px; max-width: 80%; white-space: pre-wrap; word-break: break-word; }
+    .msg-a { font-size: 15px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; padding: 2px 4px; }
+    .msg-a code { background: rgba(127,127,127,.18); padding: 1px 5px; border-radius: 6px; font-size: 13px; }
+    .msg-a pre { background: rgba(0,0,0,.35); padding: 10px; border-radius: 12px; overflow-x: auto; margin: 8px 0; }
+    .msg-a pre code { background: none; padding: 0; }
+    .center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; gap: 22px; }
+    .center h1 { font-size: 30px; font-weight: 500; text-align: center; }
+    .sugs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 720px; }
+    .sug { border: 1px solid var(--line); border-radius: 14px; padding: 9px 14px; background: var(--surface); color: var(--text); cursor: pointer; font-size: 13px; }
+    .sug:hover { border-color: var(--accent); }
+
+    .composer-wrap { padding: 0 16px 6px; }
+    .composer { max-width: 760px; margin: 0 auto; display: flex; align-items: flex-end; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 26px; padding: 8px 8px 8px 16px; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+    .composer:focus-within { border-color: var(--accent); }
+    .composer textarea { flex: 1; border: none; outline: none; background: transparent; color: var(--text); resize: none; max-height: 160px; padding: 8px 0; font-size: 15px; }
+    .send { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--accent); color: #000; font-size: 18px; cursor: pointer; flex-shrink: 0; }
+    .send:disabled { opacity: .4; cursor: default; }
+    .stop { background: var(--muted); }
+    .hint { text-align: center; font-size: 11px; color: var(--muted); padding: 6px 0 10px; }
+
+    .scrim { display: none; }
+    @media (max-width: 760px) {
+        .sb { position: fixed; left: 0; top: 0; bottom: 0; z-index: 50; transform: translateX(-100%); transition: transform .2s; width: 80vw; max-width: 300px; }
+        .sb.open { transform: none; box-shadow: 4px 0 20px rgba(0,0,0,.4); }
+        .scrim.open { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 40; }
+        .center h1 { font-size: 24px; }
+        .bub-u { max-width: 92%; }
+    }
+    .mhome { display: none; }
+</style>
+</head>
+<body>
+
+<aside class="sb" id="sb">
+    <div class="sb-top">
+        <button class="icon-btn" id="menuBtn" type="button" aria-label="Меню">☰</button>
+        <span class="brand">Акорик</span>
+    </div>
+    <button class="newbtn" id="newChat" type="button">＋ Новий чат</button>
+    <input id="search" type="search" placeholder="Пошук чатів">
+    <div class="sb-label">Чати</div>
+    <div id="chatList"></div>
+    <div class="sb-foot">
+        <a href="settings.html">⚙ Налаштування</a>
+        <a href="index.html">← Головна</a>
+    </div>
+</aside>
+<div class="scrim" id="scrim"></div>
+
+<main class="main">
+    <div class="topbar">
+        <select id="mode" aria-label="Режим">
+            <option value="general">Загальний</option>
+            <option value="code">Код</option>
+            <option value="orca">DeepSeek</option>
+        </select>
+        <span class="st" id="status"></span>
+    </div>
+
+    <div class="center" id="center">
+        <h1 id="hello">Чим можна допомогти?</h1>
+        <div class="sugs" id="sugs"></div>
+    </div>
+    <div class="log" id="log" hidden></div>
+
+    <div class="composer-wrap">
+        <form class="composer" id="form">
+            <textarea id="input" rows="1" maxlength="4000" placeholder="Запитайте Акорика…"></textarea>
+            <button class="send" id="send" type="submit" aria-label="Надіслати">➤</button>
+        </form>
+        <div class="hint">Акорик може помилятися. Перевіряйте важливе.</div>
+    </div>
+</main>
+
+<script src="js/config.js"></script>
+<script>
+(function () {
+    'use strict';
+    const CFG = window.ACORE_CONFIG || {};
+    const W = (CFG.AI_PROXY_URL || '').replace(/\/+$/, '');
+    const KEY = 'acore-ai-chats';
+    const SET_KEY = 'acore-settings';
+    const $ = id => document.getElementById(id);
+
+    const STYLE = {
+        short: 'Відповідай коротко: 1–3 речення, якщо не просять більше.',
+        detailed: 'Відповідай докладно: з поясненнями, прикладами і структурою.',
+        friendly: 'Відповідай дружньо і тепло, помірно використовуючи емодзі.',
+        formal: 'Відповідай ділово і формально, без зайвих емодзі.'
+    };
+    const SYSTEM_BASE = 'Ти Акорик, дружній помічник платформи Acore. Відповідай українською, якщо не просять іншою мовою. Не вигадуй фактів; якщо не знаєш, скажи про це. Не проси особистих даних.';
+
+    const settings = () => {
+        try { return Object.assign({ style: 'friendly', suggest: true }, JSON.parse(localStorage.getItem(SET_KEY) || '{}')); }
+        catch (e) { return { style: 'friendly', suggest: true }; }
+    };
+
+    let chats = load();
+    let curId = null;
+    let busy = false;
+    let ctrl = null;
+
+    function load() {
+        try { const a = JSON.parse(localStorage.getItem(KEY) || '[]'); return Array.isArray(a) ? a : []; }
+        catch (e) { return []; }
+    }
+    function persist() {
+        try { localStorage.setItem(KEY, JSON.stringify(chats.slice(0, 200))); }
+        catch (e) { $('status').textContent = 'Мало місця для збереження'; }
+    }
+    const cur = () => chats.find(c => c.id === curId);
+    const uid = () => 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+    /* ---------- Список чатів ---------- */
+    function renderList() {
+        const q = $('search').value.trim().toLowerCase();
+        const box = $('chatList');
+        box.textContent = '';
+        const items = chats
+            .filter(c => !q || c.title.toLowerCase().includes(q))
+            .sort((a, b) => (b.pinned - a.pinned) || (b.updated - a.updated));
+        if (!items.length) {
+            const e = document.createElement('div');
+            e.className = 'sb-label';
+            e.textContent = q ? 'Нічого не знайдено' : 'Чатів ще немає';
+            box.appendChild(e);
+            return;
+        }
+        items.forEach(c => {
+            const row = document.createElement('div');
+            row.className = 'chat-item' + (c.id === curId ? ' on' : '');
+            const t = document.createElement('span');
+            t.className = 't';
+            t.textContent = (c.pinned ? '📌 ' : '') + c.title;
+            const del = document.createElement('button');
+            del.className = 'del';
+            del.type = 'button';
+            del.title = 'Видалити';
+            del.textContent = '✕';
+            row.append(t, del);
+            row.addEventListener('click', e => { if (e.target === del) return; open(c.id); closeMenu(); });
+            del.addEventListener('click', e => {
+                e.stopPropagation();
+                if (!confirm('Видалити чат «' + c.title + '»?')) return;
+                chats = chats.filter(x => x.id !== c.id);
+                if (curId === c.id) curId = null;
+                persist();
+                renderList();
+                showEmpty();
+            });
+            box.appendChild(row);
+        });
+    }
+
+    /* ---------- Повідомлення ---------- */
+    function esc(s) { return s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+    function md(src) {
+        let t = esc(String(src));
+        const blocks = [];
+        t = t.replace(/```[\w-]*\n?([\s\S]*?)```/g, (m, code) => { blocks.push(code.replace(/\n$/, '')); return '\u0000' + (blocks.length - 1) + '\u0000'; });
+        t = t.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+        t = t.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+        t = t.replace(/\u0000(\d+)\u0000/g, (m, i) => '<pre><code>' + blocks[+i] + '</code></pre>');
+        return t;
+    }
+
+    function addU(text) {
+        const w = document.createElement('div');
+        w.className = 'wrapmsg';
+        const m = document.createElement('div');
+        m.className = 'msg-u';
+        const b = document.createElement('div');
+        b.className = 'bub-u';
+        b.textContent = text;
+        m.appendChild(b);
+        w.appendChild(m);
+        $('log').appendChild(w);
+        return w;
+    }
+    function addA(text) {
+        const w = document.createElement('div');
+        w.className = 'wrapmsg';
+        const m = document.createElement('div');
+        m.className = 'msg-a';
+        m.innerHTML = md(text);
+        w.appendChild(m);
+        $('log').appendChild(w);
+        return m;
+    }
+
+    function showChat() {
+        $('center').hidden = true;
+        $('log').hidden = false;
+    }
+    function showEmpty() {
+        $('log').hidden = true;
+        $('log').textContent = '';
+        $('center').hidden = false;
+        $('hello').textContent = 'Чим можна допомогти?';
+        renderSuggestions();
+    }
+
+    function open(id) {
+        curId = id;
+        const c = cur();
+        if (!c) { showEmpty(); renderList(); return; }
+        $('log').textContent = '';
+        c.msgs.forEach(m => (m.role === 'user' ? addU(m.content) : addA(m.content)));
+        showChat();
+        renderList();
+        $('log').scrollTop = $('log').scrollHeight;
+    }
+
+    function newChat() {
+        if (busy) return;
+        curId = null;
+        showEmpty();
+        renderList();
+        $('input').focus();
+    }
+
+    /* ---------- Пропозиції ---------- */
+    const SUGG = ['Розкажи цікавий факт про космос', 'Поясни просто, що таке штучний інтелект', 'Допоможи скласти план вивчення англійської', 'Напиши короткий вірш про осінь'];
+    function renderSuggestions() {
+        const box = $('sugs');
+        box.textContent = '';
+        if (!settings().suggest) return;
+        SUGG.forEach(s => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'sug';
+            b.textContent = s;
+            b.addEventListener('click', () => send(s));
+            box.appendChild(b);
+        });
+    }
+
+    /* ---------- Надсилання ---------- */
+    async function send(text) {
+        text = String(text || '').trim();
+        if (!text || busy) return;
+        if (!W) { alert('ШІ ще не підключено (AI_PROXY_URL у config.js).'); return; }
+
+        if (!cur()) {
+            const c = { id: uid(), title: text.slice(0, 48), pinned: false, msgs: [], updated: Date.now() };
+            chats.unshift(c);
+            curId = c.id;
+        }
+        const chat = cur();
+        chat.msgs.push({ role: 'user', content: text });
+        chat.updated = Date.now();
+        persist();
+        showChat();
+        addU(text);
+        $('hello').textContent = '';
+        $('input').value = '';
+        autosize();
+        renderList();
+
+        const target = addA('…');
+        busy = true;
+        setBusy(true);
+        $('status').textContent = 'Пише…';
+
+        const style = STYLE[settings().style] || STYLE.friendly;
+        const history = chat.msgs.slice(-20).map(m => ({ role: m.role, content: m.content }));
+        ctrl = new AbortController();
+        let answer = '';
+        try {
+            const res = await fetch(W + '/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                signal: ctrl.signal,
+                body: JSON.stringify({
+                    mode: $('mode').value,
+                    messages: [{ role: 'system', content: SYSTEM_BASE + ' ' + style }].concat(history),
+                    stream: true,
+                    temperature: 0.7
+                })
+            });
+            if (!res.ok) throw new Error('Сервіс ШІ відповів помилкою (код ' + res.status + ')');
+            const reader = res.body.getReader();
+            const dec = new TextDecoder();
+            let buf = '';
+            for (;;) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buf += dec.decode(value, { stream: true });
+                let nl;
+                while ((nl = buf.indexOf('\n')) >= 0) {
+                    const line = buf.slice(0, nl).trim();
+                    buf = buf.slice(nl + 1);
+                    if (!line.startsWith('data:')) continue;
+                    const d = line.slice(5).trim();
+                    if (d === '[DONE]') continue;
+                    try {
+                        const j = JSON.parse(d);
+                        const c = j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content;
+                        if (c) { answer += c; target.innerHTML = md(answer); $('log').scrollTop = $('log').scrollHeight; }
+                    } catch (e) { /* неповний шматок */ }
+                }
+            }
+            if (!answer.trim()) answer = 'Порожня відповідь. Спробуйте переформулювати запит.';
+        } catch (e) {
+            answer = e.name === 'AbortError' ? (answer || 'Зупинено.') : ('Помилка: ' + e.message);
+            target.innerHTML = md(answer);
+        } finally {
+            target.innerHTML = md(answer.trim() || answer);
+            chat.msgs.push({ role: 'assistant', content: answer.trim() || answer });
+            chat.updated = Date.now();
+            persist();
+            renderList();
+            busy = false;
+            ctrl = null;
+            setBusy(false);
+            $('status').textContent = '';
+            $('log').scrollTop = $('log').scrollHeight;
+        }
+    }
+
+    function setBusy(on) {
+        const b = $('send');
+        b.textContent = on ? '■' : '➤';
+        b.classList.toggle('stop', on);
+        b.disabled = false;
+        b.type = on ? 'button' : 'submit';
+    }
+
+    function autosize() {
+        const t = $('input');
+        t.style.height = 'auto';
+        t.style.height = Math.min(t.scrollHeight, 160) + 'px';
+    }
+
+    /* ---------- Події ---------- */
+    $('form').addEventListener('submit', e => { e.preventDefault(); send($('input').value); });
+    $('send').addEventListener('click', e => { if (busy && ctrl) { e.preventDefault(); ctrl.abort(); } });
+    $('input').addEventListener('input', autosize);
+    $('input').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); if (!busy) send($('input').value); }
+    });
+    $('newChat').addEventListener('click', () => { newChat(); closeMenu(); });
+    $('search').addEventListener('input', renderList);
+
+    function openMenu() { $('sb').classList.add('open'); $('scrim').classList.add('open'); }
+    function closeMenu() { $('sb').classList.remove('open'); $('scrim').classList.remove('open'); }
+    $('menuBtn').addEventListener('click', () => ($('sb').classList.contains('open') ? closeMenu() : openMenu()));
+    $('scrim').addEventListener('click', closeMenu);
+
+    /* ---------- Старт ---------- */
+    renderList();
+    if (chats.length) open(chats.slice().sort((a, b) => b.updated - a.updated)[0].id);
+    else showEmpty();
+    autosize();
+})();
+</script>
+</body>
+</html>
