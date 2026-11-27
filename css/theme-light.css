@@ -80,3 +80,28 @@ header a, a.back, .back { background: var(--brand) !important; color: #ffffff !i
         border-radius: 999px !important;
     }
 }
+/* Шапка головної у світлій темі: суцільно синя, з вищим пріоритетом за стилі сторінки */
+html[data-theme="light"] header,
+html[data-theme="light"] .top-tabs,
+html[data-theme="light"] .topbar,
+html[data-theme="light"] .site-header {
+    background: #1a4a84 !important;
+    color: #ffffff !important;
+    border-bottom: none !important;
+    box-shadow: 0 2px 8px rgba(15, 40, 80, .25) !important;
+}
+html[data-theme="light"] header .logo,
+html[data-theme="light"] header a,
+html[data-theme="light"] header .who {
+    color: #ffffff !important;
+}
+html[data-theme="light"] .top-tabs .tab-btn {
+    background: rgba(255, 255, 255, .14) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, .28) !important;
+}
+html[data-theme="light"] .top-tabs .tab-btn.active,
+html[data-theme="light"] .top-tabs .tab-btn:hover {
+    background: #ffffff !important;
+    color: #1a4a84 !important;
+}
